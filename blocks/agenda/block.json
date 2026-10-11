@@ -1,0 +1,1 @@
+{"apiVersion":3,"name":"sdr/agenda","title":"SDR · Agenda public","category":"widgets","icon":"calendar-alt","description":"Les prochaines dates de la troupe, mises à jour automatiquement.","editorScript":"sdr-blocks","supports":{"html":false}}
