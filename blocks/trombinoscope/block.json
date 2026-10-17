@@ -1,0 +1,22 @@
+{
+  "apiVersion": 3,
+  "name": "sdr/trombinoscope",
+  "title": "SDR · Trombinoscope",
+  "category": "widgets",
+  "icon": "smiley",
+  "description": "Les portraits de la troupe, avec leurs petits travers assumés.",
+  "editorScript": "sdr-blocks",
+  "style": "sdr-roster",
+  "editorStyle": "sdr-roster",
+  "attributes": {
+    "title": { "type": "string", "default": "La troupe au grand complet" },
+    "layout": { "type": "string", "default": "cards" },
+    "columns": { "type": "number", "default": 3 },
+    "showDescription": { "type": "boolean", "default": true },
+    "showLikes": { "type": "boolean", "default": true },
+    "showDislikes": { "type": "boolean", "default": true },
+    "includeOrganizers": { "type": "boolean", "default": true },
+    "order": { "type": "string", "default": "name" }
+  },
+  "supports": { "html": false }
+}
