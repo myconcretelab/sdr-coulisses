@@ -2,7 +2,7 @@
 /**
  * Plugin Name: SDR — Les Coulisses
  * Description: Agenda public, disponibilités et composition des équipes des Sorties de Route.
- * Version: 1.4.3
+ * Version: 1.4.4
  * Requires PHP: 8.1
  * Text Domain: sdr
  */
@@ -48,7 +48,7 @@ final class SDR_Coulisses {
             if($pagenow==='post.php' && $id && get_post_type($id)==='sdr_event' && self::organizer() && current_user_can('edit_post',$id)) return;
             wp_safe_redirect(home_url('/coulisses/')); exit;
         });
-        add_action('wp_enqueue_scripts', function(){ wp_enqueue_style('sdr-ui',plugins_url('assets/app.css',__FILE__),[], '1.4.2'); });
+        add_action('wp_enqueue_scripts', function(){ wp_enqueue_style('sdr-ui',plugins_url('assets/app.css',__FILE__),[], '1.4.4'); });
         add_shortcode('sdr_agenda', [__CLASS__, 'agenda']);
         add_shortcode('sdr_coulisses', [__CLASS__, 'app']);
         add_shortcode('sdr_facebook', [__CLASS__, 'facebook']);
@@ -122,6 +122,11 @@ final class SDR_Coulisses {
         return ['name'=>$user?$user->display_name:'','roles'=>get_user_meta($uid,'sdr_roles',true)?:['joueur'],'diet'=>get_user_meta($uid,'sdr_diet',true)?:'unspecified','gender'=>get_user_meta($uid,'sdr_gender',true),'experience'=>get_user_meta($uid,'sdr_experience',true),'description'=>$description,'likes'=>self::profile_list(get_user_meta($uid,'sdr_likes',true)),'dislikes'=>self::profile_list(get_user_meta($uid,'sdr_dislikes',true)),'photoId'=>$photo,'photoUrl'=>$photo?wp_get_attachment_image_url($photo,'medium'):'','rosterVisible'=>(bool)get_user_meta($uid,'sdr_roster_visible',true)];
     }
     static function profile_list($items){ return array_values(array_filter(array_map('sanitize_text_field',(array)$items),static fn($item)=>$item!=='')); }
+    static function event_title($title){
+        $parts=explode(' VS ',(string)$title,2);
+        if(count($parts)!==2) return esc_html($title);
+        return esc_html($parts[0]).' <span class="event-vs" aria-label="versus">VS</span> '.esc_html($parts[1]);
+    }
     static function avatar_data($args,$id_or_email){
         $user=false;
         if($id_or_email instanceof WP_User) $user=$id_or_email;
@@ -508,7 +513,7 @@ final class SDR_Coulisses {
     }
     static function agenda(){
         ob_start(); echo '<div class="public-agenda">'; $events=self::events();
-        foreach($events as $i=>$p){ $e=self::event_data($p); $date=new DateTime($e['date']); $format=$e['format']; $detail=$e['venue'].' · '.($e['time']?str_replace(':','h',$e['time']):'Horaire à venir');if($e['intermissionSet'])$detail.=$e['intermission']?' · Avec entracte':' · Sans entracte';echo '<a class="public-event" href="'.esc_url($e['url']).'"><div class="date-stamp"><span>'.esc_html(wp_date('M',$date->getTimestamp())).'</span><strong>'.esc_html($date->format('d')).'</strong><small>'.esc_html($date->format('Y')).'</small></div><div class="event-line-main"><span class="tag tag-'.($i%3).'">'.esc_html($format).'</span><h3>'.esc_html($e['team']?"Sortie d'route × ".$e['team']:$p->post_title).'</h3><p>'.esc_html($detail).'</p></div><span class="round-arrow" aria-label="Voir le spectacle">↗</span></a>'; }
+        foreach($events as $i=>$p){ $e=self::event_data($p); $date=new DateTime($e['date']); $format=$e['format']; $detail=$e['venue'].' · '.($e['time']?str_replace(':','h',$e['time']):'Horaire à venir');if($e['intermissionSet'])$detail.=$e['intermission']?' · Avec entracte':' · Sans entracte';$title=$e['team']?"Sortie d'route VS ".$e['team']:$p->post_title;echo '<a class="public-event" href="'.esc_url($e['url']).'"><div class="date-stamp"><span>'.esc_html(wp_date('M',$date->getTimestamp())).'</span><strong>'.esc_html($date->format('d')).'</strong><small>'.esc_html($date->format('Y')).'</small></div><div class="event-line-main"><span class="tag tag-'.($i%3).'">'.esc_html($format).'</span><h3>'.self::event_title($title).'</h3><p>'.esc_html($detail).'</p></div><span class="round-arrow" aria-label="Voir le spectacle">↗</span></a>'; }
         if(!$events) echo '<p>Les prochaines dates arrivent bientôt. On vous prépare de belles surprises.</p>';
         echo '</div>'; return ob_get_clean();
     }
@@ -553,7 +558,7 @@ final class SDR_Coulisses {
     }
     static function app(){
         if(!self::member()) return '<div class="login-callout"><h2>Bienvenue dans les coulisses.</h2><p>Cet espace est réservé aux membres de la troupe.</p><a class="button primary" href="'.esc_url(wp_login_url(home_url('/coulisses/'))).'">Se connecter →</a></div>';
-        wp_enqueue_script('sdr-app',plugins_url('assets/app.js',__FILE__),[], '1.4.3',true);
+        wp_enqueue_script('sdr-app',plugins_url('assets/app.js',__FILE__),[], '1.4.4',true);
         wp_add_inline_script('sdr-app','window.SDR='.wp_json_encode(['api'=>rest_url('sdr/v1/'),'nonce'=>wp_create_nonce('wp_rest'),'home'=>home_url('/'),'admin'=>admin_url(),'adminLogin'=>add_query_arg('sdr_admin','1',wp_login_url(admin_url(),true)),'logout'=>html_entity_decode(wp_logout_url(home_url('/')),ENT_QUOTES,'UTF-8')]).';','before');
         return '<div id="sdr-app"><div class="app-loading"><span class="loading-star">✳</span><p>On ouvre les coulisses…</p></div></div><noscript>Active JavaScript pour gérer tes disponibilités.</noscript>';
     }
