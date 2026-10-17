@@ -62,7 +62,8 @@
             panels.push(group('Date et horaires',[
                 text('date','Date du spectacle','date','La date de la représentation, indépendante de la date de publication WordPress.'),
                 text('time','Début du spectacle','time'),
-                text('call_time','Rendez-vous des membres','time')
+                text('call_time','Rendez-vous des membres','time'),
+                el(ToggleControl,{...common,key:'intermission',label:'Avec entracte',checked:!!get('intermission'),onChange:value=>set('intermission',value),help:'Indique au public si une pause est prévue pendant le spectacle.'})
             ]));
             panels.push(group('Lieu, troupe et format',[
                 relation('venue','Lieu','sdr_venue'),relation('team','Troupe invitée','sdr_team'),relation('format','Format','sdr_format')

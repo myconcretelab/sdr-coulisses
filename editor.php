@@ -14,10 +14,10 @@ final class SDR_Editor {
         foreach (self::TYPES as $type) {
             add_post_type_support($type, 'custom-fields');
             foreach (SDR_Coulisses::fields($type) as $key => [$label, $control]) {
-                $kind = $key === 'closed' ? 'boolean' : (($control === 'number' || str_starts_with($control, 'sdr_')) ? 'integer' : 'string');
+                $kind = $control === 'boolean' ? 'boolean' : (($control === 'number' || str_starts_with($control, 'sdr_')) ? 'integer' : 'string');
                 $schema = ['type' => $kind, 'context' => ['edit']];
                 if ($kind === 'integer') $schema['minimum'] = 0;
-                if ($control === 'number' && $key !== 'closed') $schema['maximum'] = 50;
+                if ($control === 'number') $schema['maximum'] = 50;
                 register_post_meta($type, '_sdr_'.$key, [
                     'type' => $kind, 'single' => true, 'description' => $label,
                     'default' => $kind === 'boolean' ? false : ($kind === 'integer' ? 0 : ''),
@@ -65,7 +65,7 @@ final class SDR_Editor {
     static function assets() {
         $screen = get_current_screen();
         if (!$screen || !in_array($screen->post_type, self::TYPES, true)) return;
-        wp_enqueue_script('sdr-editor', plugins_url('assets/editor.js', __FILE__), ['wp-plugins','wp-editor','wp-element','wp-components','wp-data','wp-api-fetch','wp-html-entities'], '1.3.0', true);
+        wp_enqueue_script('sdr-editor', plugins_url('assets/editor.js', __FILE__), ['wp-plugins','wp-editor','wp-element','wp-components','wp-data','wp-api-fetch','wp-html-entities'], '1.4.2', true);
         wp_enqueue_style('sdr-editor', plugins_url('assets/editor.css', __FILE__), ['wp-components'], '1.1.1');
         global $post, $wpdb;
         $selected = array_fill_keys(array_keys(SDR_Coulisses::ROLES), 0);
