@@ -16,7 +16,8 @@
     "showLikes": { "type": "boolean", "default": true },
     "showDislikes": { "type": "boolean", "default": true },
     "includeOrganizers": { "type": "boolean", "default": true },
-    "order": { "type": "string", "default": "name" }
+    "order": { "type": "string", "default": "name" },
+    "excludedUserIds": { "type": "array", "default": [], "items": { "type": "number" } }
   },
   "supports": { "html": false }
 }
