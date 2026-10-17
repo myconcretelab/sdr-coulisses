@@ -23,6 +23,7 @@ final class SDR_Coulisses {
         add_action('edit_user_profile', [__CLASS__, 'user_fields']);
         add_action('personal_options_update', [__CLASS__, 'save_user_fields']);
         add_action('edit_user_profile_update', [__CLASS__, 'save_user_fields']);
+        add_filter('get_avatar_data', [__CLASS__, 'avatar_data'], 20, 2);
         add_filter('nsl_is_register_allowed','__return_false',100);
         add_filter('nsl_disabled_register_error_message',fn()=> 'L’accès est réservé à la troupe. Connecte-toi à ton compte membre pour y associer Facebook.');
         add_filter('wp_mail_from',function($from){$email=sanitize_email(get_option('admin_email'));return is_email($email)?$email:$from;});
@@ -107,9 +108,39 @@ final class SDR_Coulisses {
     static function valid_date($v){ $d=DateTime::createFromFormat('!Y-m-d',$v); return $d && $d->format('Y-m-d')===$v; }
     static function profile($uid){
         $user=get_userdata($uid); $photo=(int)get_user_meta($uid,'sdr_profile_photo',true);
-        return ['name'=>$user?$user->display_name:'','roles'=>get_user_meta($uid,'sdr_roles',true)?:['joueur'],'diet'=>get_user_meta($uid,'sdr_diet',true)?:'unspecified','gender'=>get_user_meta($uid,'sdr_gender',true),'experience'=>get_user_meta($uid,'sdr_experience',true),'description'=>get_user_meta($uid,'sdr_profile_description',true),'likes'=>self::profile_list(get_user_meta($uid,'sdr_likes',true)),'dislikes'=>self::profile_list(get_user_meta($uid,'sdr_dislikes',true)),'photoId'=>$photo,'photoUrl'=>$photo?wp_get_attachment_image_url($photo,'medium'):'','rosterVisible'=>(bool)get_user_meta($uid,'sdr_roster_visible',true)];
+        $description=$user?trim((string)$user->description):'';
+        if($description==='' && $user){
+            $legacy=trim((string)get_user_meta($uid,'sdr_profile_description',true));
+            if($legacy!==''){
+                $migrated=wp_update_user(['ID'=>$uid,'description'=>$legacy]);
+                if(!is_wp_error($migrated)) delete_user_meta($uid,'sdr_profile_description');
+                $description=$legacy;
+            }
+        }
+        return ['name'=>$user?$user->display_name:'','roles'=>get_user_meta($uid,'sdr_roles',true)?:['joueur'],'diet'=>get_user_meta($uid,'sdr_diet',true)?:'unspecified','gender'=>get_user_meta($uid,'sdr_gender',true),'experience'=>get_user_meta($uid,'sdr_experience',true),'description'=>$description,'likes'=>self::profile_list(get_user_meta($uid,'sdr_likes',true)),'dislikes'=>self::profile_list(get_user_meta($uid,'sdr_dislikes',true)),'photoId'=>$photo,'photoUrl'=>$photo?wp_get_attachment_image_url($photo,'medium'):'','rosterVisible'=>(bool)get_user_meta($uid,'sdr_roster_visible',true)];
     }
     static function profile_list($items){ return array_values(array_filter(array_map('sanitize_text_field',(array)$items),static fn($item)=>$item!=='')); }
+    static function avatar_data($args,$id_or_email){
+        $user=false;
+        if($id_or_email instanceof WP_User) $user=$id_or_email;
+        elseif($id_or_email instanceof WP_Comment){
+            $user=$id_or_email->user_id?get_user_by('id',$id_or_email->user_id):false;
+            if(!$user && $id_or_email->comment_author_email) $user=get_user_by('email',$id_or_email->comment_author_email);
+        } elseif($id_or_email instanceof WP_Post){
+            $user=$id_or_email->post_author?get_user_by('id',$id_or_email->post_author):false;
+        } elseif(is_numeric($id_or_email)) $user=get_user_by('id',absint($id_or_email));
+        elseif(is_string($id_or_email) && is_email($id_or_email)) $user=get_user_by('email',$id_or_email);
+        if(!$user) return $args;
+        $photo=(int)get_user_meta($user->ID,'sdr_profile_photo',true);
+        if(!$photo || !wp_attachment_is_image($photo)) return $args;
+        $size=max(32,min(512,(int)($args['size']??96)));
+        $image=wp_get_attachment_image_src($photo,[$size,$size]);
+        if(!$image) $image=wp_get_attachment_image_src($photo,'thumbnail');
+        if(!$image) return $args;
+        $args['url']=$image[0];
+        $args['found_avatar']=true;
+        return $args;
+    }
     static function user_fields($user){
         if(!current_user_can('manage_options')) return; echo '<h2>Profil SDR (privé)</h2><p><strong>Rôles artistiques</strong> — plusieurs choix possibles.</p>'; wp_nonce_field('sdr_user','sdr_user_nonce'); $p=self::profile($user->ID);
         foreach(self::ROLES as $k=>$label) echo '<label style="margin-right:20px"><input type="checkbox" name="sdr_roles[]" value="'.$k.'" '.checked(in_array($k,$p['roles']),true,false).'> '.esc_html($label).'</label>';
@@ -117,6 +148,7 @@ final class SDR_Coulisses {
     }
     static function save_user_fields($uid){
         if(!current_user_can('manage_options') || !isset($_POST['sdr_user_nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['sdr_user_nonce'])),'sdr_user')) return;
+        delete_user_meta($uid,'sdr_profile_description');
         update_user_meta($uid,'sdr_roles',array_values(array_intersect(array_keys(self::ROLES),(array)($_POST['sdr_roles']??[]))));
         $diet=sanitize_key($_POST['sdr_diet']??'unspecified');if(in_array($diet,['unspecified','standard','vegetarian','vegan'],true))update_user_meta($uid,'sdr_diet',$diet);
         update_user_meta($uid,'sdr_experience',($_POST['sdr_experience']??'')===''?'':min(80,absint($_POST['sdr_experience'])));
@@ -195,7 +227,10 @@ final class SDR_Coulisses {
         $experience=$data['experience']??''; if($experience!=='' && (filter_var($experience,FILTER_VALIDATE_INT)===false || $experience<0 || $experience>80)) return self::error('Indique entre 0 et 80 années d’impro.');
         if(!is_string($data['description']??'') || mb_strlen($data['description']??'')>600) return self::error('La description ne peut pas dépasser 600 caractères.');
         foreach(['likes','dislikes'] as $key){ if(!is_array($data[$key]??null) || count($data[$key])>12) return self::error('Ajoute jusqu’à 12 éléments par liste.'); foreach($data[$key] as $item) if(!is_string($item) || mb_strlen($item)>60) return self::error('Chaque élément doit faire 60 caractères maximum.'); }
-        foreach(['roles'=>array_values(array_unique($data['roles'])),'diet'=>$data['diet'],'gender'=>sanitize_text_field(mb_substr($data['gender']??'',0,80)),'experience'=>$experience,'profile_description'=>sanitize_textarea_field($data['description']),'likes'=>self::profile_list($data['likes']),'dislikes'=>self::profile_list($data['dislikes']),'roster_visible'=>!empty($data['rosterVisible'])] as $k=>$v) update_user_meta($uid,'sdr_'.$k,$v);
+        $updated=wp_update_user(['ID'=>$uid,'description'=>sanitize_textarea_field($data['description'])]);
+        if(is_wp_error($updated)) return self::error('La biographie du compte n’a pas pu être enregistrée. Réessaie.',500);
+        delete_user_meta($uid,'sdr_profile_description');
+        foreach(['roles'=>array_values(array_unique($data['roles'])),'diet'=>$data['diet'],'gender'=>sanitize_text_field(mb_substr($data['gender']??'',0,80)),'experience'=>$experience,'likes'=>self::profile_list($data['likes']),'dislikes'=>self::profile_list($data['dislikes']),'roster_visible'=>!empty($data['rosterVisible'])] as $k=>$v) update_user_meta($uid,'sdr_'.$k,$v);
         return self::profile($uid);
     }
     static function save_profile_photo($req){
