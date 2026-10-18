@@ -93,3 +93,5 @@
 .new-event-actions a.button{width:100%}
 @media(max-width:1150px){.organization-actions{width:100%;justify-content:flex-end}}
 @media(max-width:560px){.organization-actions{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.organization-actions .button{min-width:0;justify-content:center;padding:10px 8px}.organization-actions .button span{font-size:15px}}
+.card-edit-action{flex:none;border:0;background:transparent;color:var(--purple);font-size:11px;font-weight:700;padding:10px 3px;text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
+.card-edit-action:hover{color:#443477}
