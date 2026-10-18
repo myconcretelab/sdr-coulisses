@@ -93,5 +93,8 @@
 .new-event-actions a.button{width:100%}
 @media(max-width:1150px){.organization-actions{width:100%;justify-content:flex-end}}
 @media(max-width:560px){.organization-actions{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.organization-actions .button{min-width:0;justify-content:center;padding:10px 8px}.organization-actions .button span{font-size:15px}}
-.card-edit-action{flex:none;border:0;background:transparent;color:var(--purple);font-size:11px;font-weight:700;padding:10px 3px;text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
-.card-edit-action:hover{color:#443477}
+.card-actions{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:8px;margin-left:auto}
+.card-actions .card-action{margin-left:0}
+.card-edit-action{display:inline-flex;align-items:center;justify-content:center;gap:7px;flex:none;min-height:42px;border:1px solid #d7c6dd;border-radius:4px 10px 5px 8px;background:#f0e9f3;color:#58446f;padding:8px 11px;font-size:11px;font-weight:700;line-height:1;white-space:nowrap;box-shadow:2px 3px 0 #392c401a;transform:rotate(-1deg);transition:background .18s,box-shadow .18s,transform .18s}
+.card-edit-icon{display:grid;place-items:center;width:20px;height:20px;border-radius:3px 6px 4px 5px;background:#e1d3e9;font-size:14px;line-height:1}
+.card-edit-action:hover{background:#e6d9ed;box-shadow:3px 4px 0 #392c4024;transform:translateY(-1px)}
