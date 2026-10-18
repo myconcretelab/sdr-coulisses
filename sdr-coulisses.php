@@ -2,7 +2,7 @@
 /**
  * Plugin Name: SDR — Les Coulisses
  * Description: Agenda public, disponibilités et composition des équipes des Sorties de Route.
- * Version: 1.4.4
+ * Version: 1.4.5
  * Requires PHP: 8.1
  * Text Domain: sdr
  */
@@ -48,7 +48,7 @@ final class SDR_Coulisses {
             if($pagenow==='post.php' && $id && get_post_type($id)==='sdr_event' && self::organizer() && current_user_can('edit_post',$id)) return;
             wp_safe_redirect(home_url('/coulisses/')); exit;
         });
-        add_action('wp_enqueue_scripts', function(){ wp_enqueue_style('sdr-ui',plugins_url('assets/app.css',__FILE__),[], '1.4.4'); });
+        add_action('wp_enqueue_scripts', function(){ wp_enqueue_style('sdr-ui',plugins_url('assets/app.css',__FILE__),[], '1.4.5'); });
         add_shortcode('sdr_agenda', [__CLASS__, 'agenda']);
         add_shortcode('sdr_coulisses', [__CLASS__, 'app']);
         add_shortcode('sdr_facebook', [__CLASS__, 'facebook']);
@@ -73,18 +73,18 @@ final class SDR_Coulisses {
         self::register(); flush_rewrite_rules();
     }
     static function sync_roles($force=false) {
-        if(!$force && get_option('sdr_role_permissions_version')==='1.3.0') return;
+        if(!$force && get_option('sdr_role_permissions_version')==='1.4.5') return;
         $organizer=get_role('sdr_organizer');
         if($organizer){
             foreach(['read','sdr_member','sdr_organize'] as $cap) $organizer->add_cap($cap);
             foreach(self::ITEM_CAPS as $cap) $organizer->remove_cap($cap);
-            foreach(['edit_sdr_events','publish_sdr_events','edit_published_sdr_events'] as $cap) $organizer->add_cap($cap);
+            foreach(['edit_sdr_events','edit_others_sdr_events','publish_sdr_events','edit_published_sdr_events'] as $cap) $organizer->add_cap($cap);
         }
         $admin=get_role('administrator');
         if($admin){
             foreach(array_merge(['sdr_member','sdr_organize'],self::ITEM_CAPS,self::EVENT_CAPS) as $cap) $admin->add_cap($cap);
         }
-        update_option('sdr_role_permissions_version','1.3.0',false);
+        update_option('sdr_role_permissions_version','1.4.5',false);
     }
     static function register() {
         foreach(['sdr_event'=>['Spectacles','Spectacle','calendar-alt','spectacles'], 'sdr_venue'=>['Lieux','Lieu','location-alt','lieux'], 'sdr_team'=>['Troupes invitées','Troupe','groups','troupes'], 'sdr_format'=>['Formats','Format','format-video','formats']] as $type=>$d) {
@@ -167,6 +167,10 @@ final class SDR_Coulisses {
         register_rest_route('sdr/v1','/archives',['methods'=>'GET','permission_callback'=>[__CLASS__,'member'],'callback'=>[__CLASS__,'archives']]);
         register_rest_route('sdr/v1','/event-options',['methods'=>'GET','permission_callback'=>[__CLASS__,'organizer'],'callback'=>[__CLASS__,'event_options']]);
         register_rest_route('sdr/v1','/events',['methods'=>'POST','permission_callback'=>[__CLASS__,'organizer'],'callback'=>[__CLASS__,'create_event']]);
+        register_rest_route('sdr/v1','/events/(?P<id>\d+)/edit',[
+            ['methods'=>'GET','permission_callback'=>[__CLASS__,'organizer'],'callback'=>[__CLASS__,'edit_event_data']],
+            ['methods'=>'POST','permission_callback'=>[__CLASS__,'organizer'],'callback'=>[__CLASS__,'update_event']],
+        ]);
         register_rest_route('sdr/v1','/profile',['methods'=>'POST','permission_callback'=>[__CLASS__,'member'],'callback'=>[__CLASS__,'save_profile']]);
         register_rest_route('sdr/v1','/profile-photo',['methods'=>'POST','permission_callback'=>[__CLASS__,'member'],'callback'=>[__CLASS__,'save_profile_photo']]);
         register_rest_route('sdr/v1','/password',['methods'=>'POST','permission_callback'=>[__CLASS__,'member'],'callback'=>[__CLASS__,'save_password']]);
@@ -182,19 +186,15 @@ final class SDR_Coulisses {
         }
         return $result;
     }
-    static function create_event($req){
-        if(!self::organizer() || !current_user_can('publish_sdr_events')) return self::error('Seule l’organisation peut créer un spectacle.',403);
-        $data=$req->get_json_params();
+    static function event_form_fields($data){
         if(!is_array($data)) return self::error('Le formulaire est incomplet.');
-        foreach(['title','date','time','callTime','bookingUrl','description','status'] as $key){
-            if(isset($data[$key]) && !is_string($data[$key])) return self::error('Le champ « '.$key.' » est invalide.');
+        foreach(['title','date','time','callTime','bookingUrl','description'] as $key){
+            if(array_key_exists($key,$data) && !is_string($data[$key])) return self::error('Le champ « '.$key.' » est invalide.');
         }
         $title=sanitize_text_field($data['title']??'');
         if($title==='' || mb_strlen($title)>200) return self::error('Indique un titre de 1 à 200 caractères.');
         $date=$data['date']??'';
         if(!self::valid_date($date)) return self::error('Indique une date de spectacle valide.');
-        $status=$data['status']??'publish';
-        if(!in_array($status,['publish','draft'],true)) return self::error('Choisis un statut valide.');
         $meta=['_sdr_date'=>$date];
         foreach(['time'=>'time','callTime'=>'call_time'] as $field=>$key){
             $value=$data[$field]??'';
@@ -219,15 +219,66 @@ final class SDR_Coulisses {
         $meta['_sdr_closed']=!empty($data['closed']);
         if(!is_bool($data['intermission']??false)) return self::error('L’option d’entracte est invalide.');
         $meta['_sdr_intermission']=!empty($data['intermission']);
+        return ['title'=>$title,'meta'=>$meta,'content'=>array_key_exists('description',$data)?wp_kses_post($data['description']):null];
+    }
+    static function create_event($req){
+        if(!self::organizer() || !current_user_can('publish_sdr_events')) return self::error('Seule l’organisation peut créer un spectacle.',403);
+        $data=$req->get_json_params();
+        $fields=self::event_form_fields($data);
+        if(is_wp_error($fields)) return $fields;
+        if(isset($data['status']) && !is_string($data['status'])) return self::error('Choisis un statut valide.');
+        $status=$data['status']??'publish';
+        if(!in_array($status,['publish','draft'],true)) return self::error('Choisis un statut valide.');
         // Saving from the popup does not send a troupe announcement.
         remove_action('transition_post_status',[__CLASS__,'queue_new_event_email'],10);
         try {
-            $id=wp_insert_post(wp_slash(['post_type'=>'sdr_event','post_status'=>$status,'post_author'=>get_current_user_id(),'post_title'=>$title,'post_content'=>wp_kses_post($data['description']??''),'meta_input'=>$meta]),true);
+            $id=wp_insert_post(wp_slash(['post_type'=>'sdr_event','post_status'=>$status,'post_author'=>get_current_user_id(),'post_title'=>$fields['title'],'post_content'=>$fields['content']??'','meta_input'=>$fields['meta']]),true);
         } finally {
             add_action('transition_post_status',[__CLASS__,'queue_new_event_email'],10,3);
         }
         if(is_wp_error($id)) return self::error('Impossible d’enregistrer le spectacle. Réessaie.',500);
         return ['id'=>$id,'status'=>$status,'event'=>self::event_data(get_post($id)),'editUrl'=>get_edit_post_link($id,'raw')];
+    }
+    static function event_edit_revision($post){
+        $values=[$post->post_title,$post->post_content,$post->post_modified_gmt];
+        foreach(['date','time','call_time','venue','team','format','booking_url','closed','intermission','capacity_joueur','capacity_mc','capacity_dj'] as $key) $values[]=self::meta($post->ID,$key);
+        return hash('sha256',wp_json_encode($values));
+    }
+    static function edit_event_data($req){
+        $id=(int)$req['id'];
+        if(!self::editable_event($id) || !current_user_can('edit_post',$id)) return self::error('Spectacle introuvable.',404);
+        $post=get_post($id);
+        $hasBlocks=has_blocks($post);
+        $result=['id'=>$id,'title'=>$post->post_title,'date'=>self::meta($id,'date'),'time'=>self::meta($id,'time'),'callTime'=>self::meta($id,'call_time'),'venue'=>(int)self::meta($id,'venue'),'team'=>(int)self::meta($id,'team'),'format'=>(int)self::meta($id,'format'),'capacity'=>[],'closed'=>(bool)self::meta($id,'closed',false),'intermission'=>(bool)self::meta($id,'intermission',false),'bookingUrl'=>self::meta($id,'booking_url'),'hasBlocks'=>$hasBlocks,'revision'=>self::event_edit_revision($post),'editUrl'=>get_edit_post_link($id,'raw')];
+        if(!$hasBlocks) $result['description']=$post->post_content;
+        foreach(self::ROLES as $key=>$label) $result['capacity'][$key]=(int)self::meta($id,'capacity_'.$key,0);
+        $response=rest_ensure_response($result);
+        $response->header('Cache-Control','no-store, private');
+        return $response;
+    }
+    static function update_event($req){
+        $id=(int)$req['id'];
+        if(!self::editable_event($id) || !current_user_can('edit_post',$id)) return self::error('Spectacle introuvable.',404);
+        return self::locked($id,function()use($req,$id){
+            global $wpdb;
+            $data=$req->get_json_params();
+            $fields=self::event_form_fields($data);
+            if(is_wp_error($fields)) return $fields;
+            $post=get_post($id);
+            if(!is_string($data['revision']??null) || $data['revision']!==self::event_edit_revision($post)) return self::error('Ce spectacle a changé depuis l’ouverture de la fenêtre. Ferme-la puis rouvre-la avant de réessayer.',409);
+            if(has_blocks($post) && array_key_exists('description',$data)) return self::error('La présentation en blocs se modifie dans Gutenberg.',400);
+            foreach(self::ROLES as $key=>$label){
+                $assigned=(int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$wpdb->prefix}sdr_responses WHERE event_id=%d AND selected_role=%s",$id,$key));
+                if($fields['meta']['_sdr_capacity_'.$key]<$assigned) return self::error('Retire des sélections avant de réduire les places de '.$label.'.');
+            }
+            $changes=['ID'=>$id,'post_title'=>$fields['title']];
+            if($fields['content']!==null) $changes['post_content']=$fields['content'];
+            $saved=wp_update_post(wp_slash($changes),true);
+            if(is_wp_error($saved) || !$saved) return self::error('Impossible de modifier le spectacle. Réessaie.',500);
+            foreach($fields['meta'] as $key=>$value) update_post_meta($id,$key,$value);
+            delete_post_meta($id,'_sdr_team_finalized_hash');
+            return ['saved'=>true,'event'=>self::event_data(get_post($id))];
+        });
     }
     static function save_profile($req){
         $uid=get_current_user_id(); $data=$req->get_json_params();
@@ -558,7 +609,7 @@ final class SDR_Coulisses {
     }
     static function app(){
         if(!self::member()) return '<div class="login-callout"><h2>Bienvenue dans les coulisses.</h2><p>Cet espace est réservé aux membres de la troupe.</p><a class="button primary" href="'.esc_url(wp_login_url(home_url('/coulisses/'))).'">Se connecter →</a></div>';
-        wp_enqueue_script('sdr-app',plugins_url('assets/app.js',__FILE__),[], '1.4.4',true);
+        wp_enqueue_script('sdr-app',plugins_url('assets/app.js',__FILE__),[], '1.4.5',true);
         wp_add_inline_script('sdr-app','window.SDR='.wp_json_encode(['api'=>rest_url('sdr/v1/'),'nonce'=>wp_create_nonce('wp_rest'),'home'=>home_url('/'),'admin'=>admin_url(),'adminLogin'=>add_query_arg('sdr_admin','1',wp_login_url(admin_url(),true)),'logout'=>html_entity_decode(wp_logout_url(home_url('/')),ENT_QUOTES,'UTF-8')]).';','before');
         return '<div id="sdr-app"><div class="app-loading"><span class="loading-star">✳</span><p>On ouvre les coulisses…</p></div></div><noscript>Active JavaScript pour gérer tes disponibilités.</noscript>';
     }
