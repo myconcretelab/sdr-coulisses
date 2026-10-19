@@ -6,6 +6,8 @@
 @font-face{font-family:'Space Grotesk';font-style:normal;font-weight:500;font-display:swap;src:url('fonts/space-grotesk-500.ttf') format('truetype')}
 @font-face{font-family:'Space Grotesk';font-style:normal;font-weight:600;font-display:swap;src:url('fonts/space-grotesk-600.ttf') format('truetype')}
 @font-face{font-family:'Space Grotesk';font-style:normal;font-weight:700;font-display:swap;src:url('fonts/space-grotesk-700.ttf') format('truetype')}
+#sdr-app .app-sidebar .backstage-logo{display:block;width:120px;max-width:100%;height:auto;mix-blend-mode:multiply}
+@media(max-width:800px){#sdr-app .app-sidebar .backstage-logo{width:70px}}
 .social-link{display:inline-block;margin-top:12px;font-size:12px;text-underline-offset:4px}#result-count{font-size:10px;color:#7a7e72}
 .topbar-actions{display:flex;align-items:center;gap:20px}.admin-access{font-size:10px;letter-spacing:0;text-underline-offset:4px}.card-date .card-date-detail{margin-top:7px;font-size:11px}.weekday-label{text-transform:capitalize;font-weight:600;color:#554870}.organization-row .date-stamp{min-height:97px;gap:3px}.organization-row .date-stamp .weekday-label{font-size:10px;color:#554870}.date-stamp .weekday-label{text-transform:capitalize}
 @media(max-width:560px){.topbar-actions{gap:10px}.admin-access{font-size:9px}.app-topbar>span:first-child{font-size:7px;letter-spacing:.02em}.topbar-actions .season-pill{font-size:8px;padding:7px}.app-sidebar .nav-item[data-view="organization"].active{font-size:0;gap:0}.app-sidebar .nav-item[data-view="organization"].active>span{font-size:23px}}
