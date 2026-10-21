@@ -19,6 +19,14 @@ Aucun compte existant n’est inscrit automatiquement. Le même attribut est dis
 comme filtre dans les relances utilisateurs générales ; leur interface WordPress
 et leur fenêtre dans les Coulisses restent inchangées.
 
+Pour modifier plusieurs comptes à la fois, ouvrir **Comptes → Tous les comptes**
+(ou **Utilisateurs**), cocher les personnes puis choisir **OK pour la scène : activer**
+ou **OK pour la scène : désactiver** dans **Actions groupées**, et cliquer sur
+**Appliquer**. La colonne **OK pour la scène** affiche ensuite **Oui** ou **Non**.
+Le bilan distingue les changements, les comptes déjà dans cet état et les éventuels
+échecs. Cette action est réservée aux administrateurs autorisés à modifier chaque
+compte sélectionné ; elle ne modifie que ce choix de contact et n’envoie aucun email.
+
 ## Email et réponse
 
 Chaque destinataire reçoit un email HTML personnel au style du site, accompagné
@@ -70,6 +78,7 @@ temporaires nettoyées par les tests :
 ```sh
 wp eval-file wp-content/plugins/sdr-coulisses/tests/event-reminders.php
 wp eval-file wp-content/plugins/sdr-coulisses/tests/relances.php
+wp eval-file wp-content/plugins/sdr-coulisses/tests/stage-bulk.php
 ```
 
 Les contrôles couvrent consentement, permissions, sélection, lots et reprises,

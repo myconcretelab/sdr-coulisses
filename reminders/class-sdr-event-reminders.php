@@ -9,6 +9,60 @@ final class SDR_Event_Reminders {
     static function boot() {
         add_action('rest_api_init', [__CLASS__, 'routes']);
         add_action('template_redirect', [__CLASS__, 'response_page'], -1);
+        add_filter('bulk_actions-users', [__CLASS__, 'stage_bulk_actions']);
+        add_filter('handle_bulk_actions-users', [__CLASS__, 'stage_bulk_update'], 10, 3);
+        add_filter('manage_users_columns', [__CLASS__, 'stage_column']);
+        add_filter('manage_users_custom_column', [__CLASS__, 'stage_column_value'], 10, 3);
+        add_action('restrict_manage_users', [__CLASS__, 'stage_bulk_nonce']);
+        add_action('admin_notices', [__CLASS__, 'stage_bulk_notice']);
+    }
+    static function stage_bulk_allowed() { return current_user_can('manage_options') && current_user_can('edit_users'); }
+    static function stage_bulk_nonce($which) {
+        if ($which === 'top' && self::stage_bulk_allowed()) wp_nonce_field('bulk-users', 'sdr_stage_nonce', false);
+    }
+    static function stage_bulk_actions($actions) {
+        if (self::stage_bulk_allowed()) {
+            $actions['sdr_stage_enable'] = 'OK pour la scène : activer';
+            $actions['sdr_stage_disable'] = 'OK pour la scène : désactiver';
+        }
+        return $actions;
+    }
+    static function stage_column($columns) {
+        if (self::stage_bulk_allowed()) $columns['sdr_stage_opt_in'] = 'OK pour la scène';
+        return $columns;
+    }
+    static function stage_column_value($value, $column, $uid) {
+        if ($column !== 'sdr_stage_opt_in' || !self::stage_bulk_allowed()) return $value;
+        return get_user_meta($uid, 'sdr_stage_opt_in', true) ? 'Oui' : 'Non';
+    }
+    static function stage_bulk_update($redirect, $action, $ids) {
+        if (!in_array($action, ['sdr_stage_enable', 'sdr_stage_disable'], true)) return $redirect;
+        if (!self::stage_bulk_allowed()) wp_die('La modification groupée des profils est réservée à l’administration.', 'Accès réservé', ['response' => 403]);
+        // users.php strips _wpnonce before custom GET actions; this field survives that redirect.
+        check_admin_referer('bulk-users', 'sdr_stage_nonce');
+        $enabled = $action === 'sdr_stage_enable';
+        $counts = ['changed' => 0, 'unchanged' => 0, 'skipped' => 0, 'failed' => 0];
+        foreach (array_unique(array_map('absint', (array) $ids)) as $uid) {
+            if (!$uid || !get_userdata($uid) || !current_user_can('edit_user', $uid)) { $counts['skipped']++; continue; }
+            if ((bool) get_user_meta($uid, 'sdr_stage_opt_in', true) === $enabled) { $counts['unchanged']++; continue; }
+            $saved = update_user_meta($uid, 'sdr_stage_opt_in', $enabled);
+            $counts[$saved !== false ? 'changed' : ((bool) get_user_meta($uid, 'sdr_stage_opt_in', true) === $enabled ? 'unchanged' : 'failed')]++;
+        }
+        $args = ['sdr_stage_result' => $enabled ? 'enabled' : 'disabled'];
+        foreach ($counts as $key => $count) $args['sdr_stage_' . $key] = $count;
+        return add_query_arg($args, remove_query_arg(['sdr_stage_result', 'sdr_stage_changed', 'sdr_stage_unchanged', 'sdr_stage_skipped', 'sdr_stage_failed', 'sdr_stage_nonce', '_wpnonce', '_wp_http_referer', 'action', 'action2', 'users'], $redirect ?: admin_url('users.php')));
+    }
+    static function stage_bulk_notice() {
+        if (!self::stage_bulk_allowed() || get_current_screen()?->id !== 'users' || !in_array($_GET['sdr_stage_result'] ?? '', ['enabled', 'disabled'], true)) return;
+        $changed = absint($_GET['sdr_stage_changed'] ?? 0);
+        $unchanged = absint($_GET['sdr_stage_unchanged'] ?? 0);
+        $skipped = absint($_GET['sdr_stage_skipped'] ?? 0);
+        $failed = absint($_GET['sdr_stage_failed'] ?? 0);
+        $message = '« OK pour la scène » ' . ($_GET['sdr_stage_result'] === 'enabled' ? 'activé' : 'désactivé') . ' pour ' . $changed . ' compte(s).';
+        if ($unchanged) $message .= ' ' . $unchanged . ' déjà dans cet état.';
+        if ($skipped) $message .= ' ' . $skipped . ' non modifié(s) : compte introuvable ou droits insuffisants.';
+        if ($failed) $message .= ' ' . $failed . ' modification(s) en échec : réessaie pour ces comptes.';
+        echo '<div class="notice ' . ($failed || $skipped ? 'notice-warning' : 'notice-success') . ' is-dismissible"><p>' . esc_html($message) . '</p></div>';
     }
     static function routes() {
         register_rest_route('sdr/v1', '/events/(?P<id>\d+)/reminders', [
