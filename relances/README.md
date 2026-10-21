@@ -51,6 +51,9 @@ vérifier sa réception. Un verrou MySQL empêche deux onglets de traiter le mê
 Les utilisateurs supprimés et les adresses modifiées après confirmation sont
 signalés en échec. Les envois et annulations sont réservés à l’auteur de la campagne.
 
+Le filtre **OK pour la scène** reprend le choix de contact renseigné dans le profil
+WordPress ou dans **Mon profil** des Coulisses. Il ne se déduit pas des rôles artistiques.
+
 ## Connexions et profils
 
 Le plugin suit les nouvelles connexions et les comptes créés après son activation.

@@ -59,7 +59,7 @@
             const identity = el('td'); const label = el('label', u.name, 'sr-user-label'); label.htmlFor = check.id;
             identity.append(label, el('span', u.email, 'sr-user-email'), el('span', u.roles.join(', '), 'sr-user-role'));
             const missing = el('td');
-            u.missing.filter(key => !['no_login', 'never_login'].includes(key)).forEach(key => { const definition = state.definitions.find(f => f.key === key); if (definition) missing.append(el('span', definition.label, 'sr-badge')); });
+            u.missing.filter(key => !['no_login', 'never_login', 'stage_opt_in'].includes(key)).forEach(key => { const definition = state.definitions.find(f => f.key === key); if (definition) missing.append(el('span', definition.label, 'sr-badge')); });
             if (!missing.childNodes.length) missing.textContent = '—';
             row.append(checkCell, identity, missing, el('td', u.login)); rows.append(row);
         });

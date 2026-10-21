@@ -3,7 +3,7 @@
 defined('ABSPATH') || exit;
 
 final class SDR_Relances {
-    const VERSION = '1.1.0';
+    const VERSION = '1.1.1';
     const API = 'sdr-relances/v1';
     const CAPABILITY = 'manage_options';
 
@@ -74,6 +74,7 @@ final class SDR_Relances {
     /** Extension : ajouter une clé, un libellé et un callback matches(WP_User, ?WP_Post). */
     static function filters() {
         return apply_filters('sdr_relances_filters', [
+            'stage_opt_in' => ['label' => 'OK pour la scène', 'matches' => static fn($u) => (bool) get_user_meta($u->ID, 'sdr_stage_opt_in', true)],
             'no_bio' => ['label' => 'Sans biographie', 'matches' => static fn($u) => trim(wp_strip_all_tags($u->description . get_user_meta($u->ID, 'sdr_profile_description', true))) === ''],
             'no_photo' => ['label' => 'Sans photo de profil', 'matches' => static fn($u) => !wp_attachment_is_image((int) get_user_meta($u->ID, 'sdr_profile_photo', true))],
             'no_login' => ['label' => 'Aucune connexion connue', 'matches' => static fn($u) => !self::last_login($u->ID)],

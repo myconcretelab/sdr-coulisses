@@ -2,7 +2,7 @@
 /**
  * Plugin Name: SDR — Les Coulisses
  * Description: Agenda public, disponibilités et composition des équipes des Sorties de Route.
- * Version: 1.4.10
+ * Version: 1.5.0
  * Requires PHP: 8.1
  * Text Domain: sdr
  */
@@ -48,7 +48,7 @@ final class SDR_Coulisses {
             if($pagenow==='post.php' && $id && get_post_type($id)==='sdr_event' && self::organizer() && current_user_can('edit_post',$id)) return;
             wp_safe_redirect(home_url('/coulisses/')); exit;
         });
-        add_action('wp_enqueue_scripts', function(){ wp_enqueue_style('sdr-ui',plugins_url('assets/app.css',__FILE__),[], '1.4.10'); });
+        add_action('wp_enqueue_scripts', function(){ wp_enqueue_style('sdr-ui',plugins_url('assets/app.css',__FILE__),[], '1.5.0'); });
         add_shortcode('sdr_agenda', [__CLASS__, 'agenda']);
         add_shortcode('sdr_coulisses', [__CLASS__, 'app']);
         add_shortcode('sdr_facebook', [__CLASS__, 'facebook']);
@@ -119,7 +119,7 @@ final class SDR_Coulisses {
                 $description=$legacy;
             }
         }
-        return ['name'=>$user?$user->display_name:'','roles'=>get_user_meta($uid,'sdr_roles',true)?:['joueur'],'diet'=>get_user_meta($uid,'sdr_diet',true)?:'unspecified','gender'=>get_user_meta($uid,'sdr_gender',true),'experience'=>get_user_meta($uid,'sdr_experience',true),'description'=>$description,'likes'=>self::profile_list(get_user_meta($uid,'sdr_likes',true)),'dislikes'=>self::profile_list(get_user_meta($uid,'sdr_dislikes',true)),'photoId'=>$photo,'photoUrl'=>$photo?wp_get_attachment_image_url($photo,'medium'):'','rosterVisible'=>(bool)get_user_meta($uid,'sdr_roster_visible',true)];
+        return ['name'=>$user?$user->display_name:'','roles'=>metadata_exists('user',$uid,'sdr_roles')?(array)get_user_meta($uid,'sdr_roles',true):['joueur'],'stageOptIn'=>(bool)get_user_meta($uid,'sdr_stage_opt_in',true),'diet'=>get_user_meta($uid,'sdr_diet',true)?:'unspecified','gender'=>get_user_meta($uid,'sdr_gender',true),'experience'=>get_user_meta($uid,'sdr_experience',true),'description'=>$description,'likes'=>self::profile_list(get_user_meta($uid,'sdr_likes',true)),'dislikes'=>self::profile_list(get_user_meta($uid,'sdr_dislikes',true)),'photoId'=>$photo,'photoUrl'=>$photo?wp_get_attachment_image_url($photo,'medium'):'','rosterVisible'=>(bool)get_user_meta($uid,'sdr_roster_visible',true)];
     }
     static function profile_list($items){ return array_values(array_filter(array_map('sanitize_text_field',(array)$items),static fn($item)=>$item!=='')); }
     static function event_title($title){
@@ -151,12 +151,14 @@ final class SDR_Coulisses {
     static function user_fields($user){
         if(!current_user_can('manage_options')) return; echo '<h2>Profil SDR (privé)</h2><p><strong>Rôles artistiques</strong> — plusieurs choix possibles.</p>'; wp_nonce_field('sdr_user','sdr_user_nonce'); $p=self::profile($user->ID);
         foreach(self::ROLES as $k=>$label) echo '<label style="margin-right:20px"><input type="checkbox" name="sdr_roles[]" value="'.$k.'" '.checked(in_array($k,$p['roles']),true,false).'> '.esc_html($label).'</label>';
+        echo '<p><label><input type="checkbox" name="sdr_stage_opt_in" value="1" '.checked($p['stageOptIn'],true,false).'> <strong>OK pour la scène</strong> — souhaite recevoir les invitations à jouer, faire le MC ou le DJ.</label></p>';
         echo '<p><label>Téléphone <input type="tel" name="sdr_phone" inputmode="tel" autocomplete="tel" maxlength="30" value="'.esc_attr(get_user_meta($user->ID,'sdr_phone',true)).'" placeholder="06 12 34 56 78"></label></p><p><label>Repas <select name="sdr_diet">';foreach(['unspecified'=>'À préciser','standard'=>'Sans préférence','vegetarian'=>'Végétarien','vegan'=>'Végétalien'] as $k=>$v)echo '<option value="'.esc_attr($k).'" '.selected($p['diet'],$k,false).'>'.esc_html($v).'</option>';echo '</select></label></p><p><label>Années d’impro <input type="number" min="0" max="80" name="sdr_experience" value="'.esc_attr($p['experience']).'"></label></p><p><label>Genre / désignation (facultatif) <input name="sdr_gender" maxlength="80" value="'.esc_attr($p['gender']).'"></label></p><p>Le téléphone et ces informations restent privés. Les membres peuvent compléter leurs préférences depuis leur espace personnel.</p>';
     }
     static function save_user_fields($uid){
         if(!current_user_can('manage_options') || !isset($_POST['sdr_user_nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['sdr_user_nonce'])),'sdr_user')) return;
         delete_user_meta($uid,'sdr_profile_description');
         update_user_meta($uid,'sdr_roles',array_values(array_intersect(array_keys(self::ROLES),(array)($_POST['sdr_roles']??[]))));
+        update_user_meta($uid,'sdr_stage_opt_in',isset($_POST['sdr_stage_opt_in']) && $_POST['sdr_stage_opt_in']==='1');
         $diet=sanitize_key($_POST['sdr_diet']??'unspecified');if(in_array($diet,['unspecified','standard','vegetarian','vegan'],true))update_user_meta($uid,'sdr_diet',$diet);
         update_user_meta($uid,'sdr_experience',($_POST['sdr_experience']??'')===''?'':min(80,absint($_POST['sdr_experience'])));
         update_user_meta($uid,'sdr_gender',sanitize_text_field(mb_substr(wp_unslash($_POST['sdr_gender']??''),0,80)));
@@ -287,10 +289,12 @@ final class SDR_Coulisses {
         $experience=$data['experience']??''; if($experience!=='' && (filter_var($experience,FILTER_VALIDATE_INT)===false || $experience<0 || $experience>80)) return self::error('Indique entre 0 et 80 années d’impro.');
         if(!is_string($data['description']??'') || mb_strlen($data['description']??'')>600) return self::error('La description ne peut pas dépasser 600 caractères.');
         foreach(['likes','dislikes'] as $key){ if(!is_array($data[$key]??null) || count($data[$key])>12) return self::error('Ajoute jusqu’à 12 éléments par liste.'); foreach($data[$key] as $item) if(!is_string($item) || mb_strlen($item)>60) return self::error('Chaque élément doit faire 60 caractères maximum.'); }
+        if(array_key_exists('stageOptIn',$data) && !is_bool($data['stageOptIn'])) return self::error('Le choix « OK pour la scène » est invalide.');
         $updated=wp_update_user(['ID'=>$uid,'description'=>sanitize_textarea_field($data['description'])]);
         if(is_wp_error($updated)) return self::error('La biographie du compte n’a pas pu être enregistrée. Réessaie.',500);
         delete_user_meta($uid,'sdr_profile_description');
         foreach(['roles'=>array_values(array_unique($data['roles'])),'diet'=>$data['diet'],'gender'=>sanitize_text_field(mb_substr($data['gender']??'',0,80)),'experience'=>$experience,'likes'=>self::profile_list($data['likes']),'dislikes'=>self::profile_list($data['dislikes']),'roster_visible'=>!empty($data['rosterVisible'])] as $k=>$v) update_user_meta($uid,'sdr_'.$k,$v);
+        if(array_key_exists('stageOptIn',$data)) update_user_meta($uid,'sdr_stage_opt_in',$data['stageOptIn']);
         return self::profile($uid);
     }
     static function save_profile_photo($req){
@@ -491,20 +495,29 @@ final class SDR_Coulisses {
     static function editable_event($id){ return get_post_type($id)==='sdr_event' && get_post_status($id)==='publish' && self::meta($id,'date')>=current_time('Y-m-d'); }
     static function locked($id,$fn){ global $wpdb; $key='sdr_event_'.$id; if((int)$wpdb->get_var($wpdb->prepare('SELECT GET_LOCK(%s,5)',$key))!==1) return self::error('Une mise à jour est en cours. Réessaie.',409); try{return $fn();} finally{$wpdb->get_var($wpdb->prepare('SELECT RELEASE_LOCK(%s)',$key));} }
     static function respond($req){
-        $id=(int)$req['id']; if(!self::editable_event($id)) return self::error('Ce spectacle n’est pas ouvert aux réponses.',404);
-        return self::locked($id,function()use($req,$id){
-            if(self::meta($id,'closed',false)) return self::error('Les réponses sont fermées. Contacte l’organisation.',409);
-            global $wpdb; $uid=get_current_user_id(); $d=$req->get_json_params(); $status=$d['availability']??''; $roles=$d['roles']??[];
-            if(!in_array($status,['yes','maybe','no','clear'],true) || !is_array($roles) || array_diff($roles,array_keys(self::ROLES))) return self::error('Réponse invalide.');
-            if($status==='clear'){ $wpdb->delete($wpdb->prefix.'sdr_responses',['event_id'=>$id,'user_id'=>$uid]); return ['saved'=>true]; }
-            $roles=$status==='no'?[]:array_values(array_unique($roles));
-            if($status!=='no' && !$roles) return self::error('Choisis au moins un rôle.');
-            if(array_diff($roles,self::profile($uid)['roles'])) return self::error('Ajoute d’abord ce rôle à ton profil.');
-            $old=$wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}sdr_responses WHERE event_id=%d AND user_id=%d",$id,$uid));
-            $selected=$old && in_array($old->selected_role,$roles,true)?$old->selected_role:'';
-            $ok=$wpdb->query($wpdb->prepare("INSERT INTO {$wpdb->prefix}sdr_responses (event_id,user_id,availability,roles,selected_role,updated_at) VALUES (%d,%d,%s,%s,%s,%s) ON DUPLICATE KEY UPDATE availability=VALUES(availability),roles=VALUES(roles),selected_role=VALUES(selected_role),updated_at=VALUES(updated_at)",$id,$uid,$status,wp_json_encode($roles),$selected,current_time('mysql')));
-            return $ok===false?self::error('La réponse n’a pas pu être enregistrée.',500):['saved'=>true];
-        });
+        return self::save_response((int)$req['id'],get_current_user_id(),$req->get_json_params());
+    }
+    /** Shared by the authenticated form and the limited, personal email link. */
+    static function save_response($id,$uid,$data,$only_missing=false){
+        return self::locked($id,fn()=>self::write_response($id,$uid,$data,$only_missing));
+    }
+    /** Internal writer: the caller must hold the event lock throughout its authorization and save. */
+    static function write_response($id,$uid,$data,$only_missing=false){
+        if(!is_array($data) || !user_can($uid,'sdr_member')) return self::error('Réponse invalide.',403);
+        if(!self::editable_event($id)) return self::error('Ce spectacle n’est pas ouvert aux réponses.',404);
+        if(self::meta($id,'closed',false)) return self::error('Les réponses sont fermées. Contacte l’organisation.',409);
+        global $wpdb;
+        $old=$wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}sdr_responses WHERE event_id=%d AND user_id=%d",$id,$uid));
+        if($only_missing && $old) return self::error('Ta réponse est déjà enregistrée. Pour la modifier, retrouve le spectacle dans les Coulisses.',409);
+        $status=$data['availability']??''; $roles=$data['roles']??[];
+        if(!in_array($status,$only_missing?['yes','no']:['yes','maybe','no','clear'],true) || !is_array($roles) || count(array_filter($roles,'is_string'))!==count($roles) || array_diff($roles,array_keys(self::ROLES))) return self::error('Réponse invalide.');
+        if($status==='clear'){ $wpdb->delete($wpdb->prefix.'sdr_responses',['event_id'=>$id,'user_id'=>$uid]); return ['saved'=>true]; }
+        $roles=$status==='no'?[]:array_values(array_unique($roles));
+        if($status!=='no' && !$roles) return self::error('Choisis au moins un rôle.');
+        if(array_diff($roles,self::profile($uid)['roles'])) return self::error('Ajoute d’abord ce rôle à ton profil.');
+        $selected=$old && in_array($old->selected_role,$roles,true)?$old->selected_role:'';
+        $ok=$wpdb->query($wpdb->prepare("INSERT INTO {$wpdb->prefix}sdr_responses (event_id,user_id,availability,roles,selected_role,updated_at) VALUES (%d,%d,%s,%s,%s,%s) ON DUPLICATE KEY UPDATE availability=VALUES(availability),roles=VALUES(roles),selected_role=VALUES(selected_role),updated_at=VALUES(updated_at)",$id,$uid,$status,wp_json_encode($roles),$selected,current_time('mysql')));
+        return $ok===false?self::error('La réponse n’a pas pu être enregistrée.',500):['saved'=>true];
     }
     static function select($req){
         $id=(int)$req['id']; if(!self::editable_event($id)) return self::error('Spectacle introuvable.',404);
@@ -609,7 +622,8 @@ final class SDR_Coulisses {
     }
     static function app(){
         if(!self::member()) return '<div class="login-callout"><h2>Bienvenue dans les coulisses.</h2><p>Cet espace est réservé aux membres de la troupe.</p><a class="button primary" href="'.esc_url(wp_login_url(home_url('/coulisses/'))).'">Se connecter →</a></div>';
-        wp_enqueue_script('sdr-app',plugins_url('assets/app.js',__FILE__),[], '1.4.10',true);
+        wp_enqueue_script('sdr-event-reminders',plugins_url('assets/event-reminders.js',__FILE__),[], '1.5.0',true);
+        wp_enqueue_script('sdr-app',plugins_url('assets/app.js',__FILE__),['sdr-event-reminders'], '1.5.0',true);
         wp_add_inline_script('sdr-app','window.SDR='.wp_json_encode(['api'=>rest_url('sdr/v1/'),'nonce'=>wp_create_nonce('wp_rest'),'home'=>home_url('/'),'logo'=>get_theme_file_uri('/assets/sdr-logo.jpeg'),'admin'=>admin_url(),'relances'=>class_exists('SDR_Relances') && SDR_Relances::allowed()?SDR_Relances::workspace_url():'','adminLogin'=>add_query_arg('sdr_admin','1',wp_login_url(admin_url(),true)),'logout'=>html_entity_decode(wp_logout_url(home_url('/')),ENT_QUOTES,'UTF-8')]).';','before');
         return '<div id="sdr-app"><div class="app-loading"><span class="loading-star">✳</span><p>On ouvre les coulisses…</p></div></div><noscript>Active JavaScript pour gérer tes disponibilités.</noscript>';
     }
@@ -623,5 +637,7 @@ final class SDR_Coulisses {
     }
 }
 require_once __DIR__.'/editor.php';
+require_once __DIR__.'/reminders/class-sdr-event-reminders.php';
+SDR_Event_Reminders::boot();
 SDR_Coulisses::boot();
 register_activation_hook(__FILE__,['SDR_Coulisses','activate']);
