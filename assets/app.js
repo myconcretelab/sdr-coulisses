@@ -6,7 +6,7 @@
   const roleNames = {joueur:'Joueur·se',mc:'MC',dj:'DJ'};
   const statusNames = {yes:'Partant·e !',maybe:'Si besoin',no:'Pas dispo'};
   const icons = {calendar:'▦',profile:'◉',team:'♧',arrow:'↗'};
-  let data, view=new URLSearchParams(location.search).get('vue')==='equipes'?'organization':new URLSearchParams(location.search).get('vue')==='archives'?'archives':'planning', filter='all', query='', dialogEvent=null, busy=false;
+  let data, view=new URLSearchParams(location.search).get('vue')==='equipes'?'organization':new URLSearchParams(location.search).get('vue')==='archives'?'archives':new URLSearchParams(location.search).get('vue')==='profil'?'profile':'planning', filter='all', query='', dialogEvent=null, busy=false;
   let archiveData=null,archiveLoading=false,archiveError='',archiveSeason='all',archiveQuery='';
   const dateParts = date => { const d=new Date(date+'T12:00:00'); return {day:d.getDate(),month:d.toLocaleDateString('fr-FR',{month:'short'}).replace('.',''),weekday:d.toLocaleDateString('fr-FR',{weekday:'long'}),full:d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}; };
   async function api(path, body) { const r=await fetch(SDR.api+path,{method:body?'POST':'GET',credentials:'same-origin',headers:{'X-WP-Nonce':SDR.nonce,'Content-Type':'application/json'},...(body?{body:JSON.stringify(body)}:{})}); let result; try {result=await r.json();}catch(e){throw new Error('Le serveur ne répond pas correctement. Réessaie.');} if(!r.ok) throw new Error(result.message || 'Impossible d’enregistrer.'); return result; }
