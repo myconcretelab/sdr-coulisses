@@ -3,7 +3,7 @@
     const cfg = window.SDRRelances;
     const $ = id => document.getElementById(`sr-${id}`);
     const state = { users: [], selected: new Set(), page: 1, filters: [], definitions: [], variables: [], previewReady: false, loading: true, initialized: false, running: false, campaign: null };
-    let listVersion = 0, previewVersion = 0, previewTimer, searchTimer, draftTimer, target = 'body', editorBound = false, draftWriting = false, draftDirty = false;
+    let listVersion = 0, previewVersion = 0, previewTimer, searchTimer, draftTimer, target = 'body', editorBound = false, draftWriting = false, draftDirty = false, lastEdit = '';
     const el = (tag, text, className) => { const n = document.createElement(tag); if (text !== undefined) n.textContent = text; if (className) n.className = className; return n; };
     async function api(path, body) {
         const response = await fetch(cfg.api + path, { method: body === undefined ? 'GET' : 'POST', credentials: 'same-origin', headers: { 'X-WP-Nonce': cfg.nonce, 'Content-Type': 'application/json' }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
@@ -120,6 +120,9 @@
     }
     function changed() {
         if (!state.initialized || state.running) return;
+        const edit = JSON.stringify([$('subject').value, body(), $('event').value]);
+        if (edit === lastEdit) return;
+        lastEdit = edit;
         queuePreview(); $('draft-status').textContent = 'Modifications en cours…'; draftDirty = true; clearTimeout(draftTimer); draftTimer = setTimeout(saveDraft, 900);
     }
     async function saveDraft() {
@@ -134,6 +137,14 @@
         editorBound = true;
         ed.on('init', () => { if (state.initialized) ed.setContent($('body').value); });
         ed.on('input change keyup undo redo', changed); ed.on('focus', () => { target = 'body'; });
+        ed.on('keydown', closeEmbedded);
+    }
+    function closeEmbedded(event) {
+        if (event.key !== 'Escape' || window.parent === window || $('confirm').open || event.defaultPrevented) return;
+        // TinyMCE's own link dialog must handle Escape before the surrounding popup.
+        if (editor()?.windowManager.getWindows().length) return;
+        event.preventDefault();
+        window.parent.postMessage({ type: 'sdr-relances-close' }, window.location.origin);
     }
     function showCampaign(c) {
         state.campaign = c; $('campaign').hidden = false; $('campaign-subject').textContent = c.subject;
@@ -152,6 +163,7 @@
         finally { state.running = false; showCampaign(state.campaign); }
     }
     function attach() {
+        document.addEventListener('keydown', closeEmbedded);
         $('search').addEventListener('input', () => { clearTimeout(searchTimer); ++listVersion; state.loading = true; state.selected.clear(); selectionChanged(); searchTimer = setTimeout(reloadUsers, 250); });
         ['role', 'mode'].forEach(id => $(id).addEventListener('change', reloadUsers));
         $('event').addEventListener('change', () => { if ($('event').value === '0') state.filters = state.filters.filter(k => !state.definitions.find(f => f.key === k)?.event); renderVariables(); renderFilters(); changed(); reloadUsers(); });
@@ -204,6 +216,7 @@
             const data = await api('bootstrap'); state.definitions = data.filters; state.variables = data.variables;
             data.roles.forEach(r => $('role').add(new Option(r.label, r.key))); data.events.forEach(e => $('event').add(new Option(e.label, String(e.id))));
             if (data.draft) { $('subject').value = data.draft.subject; setBody(data.draft.body); if ([...$('event').options].some(o => o.value === String(data.draft.event))) $('event').value = String(data.draft.event); else if (data.draft.event) notice('Le spectacle du brouillon n’est plus disponible. Choisis un nouveau spectacle.', true); $('draft-status').textContent = 'Brouillon restauré.'; }
+            lastEdit = JSON.stringify([$('subject').value, body(), $('event').value]);
             state.initialized = true; $('subject').disabled = false; $('variable').disabled = false; renderVariables(); renderFilters();
             $('workspace').setAttribute('aria-busy', 'false'); if (data.campaign) showCampaign(data.campaign); await reloadUsers();
         } catch (error) { notice(`Impossible de charger l’outil : ${error.message} Recharge cette page pour réessayer.`, true); $('workspace').setAttribute('aria-busy', 'false'); }

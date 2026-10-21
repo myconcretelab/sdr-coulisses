@@ -7,8 +7,17 @@ des Coulisses. WordPress reconnaît les deux fichiers de plugin dans ce dossier.
 
 ## Utilisation
 
-Ouvrir **Comptes → Relances utilisateurs** (ou **Utilisateurs** selon la traduction
-WordPress). L’accès est réservé aux administrateurs pouvant lister les comptes.
+Dans les **Coulisses**, ouvrir **Côté organisation → Relances utilisateurs**.
+L’outil s’ouvre dans une fenêtre réservée aux organisateurs et administrateurs.
+La page **Comptes → Relances utilisateurs** (ou **Utilisateurs** selon la traduction
+WordPress) reste disponible pour les administrateurs pouvant lister les comptes.
+L’organisation n’obtient aucun droit d’administration des comptes WordPress.
+
+Les deux accès utilisent la même vue PHP, le même éditeur, les mêmes fichiers
+JavaScript et la même API. La fenêtre charge cette vue dans un cadre de même
+origine, avec une mise en page adaptée aux Coulisses. Aucun filtre, variable ou
+traitement d’envoi n’est dupliqué. Le plugin de relances doit rester activé ;
+sinon son entrée n’apparaît pas dans les Coulisses.
 
 1. Choisir le rôle, rechercher un nom ou un email et cocher les filtres. Choisir
    « tous » pour cumuler les conditions ou « au moins un » pour les réunir.
@@ -21,14 +30,17 @@ WordPress). L’accès est réservé aux administrateurs pouvant lister les comp
    Les variables fonctionnent aussi dans les liens, par exemple `{{lien_profil}}`.
 5. Choisir une personne sélectionnée dans l’aperçu. Les variables inconnues ou
    liées à un spectacle manquant bloquent l’envoi. Le test est adressé uniquement
-   à l’administrateur connecté, avec les valeurs de la personne prévisualisée.
+   à la personne connectée, avec les valeurs de la personne prévisualisée.
 6. Confirmer l’envoi. Chaque destinataire reçoit un email séparé via `wp_mail`.
    Garder l’onglet ouvert : les messages sont transmis par lots de cinq. Si l’onglet
    est fermé ou la connexion interrompue, rouvrir la page et cliquer sur Reprendre.
-   Annuler ne supprime pas les messages déjà transmis.
+   Annuler ne supprime pas les messages déjà transmis. Fermer la fenêtre des
+   relances conserve sa sélection, son texte et un éventuel envoi en cours tant
+   que la page des Coulisses reste ouverte. La touche Échap et le bouton de
+   fermeture permettent de revenir aux Coulisses.
 
 L’objet, le texte et le spectacle du brouillon sont enregistrés automatiquement
-pour chaque administrateur. Les dix dernières campagnes sont conservées pour la
+pour chaque organisateur ou administrateur. Les dix dernières campagnes sont conservées pour la
 reprise et le bilan ; la dernière est affichée dans l’interface. Les campagnes
 n’ont pas d’envoi automatique programmé. Une réponse positive de `wp_mail` indique
 l’acceptation par WordPress, pas la réception effective par le destinataire.
@@ -104,4 +116,6 @@ wp eval-file wp-content/plugins/sdr-coulisses/tests/relances.php
 
 Ces tests créent des comptes et un spectacle temporaires, interceptent tous les
 emails et nettoient leurs données. Ils vérifient les permissions REST, filtres,
-variables, reprises, échecs, annulations et absence de double envoi.
+variables, reprises, échecs, annulations et absence de double envoi. Ils couvrent
+aussi les accès organisateur sans droits de gestion des comptes, les brouillons
+personnels et l’isolation des campagnes entre organisateurs et administrateurs.

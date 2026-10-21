@@ -1,0 +1,13 @@
+/* Only the embedded shell differs; the view, editor and messaging logic are shared. */
+html{background:#f7f5ef}
+body.sdr-relances-embedded{margin:0;padding:24px;color:#252820;background:#f7f5ef;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.sdr-relances-embedded .sdr-relances{max-width:none;margin:0;--sr-border:#dddccf;--sr-muted:#66695f}
+.sdr-relances-embedded .sr-card{border-radius:10px;background:#fffefa}
+.sdr-relances-embedded .sr-step{background:#e9e1f5;color:#5e4288}
+.sdr-relances-embedded .sr-compose-column{position:static}
+.sdr-relances-embedded .widefat{width:100%}
+.sdr-relances-embedded .sr-filter:has(input:checked){background:#eee8f7;border-color:#8061b2}
+.sdr-relances-embedded .button-primary{background:#675084;border-color:#675084}
+.sdr-relances-embedded .button-primary:hover,.sdr-relances-embedded .button-primary:focus{background:#523c6e;border-color:#523c6e}
+.sdr-relances-embedded .sr-table-wrap{max-height:480px}
+@media(max-width:600px){body.sdr-relances-embedded{padding:16px 10px}.sdr-relances-embedded input[type=text],.sdr-relances-embedded input[type=search],.sdr-relances-embedded select{font-size:16px}.sdr-relances-embedded h1{font-size:23px}}

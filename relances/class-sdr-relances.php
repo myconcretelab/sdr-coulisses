@@ -3,13 +3,14 @@
 defined('ABSPATH') || exit;
 
 final class SDR_Relances {
-    const VERSION = '1.0.1';
+    const VERSION = '1.1.0';
     const API = 'sdr-relances/v1';
     const CAPABILITY = 'manage_options';
 
     static function boot() {
         add_action('admin_menu', [__CLASS__, 'menu']);
         add_action('admin_enqueue_scripts', [__CLASS__, 'assets']);
+        add_action('template_redirect', [__CLASS__, 'embedded_page'], 0);
         add_action('rest_api_init', [__CLASS__, 'routes']);
         add_action('wp_login', static function ($login, $user) { self::record_login($user->ID); }, 10, 2);
         add_action('user_register', static function ($id) { update_user_meta($id, 'sdr_relances_tracked_account', 1); });
@@ -19,13 +20,18 @@ final class SDR_Relances {
         });
     }
     static function record_login($id) { update_user_meta($id, 'sdr_relances_last_login', time()); }
-    static function allowed() { return current_user_can(self::CAPABILITY) && current_user_can('list_users'); }
+    static function admin_allowed() { return current_user_can(self::CAPABILITY) && current_user_can('list_users'); }
+    static function allowed() { return self::admin_allowed() || (class_exists('SDR_Coulisses') && SDR_Coulisses::organizer()); }
+    static function workspace_url() { return add_query_arg('sdr-relances', '1', home_url('/coulisses/')); }
     static function error($message, $status = 400) { return new WP_Error('sdr_relances_error', $message, ['status' => $status]); }
     static function menu() {
         add_users_page('Relances utilisateurs', 'Relances utilisateurs', self::CAPABILITY, 'sdr-relances', [__CLASS__, 'page']);
     }
     static function assets($hook) {
-        if ($hook !== 'users_page_sdr-relances' || !self::allowed()) return;
+        if ($hook !== 'users_page_sdr-relances' || !self::admin_allowed()) return;
+        self::enqueue_assets();
+    }
+    static function enqueue_assets() {
         wp_enqueue_editor();
         wp_enqueue_style('sdr-relances', plugins_url('admin.css', __FILE__), [], self::VERSION);
         wp_enqueue_script('sdr-relances', plugins_url('admin.js', __FILE__), ['wp-editor', 'wp-api-fetch'], self::VERSION, true);
@@ -35,8 +41,23 @@ final class SDR_Relances {
         ]) . ';', 'before');
     }
     static function page() {
-        if (!self::allowed()) wp_die('Accès réservé à l’administration.', '', ['response' => 403]);
+        if (!self::admin_allowed()) wp_die('Accès réservé à l’administration.', '', ['response' => 403]);
         require __DIR__ . '/page.php';
+    }
+    static function embedded_page() {
+        if (!is_page('coulisses') || !isset($_GET['sdr-relances'])) return;
+        nocache_headers();
+        if (!self::allowed()) wp_die('Les relances sont réservées à l’organisation SDR.', 'Accès réservé', ['response' => is_user_logged_in() ? 403 : 401]);
+        send_frame_options_header();
+        header('Content-Security-Policy: frame-ancestors \'self\'');
+        header('Content-Type: text/html; charset=' . get_bloginfo('charset'));
+        show_admin_bar(false);
+        wp_register_style('sdr-relances-base', false, ['dashicons', 'common', 'forms', 'buttons', 'list-tables']);
+        wp_enqueue_style('sdr-relances-base');
+        self::enqueue_assets();
+        wp_enqueue_style('sdr-relances-embedded', plugins_url('embedded.css', __FILE__), ['sdr-relances', 'sdr-relances-base'], self::VERSION);
+        require __DIR__ . '/embedded.php';
+        exit;
     }
     static function routes() {
         foreach ([
