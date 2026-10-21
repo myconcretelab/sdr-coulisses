@@ -3,7 +3,7 @@
 defined('ABSPATH') || exit;
 
 final class SDR_Relances {
-    const VERSION = '1.0.0';
+    const VERSION = '1.0.1';
     const API = 'sdr-relances/v1';
     const CAPABILITY = 'manage_options';
 
@@ -89,6 +89,10 @@ final class SDR_Relances {
         if (!$date || $date->format('Y-m-d') !== get_post_meta($post->ID, '_sdr_date', true)) return self::error('Ce spectacle n’a pas de date valide.');
         return $post;
     }
+    /** Les titres WordPress sont formatés pour HTML ; les variables attendent du texte brut. */
+    static function text($value) {
+        return html_entity_decode(wp_strip_all_tags((string) $value), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    }
     static function definitions() {
         return apply_filters('sdr_relances_variables', [
             'prenom' => ['label' => 'Prénom (nom affiché si absent)', 'resolve' => static fn($u) => $u->first_name ?: $u->display_name],
@@ -98,21 +102,21 @@ final class SDR_Relances {
             'email' => ['label' => 'Adresse email', 'resolve' => static fn($u) => $u->user_email],
             'lien_profil' => ['label' => 'Lien vers le profil dans les Coulisses', 'resolve' => static fn() => home_url('/coulisses/?vue=profil')],
             'lien_coulisses' => ['label' => 'Lien vers les Coulisses', 'resolve' => static fn() => home_url('/coulisses/')],
-            'nom_site' => ['label' => 'Nom du site', 'resolve' => static fn() => wp_specialchars_decode(get_bloginfo('name'), ENT_QUOTES)],
+            'nom_site' => ['label' => 'Nom du site', 'resolve' => static fn() => self::text(get_bloginfo('name'))],
             'date_du_jour' => ['label' => 'Date du jour', 'resolve' => static fn() => wp_date(get_option('date_format'))],
-            'spectacle' => ['label' => 'Titre du spectacle', 'event' => true, 'resolve' => static fn($u, $e) => get_the_title($e)],
+            'spectacle' => ['label' => 'Titre du spectacle', 'event' => true, 'resolve' => static fn($u, $e) => self::text(get_the_title($e))],
             'date_spectacle' => ['label' => 'Date du spectacle', 'event' => true, 'resolve' => static fn($u, $e) => wp_date(get_option('date_format'), (new DateTimeImmutable(get_post_meta($e->ID, '_sdr_date', true), wp_timezone()))->getTimestamp())],
             'jours_avant_spectacle' => ['label' => 'Jours restants (0 aujourd’hui, négatif si passé)', 'event' => true, 'resolve' => static fn($u, $e) => (new DateTimeImmutable('today', wp_timezone()))->diff(new DateTimeImmutable(get_post_meta($e->ID, '_sdr_date', true), wp_timezone()))->format('%r%a')],
             'heure_spectacle' => ['label' => 'Heure du spectacle', 'event' => true, 'resolve' => static fn($u, $e) => get_post_meta($e->ID, '_sdr_time', true)],
             'heure_rendez_vous' => ['label' => 'Heure de rendez-vous', 'event' => true, 'resolve' => static fn($u, $e) => get_post_meta($e->ID, '_sdr_call_time', true)],
-            'lieu_spectacle' => ['label' => 'Lieu du spectacle', 'event' => true, 'resolve' => static fn($u, $e) => ($id = (int) get_post_meta($e->ID, '_sdr_venue', true)) ? get_the_title($id) : 'À préciser'],
+            'lieu_spectacle' => ['label' => 'Lieu du spectacle', 'event' => true, 'resolve' => static fn($u, $e) => ($id = (int) get_post_meta($e->ID, '_sdr_venue', true)) ? self::text(get_the_title($id)) : 'À préciser'],
             'lien_spectacle' => ['label' => 'Lien du spectacle', 'event' => true, 'resolve' => static fn($u, $e) => get_permalink($e)],
         ]);
     }
     static function bootstrap() {
         $events = [];
         if (post_type_exists('sdr_event')) foreach (get_posts(['post_type' => 'sdr_event', 'post_status' => 'publish', 'numberposts' => -1, 'meta_key' => '_sdr_date', 'orderby' => 'meta_value', 'order' => 'ASC', 'meta_query' => [['key' => '_sdr_date', 'value' => current_time('Y-m-d'), 'compare' => '>=', 'type' => 'DATE']]]) as $e) {
-            if (!is_wp_error(self::event($e->ID))) $events[] = ['id' => $e->ID, 'label' => get_the_title($e) . ' — ' . get_post_meta($e->ID, '_sdr_date', true)];
+            if (!is_wp_error(self::event($e->ID))) $events[] = ['id' => $e->ID, 'label' => self::text(get_the_title($e)) . ' — ' . get_post_meta($e->ID, '_sdr_date', true)];
         }
         $filters = [];
         foreach (self::filters() as $key => $f) {

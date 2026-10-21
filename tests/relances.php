@@ -24,8 +24,8 @@ try {
         if (is_wp_error($id)) throw new RuntimeException($id->get_error_message());
         $ids[] = $id;
     }
-    $event = wp_insert_post(['post_type' => 'sdr_event', 'post_title' => 'Spectacle & essai', 'post_status' => 'publish', 'meta_input' => ['_sdr_date' => (new DateTimeImmutable('today', wp_timezone()))->modify('+24 days')->format('Y-m-d'), '_sdr_time' => '20:30']]); $posts[] = $event;
-    $payload = ['search' => $prefix, 'event' => $event, 'subject' => 'Bonjour {{ prenom }} — J-{{jours_avant_spectacle}}', 'body' => '<p><strong>{{prenom}}</strong> — {{spectacle}}</p><p><a href="{{lien_profil}}">Mon profil</a></p>'];
+    $event = wp_insert_post(['post_type' => 'sdr_event', 'post_title' => "Sortie d'route — Échos & amis", 'post_status' => 'publish', 'meta_input' => ['_sdr_date' => (new DateTimeImmutable('today', wp_timezone()))->modify('+24 days')->format('Y-m-d'), '_sdr_time' => '20:30']]); $posts[] = $event;
+    $payload = ['search' => $prefix, 'event' => $event, 'subject' => 'Bonjour {{ prenom }} — {{spectacle}} — J-{{jours_avant_spectacle}}', 'body' => '<p><strong>{{prenom}}</strong> — {{spectacle}}</p><p><a href="{{lien_profil}}">Mon profil</a></p>'];
     $all = SDR_Relances::users(['search' => $prefix]); $assert(count($all['users']) === 8, 'Liste des utilisateurs de test');
     $assert(count(SDR_Relances::users(['search' => $prefix, 'filters' => ['never_login']])['users']) === 8, 'Nouveaux comptes suivis jamais connectés');
     SDR_Relances::record_login($ids[0]);
@@ -57,6 +57,18 @@ try {
     $assert(!is_wp_error($render) && str_contains($render['subject'], 'J-24'), 'Compte à rebours en jours calendaires');
     $assert(str_contains($render['html'], 'Aline &amp; Éloïse') && str_contains($render['html'], '<strong>'), 'Variables échappées et texte enrichi conservé');
     $assert(str_contains($render['html'], '/coulisses/?vue=profil'), 'Lien direct vers le profil');
+    $assert(str_contains($render['subject'], 'Sortie d’route — Échos & amis'), 'Ponctuation WordPress et accents dans l’objet');
+    $encoded_title = static fn($title, $id) => (int) $id === $event ? 'Sortie d&rsquo;route — Caf&eacute; &#xC9;t&#233; &amp; amis' : $title;
+    add_filter('the_title', $encoded_title, 20, 2);
+    try {
+        $encoded = SDR_Relances::preview($payload + ['user' => $ids[0]]);
+        $assert(str_contains($encoded['subject'], 'Sortie d’route — Café Été & amis'), 'Entités nommées et numériques décodées dans l’aperçu');
+        $assert(str_contains(html_entity_decode(wp_strip_all_tags($encoded['html']), ENT_QUOTES | ENT_HTML5, 'UTF-8'), 'Sortie d’route — Café Été & amis'), 'Même texte dans le corps HTML');
+        $options = array_column(SDR_Relances::bootstrap()['events'], 'label', 'id');
+        $assert(str_starts_with($options[$event], 'Sortie d’route — Café Été & amis'), 'Libellé du spectacle sans entités HTML');
+        SDR_Relances::test_mail($payload + ['user' => $ids[0]]);
+        $assert(end($mails)['subject'] === '[TEST] ' . $encoded['subject'], 'Objet transmis au mail identique à l’aperçu');
+    } finally { remove_filter('the_title', $encoded_title, 20); }
     $assert(is_wp_error(SDR_Relances::message(array_merge($payload, ['event' => 0]))), 'Variables spectacle sans spectacle refusées');
     $assert(is_wp_error(SDR_Relances::message(array_merge($payload, ['subject' => '{{inconnue}}']))), 'Variable inconnue refusée');
     $assert(is_wp_error(SDR_Relances::message(array_merge($payload, ['body' => '   ']))), 'Message vide refusé');
