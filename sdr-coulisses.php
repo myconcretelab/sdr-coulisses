@@ -2,7 +2,7 @@
 /**
  * Plugin Name: SDR — Les Coulisses
  * Description: Agenda public, disponibilités et composition des équipes des Sorties de Route.
- * Version: 1.5.1
+ * Version: 1.6.0
  * Requires PHP: 8.1
  * Text Domain: sdr
  */
@@ -48,7 +48,7 @@ final class SDR_Coulisses {
             if($pagenow==='post.php' && $id && get_post_type($id)==='sdr_event' && self::organizer() && current_user_can('edit_post',$id)) return;
             wp_safe_redirect(home_url('/coulisses/')); exit;
         });
-        add_action('wp_enqueue_scripts', function(){ wp_enqueue_style('sdr-ui',plugins_url('assets/app.css',__FILE__),[], '1.5.0'); });
+        add_action('wp_enqueue_scripts', function(){ wp_enqueue_style('sdr-ui',plugins_url('assets/app.css',__FILE__),[], '1.6.0'); });
         add_shortcode('sdr_agenda', [__CLASS__, 'agenda']);
         add_shortcode('sdr_coulisses', [__CLASS__, 'app']);
         add_shortcode('sdr_facebook', [__CLASS__, 'facebook']);
@@ -393,21 +393,7 @@ final class SDR_Coulisses {
         if($post->post_status==='publish' && get_post_meta($post->ID,'_sdr_date_announcement_pending',true)) self::notify_new_event($post->ID);
     }
     static function notify_new_event($eventId){
-        $event=get_post($eventId);
-        if(!$event || $event->post_type!=='sdr_event' || $event->post_status!=='publish' || !get_post_meta($eventId,'_sdr_date_announcement_pending',true)) return ['sent'=>0,'failed'=>0];
-        $details=self::event_email_details($event); $sentIds=array_map('intval',(array)get_post_meta($eventId,'_sdr_date_announcement_sent_users',true)); $sent=0; $failed=0;
-        foreach(self::member_email_recipients() as $user){
-            if(in_array($user->ID,$sentIds,true)) continue;
-            $subject='Nouvelle date : '.$details['date'].' — Les Sorties de Route';
-            $lines=['Une nouvelle date vient d’être ajoutée au planning.','','Spectacle : '.$details['title'],'Date : '.$details['date'],'Lieu : '.$details['venue'],'Début du spectacle : '.$details['time'],'Rendez-vous de la troupe : '.$details['callTime']];
-            if($details['team']) $lines[]='Troupe invitée : '.$details['team'];
-            $lines[]=''; $lines[]='Indique ta disponibilité dans les Coulisses : '.$details['url'];
-            if(self::send_plain_email($user,$subject,$lines)){ $sentIds[]=$user->ID; $sent++; update_post_meta($eventId,'_sdr_date_announcement_sent_users',array_values(array_unique($sentIds))); }
-            else $failed++;
-        }
-        update_post_meta($eventId,'_sdr_date_announcement_last_attempt',current_time('mysql'));
-        if($failed===0){ delete_post_meta($eventId,'_sdr_date_announcement_pending'); update_post_meta($eventId,'_sdr_date_announcement_sent',current_time('mysql')); wp_clear_scheduled_hook('sdr_notify_new_event',[$eventId]); }
-        return ['sent'=>$sent,'failed'=>$failed];
+        return SDR_Event_Reminders::automatic_announcement($eventId);
     }
     static function season($today){
         // August keeps the completed season visible until September's rollover.
@@ -622,8 +608,8 @@ final class SDR_Coulisses {
     }
     static function app(){
         if(!self::member()) return '<div class="login-callout"><h2>Bienvenue dans les coulisses.</h2><p>Cet espace est réservé aux membres de la troupe.</p><a class="button primary" href="'.esc_url(wp_login_url(home_url('/coulisses/'))).'">Se connecter →</a></div>';
-        wp_enqueue_script('sdr-event-reminders',plugins_url('assets/event-reminders.js',__FILE__),[], '1.5.0',true);
-        wp_enqueue_script('sdr-app',plugins_url('assets/app.js',__FILE__),['sdr-event-reminders'], '1.5.0',true);
+        wp_enqueue_script('sdr-event-reminders',plugins_url('assets/event-reminders.js',__FILE__),[], '1.6.0',true);
+        wp_enqueue_script('sdr-app',plugins_url('assets/app.js',__FILE__),['sdr-event-reminders'], '1.6.0',true);
         wp_add_inline_script('sdr-app','window.SDR='.wp_json_encode(['api'=>rest_url('sdr/v1/'),'nonce'=>wp_create_nonce('wp_rest'),'home'=>home_url('/'),'logo'=>get_theme_file_uri('/assets/sdr-logo.jpeg'),'admin'=>admin_url(),'relances'=>class_exists('SDR_Relances') && SDR_Relances::allowed()?SDR_Relances::workspace_url():'','adminLogin'=>add_query_arg('sdr_admin','1',wp_login_url(admin_url(),true)),'logout'=>html_entity_decode(wp_logout_url(home_url('/')),ENT_QUOTES,'UTF-8')]).';','before');
         return '<div id="sdr-app"><div class="app-loading"><span class="loading-star">✳</span><p>On ouvre les coulisses…</p></div></div><noscript>Active JavaScript pour gérer tes disponibilités.</noscript>';
     }

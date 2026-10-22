@@ -5,12 +5,12 @@
 <div style="display:none;max-height:0;overflow:hidden;opacity:0">Une date, une scène, et peut-être toi. Ta réponse sans mot de passe.</div>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eee9de"><tr><td align="center" style="padding:28px 12px">
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;background:#fffdf6;border:1px solid #cfc3b1">
-<tr><td style="padding:18px 28px;border-bottom:1px dashed #b9ad99;font-size:12px;letter-spacing:2px;font-weight:bold">LES SORTIES DE ROUTE <span style="color:#79608f">✳︎</span> LE PETIT RAPPEL</td></tr>
+<tr><td style="padding:18px 28px;border-bottom:1px dashed #b9ad99;font-size:12px;letter-spacing:2px;font-weight:bold">LES SORTIES DE ROUTE <span style="color:#79608f">✳︎</span> <?php echo $announcement ? 'LA PROCHAINE SORTIE' : 'LE PETIT RAPPEL'; ?></td></tr>
 <tr><td style="padding:32px 28px 12px">
 <span style="display:inline-block;padding:5px 11px;background:#e4dbee;color:#5f437d;font-size:11px;letter-spacing:1px;font-weight:bold">L’IMPRÉVU, ÇA SE PRÉPARE.</span>
-<h1 style="font-family:Georgia,serif;font-size:38px;line-height:1.12;font-weight:normal;margin:24px 0;color:#302e28">On te garde une place<br>dans l’imprévu <span style="color:#8d6ca7">?</span></h1>
+<h1 style="font-family:Georgia,serif;font-size:38px;line-height:1.12;font-weight:normal;margin:24px 0;color:#302e28"><?php echo $announcement ? 'Une nouvelle date.<br>Et si tu en étais <span style="color:#8d6ca7">?</span>' : 'On te garde une place<br>dans l’imprévu <span style="color:#8d6ca7">?</span>'; ?></h1>
 <p style="font-size:16px;margin:0 0 16px">Bonjour <?php echo esc_html($name); ?>,</p>
-<p style="font-size:16px;margin:0 0 22px">Une soirée se prépare et ta réponse manque encore au casting. Ça te dit de rejoindre l’aventure ?</p>
+<p style="font-size:16px;margin:0 0 22px"><?php echo $announcement ? 'Une nouvelle soirée vient d’arriver au planning. On a la date, on a la scène… il ne manque plus que tes envies !' : 'Une soirée se prépare et ta réponse manque encore au casting. Ça te dit de rejoindre l’aventure ?'; ?></p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eee7f4;border:1px solid #d7c9e2">
 <tr><td style="padding:20px 22px"><p style="font-size:11px;letter-spacing:1px;color:#6b537e;margin:0 0 6px;font-weight:bold">LE RENDEZ-VOUS</p><h2 style="font-family:Georgia,serif;font-size:25px;line-height:1.3;margin:0 0 16px;font-weight:normal"><?php echo esc_html($details['title']); ?></h2>
 <p style="margin:0 0 5px;font-size:16px;font-weight:bold"><?php echo esc_html($details['date']); ?></p><p style="margin:0 0 12px;font-size:15px"><?php echo esc_html($details['venue']); ?></p>

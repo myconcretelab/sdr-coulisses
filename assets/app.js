@@ -123,8 +123,8 @@
         </fieldset>
         <fieldset class="new-event-section"><legend class="stage-reminder-heading">Qui monte sur scène ? <span aria-hidden="true">♧</span><button type="button" class="button secondary stage-reminder-button" data-remind-event="${editing?id:''}" ${!editing||existing.closed?'disabled':''} title="${editing?(existing.closed?'Les réponses sont fermées':'Choisir les personnes à relancer'):'Enregistre d’abord le spectacle'}" aria-haspopup="dialog">Relancer les non-inscrits <span aria-hidden="true">✉</span></button></legend><p class="field-help">Places pour les SDR, hors troupe invitée. ${editing?'Les places déjà attribuées ne peuvent pas être retirées.':'Ajustables ensuite dans la composition de l’équipe.'}</p><div class="new-event-capacities">${Object.entries(roleNames).map(([key,label])=>`<label class="new-event-field">${label}<input name="capacity_${key}" type="number" min="${assigned[key]}" max="30" step="1" required value="${existing?.capacity?.[key]??0}"></label>`).join('')}</div><label class="close-switch"><input type="checkbox" name="closed" ${existing?.closed?'checked':''}><span class="switch-track" aria-hidden="true"></span><span>Fermer les réponses<small>Les membres ne pourront plus changer leur disponibilité.</small></span></label></fieldset>
         <div class="new-event-section"><label class="new-event-field">Lien de billetterie <span class="optional">(facultatif)</span><input name="bookingUrl" type="url" placeholder="https://…" value="${h(existing?.bookingUrl||'')}"></label>${existing?.hasBlocks?`<p class="new-event-block-note">La présentation de ce spectacle est composée de blocs Gutenberg. Elle reste intacte ici ; <a href="${h(existing.editUrl)}">ouvre l’éditeur</a> pour la modifier.</p>`:`<label class="new-event-field">Présentation <span class="optional">(facultatif)</span><textarea name="description" rows="3" placeholder="Quelques mots sur la soirée…">${h(existing?.description||'')}</textarea></label>`}</div>
-        <p class="new-event-save-help">${editing?'Les changements seront visibles dans le planning et l’agenda public. Aucun email n’est envoyé automatiquement.':'Le spectacle sera visible dans le planning et l’agenda public. Aucun email n’est envoyé à cette étape.'}</p><p class="form-message" role="status" aria-live="polite"></p>
-        <div class="new-event-actions"><button type="submit" value="save" class="button primary">${editing?'Enregistrer les modifications':'Enregistrer le spectacle'} <span aria-hidden="true">✓</span></button>${editing?`<a class="button secondary" href="${h(existing.editUrl)}">Ouvrir dans Gutenberg <span aria-hidden="true">↗</span></a>`:'<button type="submit" value="editor" class="button secondary">Enregistrer et ouvrir Gutenberg <span aria-hidden="true">↗</span></button>'}</div><button type="button" class="new-event-cancel">Annuler</button>
+        <p class="new-event-save-help">${editing?'Les changements seront visibles dans le planning et l’agenda public. Aucun email n’est envoyé automatiquement.':'L’enregistrement simple ne déclenche aucun email. « Enregistrer et prévenir les joueurs » ouvre le choix des destinataires avant l’envoi.'}</p><p class="form-message" role="status" aria-live="polite"></p>
+        <div class="new-event-actions"><button type="submit" value="save" class="button primary">${editing?'Enregistrer les modifications':'Enregistrer le spectacle'} <span aria-hidden="true">✓</span></button>${editing?`<a class="button secondary" href="${h(existing.editUrl)}">Ouvrir dans Gutenberg <span aria-hidden="true">↗</span></a>`:'<button type="submit" value="invite" class="button secondary new-event-invite" aria-haspopup="dialog" disabled>Enregistrer et prévenir les joueurs <span aria-hidden="true">✉</span></button><button type="submit" value="editor" class="button secondary">Enregistrer et ouvrir Gutenberg <span aria-hidden="true">↗</span></button>'}</div><button type="button" class="new-event-cancel">Annuler</button>
       </form></div>`;
       const form=dialog.querySelector('form');
       let saving=false;
@@ -142,13 +142,20 @@
       const reminderButton=form.querySelector('[data-remind-event]');
       const refreshReminder=()=>{
         const dirty=JSON.stringify([...new FormData(form)])!==initialFields;
+        const invite=form.querySelector('[value=invite]');
+        if(invite){
+          invite.disabled=form.elements.closed.checked||!form.elements.date.value||form.elements.date.value<options.today;
+          invite.title=invite.disabled?'Renseigne une date à venir avec les réponses ouvertes':'Enregistrer puis choisir les personnes à prévenir';
+        }
         reminderButton.disabled=!editing||existing.closed||dirty;
         reminderButton.title=!editing?'Enregistre d’abord le spectacle':dirty?'Enregistre les modifications avant de relancer':existing.closed?'Les réponses sont fermées':'Choisir les personnes à relancer';
       };
       form.addEventListener('input',refreshReminder);
+      refreshReminder();
       form.onsubmit=async event=>{
         event.preventDefault();if(saving) return;
-        const fd=new FormData(form),openEditor=event.submitter?.value==='editor';
+        const fd=new FormData(form),openEditor=event.submitter?.value==='editor',invite=!editing&&event.submitter?.value==='invite';
+        if(invite&&window.SDREventReminders.isSending()){toast('Termine l’envoi en cours avant de créer un spectacle avec invitation.',true);return;}
         const body={title:fd.get('title'),date:fd.get('date'),time:fd.get('time'),callTime:fd.get('callTime'),venue:Number(fd.get('venue')),format:Number(fd.get('format')),team:Number(fd.get('team')),capacity:Object.fromEntries(Object.keys(roleNames).map(key=>[key,Number(fd.get('capacity_'+key))])),bookingUrl:fd.get('bookingUrl'),closed:fd.has('closed'),intermission:fd.has('intermission')};
         if(fd.has('description')) body.description=fd.get('description');
         if(editing) body.revision=existing.revision;
@@ -169,6 +176,10 @@
           dialog.close();view='planning';filter='all';query='';render();
           root.querySelector('[data-new-event]')?.focus();
           toast('Le spectacle est enregistré.');
+          if(invite){
+            try{await window.SDREventReminders.open(result.id,root.querySelector(`[data-edit-event="${result.id}"]`)||root.querySelector('[data-new-event]'),'announcement');}
+            catch(error){toast('Le spectacle est enregistré, mais la sélection des destinataires n’a pas pu s’ouvrir. Retrouve-le dans le planning pour réessayer.',true);}
+          }
         }catch(error){
           saving=false;message.textContent=error.message;
           dialog.querySelectorAll('button,input,select,textarea').forEach(control=>control.disabled=false);

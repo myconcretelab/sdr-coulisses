@@ -1,4 +1,27 @@
-# Relancer les non-inscrits d’un spectacle
+# Inviter les joueurs et relancer les non-inscrits
+
+## À la création d’un spectacle
+
+La fenêtre **Nouveau spectacle** propose trois actions :
+
+- **Enregistrer le spectacle** : publie la date sans envoyer d’email.
+- **Enregistrer et prévenir les joueurs** : publie la date puis ouvre la même fenêtre
+  de sélection que les relances. Les personnes admissibles sont cochées par défaut ;
+  décocher les personnes à ne pas prévenir puis confirmer **Envoyer à N personnes**.
+- **Enregistrer et ouvrir Gutenberg** : publie la date sans email puis ouvre l’éditeur.
+
+Fermer la sélection sans confirmer ne déclenche aucun email : le spectacle reste
+bien enregistré. Une date passée ou fermée aux réponses ne peut pas être annoncée.
+L’email d’annonce utilise le même modèle, les mêmes boutons et les mêmes liens
+personnels que la relance, avec le titre **Une nouvelle date. Et si tu en étais ?**.
+
+La publication directe d’une nouvelle fiche depuis WordPress conserve son annonce
+automatique existante (lors de la publication REST ou par l’événement planifié),
+désormais limitée aux profils **OK pour la scène**, avec ce même email HTML.
+Ce déclenchement ne concerne pas les trois actions de création des Coulisses :
+elles passent uniquement par les choix décrits ci-dessus.
+
+## Pour une date existante
 
 Dans les Coulisses, ouvrir **Modifier** sur une date puis **Relancer les non-inscrits**,
 à droite de **Qui monte sur scène ?**. Enregistrer les modifications du spectacle
@@ -61,13 +84,15 @@ de demande rend les répétitions de création idempotentes. Les destinataires c
 sont conservés et revérifiés avant chaque email : une nouvelle réponse, un retrait
 « OK pour la scène » ou un changement de profil/adresse évite une relance devenue inutile.
 Un verrou partagé avec les réponses protège les opérations d’un même spectacle.
-Les envois sont traités par lots de cinq ; garder la page ouverte. Une interruption
+Les envois confirmés dans la fenêtre sont traités par lots de cinq ; garder la page ouverte. Une interruption
 permet de reprendre les destinataires encore en attente, avec le même auteur.
 Une transmission interrompue à l’intérieur d’un email est signalée comme incertaine
 et n’est pas renvoyée automatiquement. Le bilan distingue acceptés par WordPress,
 échecs, ignorés, incertains et annulés. L’acceptation ne garantit pas la réception.
-Les dix dernières campagnes par spectacle et auteur sont conservées. Aucun envoi
-n’est planifié en arrière-plan. Les réponses publiques sont limitées à leur lien ;
+Les dix dernières campagnes par spectacle et auteur sont conservées. Les envois
+confirmés dans la fenêtre ne sont pas planifiés en arrière-plan. La publication
+WordPress garde son déclenchement automatique distinct ; un état sauvegardé avant
+transmission évite aussi de renvoyer automatiquement un email interrompu. Les réponses publiques sont limitées à leur lien ;
 elles n’autorisent aucune autre opération sur le compte ou sur le spectacle.
 
 ## Vérifications locales
@@ -76,6 +101,7 @@ Sur une installation `.local`, avec tous les emails interceptés et les données
 temporaires nettoyées par les tests :
 
 ```sh
+wp eval-file wp-content/plugins/sdr-coulisses/tests/event-announcements.php
 wp eval-file wp-content/plugins/sdr-coulisses/tests/event-reminders.php
 wp eval-file wp-content/plugins/sdr-coulisses/tests/relances.php
 wp eval-file wp-content/plugins/sdr-coulisses/tests/stage-bulk.php
