@@ -3,7 +3,7 @@
 defined('ABSPATH') || exit;
 
 final class SDR_Relances {
-    const VERSION = '1.1.1';
+    const VERSION = '1.1.2';
     const API = 'sdr-relances/v1';
     const CAPABILITY = 'manage_options';
 

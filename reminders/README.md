@@ -29,6 +29,14 @@ les candidatures, les besoins et les deux actions de sauvegarde avec ou sans ema
 **Relancer les non-inscrits** se trouve à droite du titre **Composer l’équipe** ;
 il réutilise la sélection des destinataires et le service d’envoi existants.
 
+Les informations du spectacle sont regroupées dans un résumé compact, partagé
+avec la fiche de réponse et les archives. Les candidatures apparaissent en fiches
+sur deux colonnes (une sur mobile), avec la disponibilité directement indiquée sur
+chaque choix de rôle et une légende commune. La bande colorée et la fermeture
+restent visibles pendant le défilement ; les compteurs de composition se fixent
+juste en dessous. Cette bande persistante est aussi présente dans les fenêtres de
+création, de modification, d’archives et de relance.
+
 Chaque carte affiche **Équipe à composer**, **Équipe incomplète** ou **Équipe complète**,
 selon les personnes réellement retenues dans chaque rôle. Aucun besoin défini ne
 signifie pas une équipe complète : la carte indique alors **Besoins à préciser**.

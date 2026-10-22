@@ -39,5 +39,5 @@
             </section>
         </div>
     </div>
-    <dialog id="sr-confirm" aria-labelledby="sr-confirm-title"><h2 id="sr-confirm-title">Confirmer l’envoi</h2><p id="sr-confirm-copy"></p><p>Un email distinct sera transmis pour chaque personne. Vérifie l’aperçu et, si besoin, envoie-toi un test avant de confirmer.</p><div class="sr-send-actions"><button type="button" class="button" id="sr-confirm-back">Revenir au message</button><button type="button" class="button button-primary" id="sr-confirm-send">Confirmer l’envoi</button></div></dialog>
+    <dialog id="sr-confirm" aria-labelledby="sr-confirm-title"><div class="sr-confirm-heading"><h2 id="sr-confirm-title">Confirmer l’envoi</h2><button type="button" id="sr-confirm-close" aria-label="Fermer la confirmation">×</button></div><div class="sr-confirm-body"><p id="sr-confirm-copy"></p><p>Un email distinct sera transmis pour chaque personne. Vérifie l’aperçu et, si besoin, envoie-toi un test avant de confirmer.</p><div class="sr-send-actions"><button type="button" class="button" id="sr-confirm-back">Revenir au message</button><button type="button" class="button button-primary" id="sr-confirm-send">Confirmer l’envoi</button></div></div></dialog>
 </div>

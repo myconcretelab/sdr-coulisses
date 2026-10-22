@@ -2,7 +2,7 @@
 /**
  * Plugin Name: SDR — Relances utilisateurs
  * Description: Filtres de profils, emails personnalisés et prévisualisation dans les Coulisses et Utilisateurs → Relances utilisateurs.
- * Version: 1.1.1
+ * Version: 1.1.2
  * Requires at least: 6.5
  * Requires PHP: 8.1
  * Text Domain: sdr-relances

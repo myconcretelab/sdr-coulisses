@@ -13,7 +13,7 @@
     if(current?.running){if(!current.dialog.open)current.dialog.showModal();current.dialog.querySelector('[role=status]').textContent='Une relance est déjà en cours. Tu peux suivre son avancement ici.';return;}
     current?.dialog.remove();
     const dialog=document.createElement('dialog');dialog.className='event-dialog reminder-dialog';dialog.setAttribute('aria-labelledby','reminder-title');
-    dialog.innerHTML=`<button type="button" class="dialog-close" aria-label="Fermer les relances">×</button><div class="dialog-banner"><span class="tag">${announcement?'UNE NOUVELLE DATE À PARTAGER':'UN PETIT SIGNE À LA TROUPE'}</span><span aria-hidden="true">✉</span></div><div class="dialog-inner"><h2 id="reminder-title">${announcement?'Prévenir les joueurs':'Relancer les non-inscrits'}</h2><p role="status" aria-live="polite">On prépare la liste…</p><div class="reminder-content"></div></div>`;
+    dialog.innerHTML=`<div class="dialog-banner"><span class="tag">${announcement?'UNE NOUVELLE DATE À PARTAGER':'UN PETIT SIGNE À LA TROUPE'}</span><span class="dialog-doodle" aria-hidden="true">✉</span><button type="button" class="dialog-close" aria-label="Fermer les relances">×</button></div><div class="dialog-inner"><h2 id="reminder-title">${announcement?'Prévenir les joueurs':'Relancer les non-inscrits'}</h2><p role="status" aria-live="polite">On prépare la liste…</p><div class="reminder-content"></div></div>`;
     document.body.append(dialog);dialog.showModal();
     const state=current={id,kind,dialog,opener,running:false,selected:new Set(),campaign:null,sent:false,requestId:'relance-'+Date.now()+'-'+Math.random().toString(36).slice(2)};
     dialog.querySelector('.dialog-close').onclick=()=>dialog.close();

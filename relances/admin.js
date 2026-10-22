@@ -163,6 +163,7 @@
         finally { state.running = false; showCampaign(state.campaign); }
     }
     function attach() {
+        $('confirm-close').onclick = () => $('confirm').close();
         document.addEventListener('keydown', closeEmbedded);
         $('search').addEventListener('input', () => { clearTimeout(searchTimer); ++listVersion; state.loading = true; state.selected.clear(); selectionChanged(); searchTimer = setTimeout(reloadUsers, 250); });
         ['role', 'mode'].forEach(id => $(id).addEventListener('change', reloadUsers));
