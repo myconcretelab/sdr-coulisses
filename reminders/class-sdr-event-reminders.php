@@ -3,7 +3,7 @@
 defined('ABSPATH') || exit;
 
 final class SDR_Event_Reminders {
-    const VERSION = '1.1.0';
+    const VERSION = '1.1.1';
     const PREFIX = 'sdr_event_reminder_';
 
     static function boot() {

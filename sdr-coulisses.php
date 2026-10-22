@@ -2,7 +2,7 @@
 /**
  * Plugin Name: SDR — Les Coulisses
  * Description: Agenda public, disponibilités et composition des équipes des Sorties de Route.
- * Version: 1.6.0
+ * Version: 1.6.1
  * Requires PHP: 8.1
  * Text Domain: sdr
  */

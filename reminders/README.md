@@ -59,6 +59,10 @@ d’une version texte. Il rappelle le titre, la date, le lieu, les horaires et l
   rôles actuels du profil. Plusieurs rôles peuvent être proposés avant validation.
 - **Je ne suis pas dispo** ouvre une confirmation d’indisponibilité sans connexion.
 
+La fiche affiche **Confirme ta réponse** et un encadré indiquant dès l’arrivée
+que la réponse n’est pas encore enregistrée. Les boutons de confirmation et de
+changement de choix occupent toute la largeur, avec une taille adaptée au mobile.
+
 Une simple consultation du lien, même répétée ou par un outil de sécurité des emails,
 ne modifie aucune réponse. Seule une validation explicite par POST l’enregistre.
 Le même service de sauvegarde est utilisé par cette fiche et les Coulisses.
