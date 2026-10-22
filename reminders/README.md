@@ -23,10 +23,23 @@ elles passent uniquement par les choix décrits ci-dessus.
 
 ## Pour une date existante
 
-Dans les Coulisses, ouvrir **Modifier** sur une date puis **Relancer les non-inscrits**,
-à droite de **Qui monte sur scène ?**. Enregistrer les modifications du spectacle
-avant de relancer. Le bouton reste désactivé sur une nouvelle date non enregistrée
-ou lorsque les réponses sont fermées.
+Dans le planning des Coulisses, chaque date propose **Composer l’équipe** aux
+organisateurs et administrateurs. La fenêtre conserve le tableau des sélections,
+les candidatures, les besoins et les deux actions de sauvegarde avec ou sans email.
+**Relancer les non-inscrits** se trouve à droite du titre **Composer l’équipe** ;
+il réutilise la sélection des destinataires et le service d’envoi existants.
+
+Chaque carte affiche **Équipe à composer**, **Équipe incomplète** ou **Équipe complète**,
+selon les personnes réellement retenues dans chaque rôle. Aucun besoin défini ne
+signifie pas une équipe complète : la carte indique alors **Besoins à préciser**.
+Les changements de sélection ou de besoins actualisent cet état dans le planning.
+La rubrique séparée **Composer les équipes** est retirée ; les anciens liens
+`?vue=equipes&spectacle=ID` ouvrent cette même fenêtre au-dessus du planning.
+
+Le bouton de relance reste aussi disponible dans **Modifier**, à droite de
+**Qui monte sur scène ?**. Enregistrer les changements du spectacle ou des besoins
+avant de relancer. La relance est désactivée pendant ces changements, sur une
+nouvelle date non enregistrée ou lorsque les réponses sont fermées.
 
 La fenêtre affiche les personnes sans aucune réponse, ayant coché **OK pour la scène**
 et au moins un rôle artistique. Les cases sont toutes cochées au départ ; décocher
