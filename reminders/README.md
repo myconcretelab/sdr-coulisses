@@ -44,10 +44,12 @@ Les changements de sélection ou de besoins actualisent cet état dans le planni
 La rubrique séparée **Composer les équipes** est retirée ; les anciens liens
 `?vue=equipes&spectacle=ID` ouvrent cette même fenêtre au-dessus du planning.
 
-Le bouton de relance reste aussi disponible dans **Modifier**, à droite de
-**Qui monte sur scène ?**. Enregistrer les changements du spectacle ou des besoins
-avant de relancer. La relance est désactivée pendant ces changements, sur une
-nouvelle date non enregistrée ou lorsque les réponses sont fermées.
+Le bouton de relance se trouve uniquement dans **Composer l’équipe**. Les fenêtres
+de création et de modification affichent **Combien de places sur scène ?** pour
+régler les effectifs, sans bouton de relance dans cette section. L’action distincte
+**Enregistrer et prévenir les joueurs** reste disponible à la création.
+Enregistrer les changements des besoins avant de relancer ; la relance est désactivée
+pendant ces changements ou lorsque les réponses sont fermées.
 
 La fenêtre affiche les personnes sans aucune réponse, ayant coché **OK pour la scène**
 et au moins un rôle artistique. Les cases sont toutes cochées au départ ; décocher
