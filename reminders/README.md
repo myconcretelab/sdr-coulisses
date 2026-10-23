@@ -48,6 +48,8 @@ Le bouton de relance se trouve uniquement dans **Composer l’équipe**. Les fen
 de création et de modification affichent **Combien de places sur scène ?** pour
 régler les effectifs, sans bouton de relance dans cette section. L’action distincte
 **Enregistrer et prévenir les joueurs** reste disponible à la création.
+Chaque effectif dispose de grands boutons **−** et **+**, en plus de la saisie au
+clavier. Les limites vont de zéro (ou du nombre de places déjà attribuées) à trente.
 Enregistrer les changements des besoins avant de relancer ; la relance est désactivée
 pendant ces changements ou lorsque les réponses sont fermées.
 

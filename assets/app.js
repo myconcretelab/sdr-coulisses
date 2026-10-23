@@ -129,7 +129,7 @@
           <div class="new-event-grid"><label class="new-event-field">Rendez-vous de la troupe<input name="callTime" type="time" value="${h(existing?.callTime||'')}"></label><label class="new-event-field">Début du spectacle<input name="time" type="time" value="${h(existing?.time||'')}"></label></div>
           <label class="new-event-field">Troupe invitée<select name="team">${choices(options.teams,'Pas de troupe invitée / à préciser',existing?.team)}</select></label><label class="close-switch"><input type="checkbox" name="intermission" ${existing?.intermission?'checked':''}><span class="switch-track" aria-hidden="true"></span><span>Avec entracte<small>À cocher si une pause est prévue pendant le spectacle.</small></span></label>
         </fieldset>
-        <fieldset class="new-event-section"><legend>Combien de places sur scène ? <span aria-hidden="true">♧</span></legend><p class="field-help">Places pour les SDR, hors troupe invitée. ${editing?'Les places déjà attribuées ne peuvent pas être retirées.':'Ajustables ensuite dans la composition de l’équipe.'}</p><div class="new-event-capacities">${Object.entries(roleNames).map(([key,label])=>`<label class="new-event-field">${label}<input name="capacity_${key}" type="number" min="${assigned[key]}" max="30" step="1" required value="${existing?.capacity?.[key]??0}"></label>`).join('')}</div><label class="close-switch"><input type="checkbox" name="closed" ${existing?.closed?'checked':''}><span class="switch-track" aria-hidden="true"></span><span>Fermer les réponses<small>Les membres ne pourront plus changer leur disponibilité.</small></span></label></fieldset>
+        <fieldset class="new-event-section"><legend>Combien de places sur scène ? <span aria-hidden="true">♧</span></legend><p class="field-help">Places pour les SDR, hors troupe invitée. ${editing?'Les places déjà attribuées ne peuvent pas être retirées.':'Ajustables ensuite dans la composition de l’équipe.'}</p><div class="new-event-capacities">${Object.entries(roleNames).map(([key,label])=>`<div class="new-event-field"><label for="new-capacity-${key}">${label}</label><div class="capacity-stepper new-event-stepper"><button type="button" data-event-step="-1" data-role="${key}" aria-label="Retirer une place ${label}">−</button><input id="new-capacity-${key}" name="capacity_${key}" type="number" min="${assigned[key]}" max="30" step="1" required value="${existing?.capacity?.[key]??0}"><button type="button" data-event-step="1" data-role="${key}" aria-label="Ajouter une place ${label}">+</button></div></div>`).join('')}</div><label class="close-switch"><input type="checkbox" name="closed" ${existing?.closed?'checked':''}><span class="switch-track" aria-hidden="true"></span><span>Fermer les réponses<small>Les membres ne pourront plus changer leur disponibilité.</small></span></label></fieldset>
         <div class="new-event-section"><label class="new-event-field">Lien de billetterie <span class="optional">(facultatif)</span><input name="bookingUrl" type="url" placeholder="https://…" value="${h(existing?.bookingUrl||'')}"></label>${existing?.hasBlocks?`<p class="new-event-block-note">La présentation de ce spectacle est composée de blocs Gutenberg. Elle reste intacte ici ; <a href="${h(existing.editUrl)}">ouvre l’éditeur</a> pour la modifier.</p>`:`<label class="new-event-field">Présentation <span class="optional">(facultatif)</span><textarea name="description" rows="3" placeholder="Quelques mots sur la soirée…">${h(existing?.description||'')}</textarea></label>`}</div>
         <p class="new-event-save-help">${editing?'Les changements seront visibles dans le planning et l’agenda public. Aucun email n’est envoyé automatiquement.':'L’enregistrement simple ne déclenche aucun email. « Enregistrer et prévenir les joueurs » ouvre le choix des destinataires avant l’envoi.'}</p><p class="form-message" role="status" aria-live="polite"></p>
         <div class="new-event-actions"><button type="submit" value="save" class="button primary">${editing?'Enregistrer les modifications':'Enregistrer le spectacle'} <span aria-hidden="true">✓</span></button>${editing?`<a class="button secondary" href="${h(existing.editUrl)}">Ouvrir dans Gutenberg <span aria-hidden="true">↗</span></a>`:'<button type="submit" value="invite" class="button secondary new-event-invite" aria-haspopup="dialog" disabled>Enregistrer et prévenir les joueurs <span aria-hidden="true">✉</span></button><button type="submit" value="editor" class="button secondary">Enregistrer et ouvrir Gutenberg <span aria-hidden="true">↗</span></button>'}</div><button type="button" class="new-event-cancel">Annuler</button>
@@ -146,6 +146,19 @@
         dialog.querySelector('#new-venue-address').textContent=venue?[venue.address,venue.city].filter(Boolean).join(' · ')||'Adresse à compléter dans la fiche du lieu.':'Choisis parmi les lieux enregistrés.';
       };
       form.elements.venue.onchange();
+      const refreshCapacities=()=>{
+        form.querySelectorAll('[data-event-step]').forEach(button=>{
+          const input=form.elements['capacity_'+button.dataset.role],value=Number(input.value),min=Number(input.min),max=Number(input.max);
+          button.disabled=saving||!input.checkValidity()||input.value===''||(Number(button.dataset.eventStep)<0?value<=min:value>=max);
+        });
+      };
+      form.querySelectorAll('[data-event-step]').forEach(button=>button.onclick=()=>{
+        const input=form.elements['capacity_'+button.dataset.role];
+        input.value=Math.max(Number(input.min),Math.min(Number(input.max),Number(input.value)+Number(button.dataset.eventStep)));
+        input.dispatchEvent(new Event('input',{bubbles:true}));
+      });
+      form.addEventListener('input',refreshCapacities);
+      refreshCapacities();
       const refreshInvitation=()=>{
         const invite=form.querySelector('[value=invite]');
         if(invite){
@@ -186,7 +199,7 @@
         }catch(error){
           saving=false;message.textContent=error.message;
           dialog.querySelectorAll('button,input,select,textarea').forEach(control=>control.disabled=false);
-          refreshInvitation();
+          refreshInvitation();refreshCapacities();
         }
       };
       form.elements.title.focus();
