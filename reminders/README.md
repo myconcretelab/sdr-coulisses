@@ -53,10 +53,23 @@ clavier. Les limites vont de zéro (ou du nombre de places déjà attribuées) �
 Enregistrer les changements des besoins avant de relancer ; la relance est désactivée
 pendant ces changements ou lorsque les réponses sont fermées.
 
-La fenêtre affiche les personnes sans aucune réponse, ayant coché **OK pour la scène**
-et au moins un rôle artistique. Les cases sont toutes cochées au départ ; décocher
-les personnes à ne pas contacter puis confirmer avec **Envoyer à N personnes**.
-Les rôles visibles correspondent au profil, sans restriction aux besoins du spectacle.
+La relance calcule les places encore libres pour chaque rôle à partir des personnes
+**sélectionnées**, sans confondre une candidature et une place attribuée. La fenêtre
+affiche ces besoins et uniquement les profils **OK pour la scène**, sans réponse,
+ayant au moins un rôle encore recherché. Les rôles correspondants sont mis en évidence ;
+les cases sont toutes cochées au départ. Décocher les personnes à ne pas contacter
+puis confirmer **Envoyer à N personnes**. Une équipe complète ou sans besoins définis
+ne propose personne à relancer ; un besoin sans profil admissible est expliqué.
+Le contrôle est répété lors de la préparation et avant chaque email : une place
+pourvue entre-temps fait ignorer les destinataires devenus hors cible.
+
+L’objet, le titre et le texte de l’email indiquent les rôles encore recherchés qui
+correspondent au destinataire, par exemple **Il manque encore 1 MC**. Le lien personnel
+ne permet de proposer que ces rôles, tant qu’ils figurent toujours dans le profil.
+Une réponse reste une disponibilité, même si l’équipe évolue après l’envoi : elle
+n’attribue jamais automatiquement une place. Les liens antérieurs restent utilisables.
+Les annonces de nouvelles dates conservent leur audience générale de volontaires,
+y compris lorsque les besoins n’ont pas encore été définis.
 Une indisponibilité ou une réponse « si besoin » est déjà une réponse : pas de relance.
 Les comptes de démonstration, les adresses `.invalid` / `.test` et les adresses de
 remplacement `sdr@sdr.fr` / `sdr@sdr.com` sont exclus.
@@ -81,7 +94,8 @@ Chaque destinataire reçoit un email HTML personnel au style du site, accompagn�
 d’une version texte. Il rappelle le titre, la date, le lieu, les horaires et les rôles.
 
 - **OK, je me lance !** ouvre une petite fiche sans connexion, avec uniquement les
-  rôles actuels du profil. Plusieurs rôles peuvent être proposés avant validation.
+  rôles proposés dans l’email et toujours présents dans le profil. Plusieurs rôles
+  peuvent être proposés avant validation.
 - **Je ne suis pas dispo** ouvre une confirmation d’indisponibilité sans connexion.
 
 La fiche affiche **Confirme ta réponse** et un encadré indiquant dès l’arrivée
@@ -95,7 +109,7 @@ Aucune session WordPress n’est créée. Pour modifier une réponse déjà enre
 le membre retrouve le spectacle dans les Coulisses avec sa connexion habituelle.
 
 Le secret aléatoire de 256 bits est lié à une personne et à un spectacle ; seule son
-empreinte SHA-256 est conservée avec l’adresse et l’échéance. Il expire au plus tard
+empreinte SHA-256 est conservée avec l’adresse, l’échéance et les rôles proposés. Il expire au plus tard
 après 14 jours ou à la fin du jour du spectacle. Une nouvelle invitation remplace
 le secret précédent. Le changement d’adresse, le retrait des rôles ou de l’accès
 membre, la fermeture des réponses ou le passage de la date empêchent son utilisation.
@@ -132,6 +146,7 @@ temporaires nettoyées par les tests :
 ```sh
 wp eval-file wp-content/plugins/sdr-coulisses/tests/event-announcements.php
 wp eval-file wp-content/plugins/sdr-coulisses/tests/event-reminders.php
+wp eval-file wp-content/plugins/sdr-coulisses/tests/event-reminder-needs.php
 wp eval-file wp-content/plugins/sdr-coulisses/tests/relances.php
 wp eval-file wp-content/plugins/sdr-coulisses/tests/stage-bulk.php
 ```
@@ -139,3 +154,6 @@ wp eval-file wp-content/plugins/sdr-coulisses/tests/stage-bulk.php
 Les contrôles couvrent consentement, permissions, sélection, lots et reprises,
 réponses avant envoi, liens falsifiés ou expirés, rôles, indisponibilités, rejeux,
 fermetures, réponses et sélections existantes, et maintien des réponses habituelles.
+La suite des besoins vérifie aussi le ciblage par rôle, la dernière place pourvue
+avant envoi, le texte personnalisé, les réponses limitées aux rôles invités et
+le maintien des annonces générales de nouvelles dates.

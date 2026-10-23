@@ -92,13 +92,36 @@ final class SDR_Event_Reminders {
         global $wpdb;
         return $wpdb->get_row($wpdb->prepare("SELECT availability,roles,selected_role FROM {$wpdb->prefix}sdr_responses WHERE event_id=%d AND user_id=%d", $event, $user));
     }
-    static function candidates($event) {
+    /** Vacancies are based on actual selections, never on the number of volunteers. */
+    static function needs($event) {
+        global $wpdb;
+        $selected = $wpdb->get_results($wpdb->prepare("SELECT selected_role,COUNT(*) AS total FROM {$wpdb->prefix}sdr_responses WHERE event_id=%d AND selected_role<>'' GROUP BY selected_role", $event), OBJECT_K);
+        $needs = [];
+        foreach (SDR_Coulisses::ROLES as $role => $label) {
+            $remaining = max(0, (int) SDR_Coulisses::meta($event, 'capacity_' . $role, 0) - (int) ($selected[$role]->total ?? 0));
+            if ($remaining) $needs[$role] = $remaining;
+        }
+        return $needs;
+    }
+    static function need_summary($needs) {
+        $labels = [];
+        foreach ($needs as $role => $count) $labels[] = $count . ' ' . ($role === 'joueur' ? ($count > 1 ? 'joueur·ses' : 'joueur·se') : SDR_Coulisses::ROLES[$role]);
+        return implode(' · ', $labels);
+    }
+    static function target_roles($event, $uid, $kind = 'reminder', $needs = null) {
+        $roles = self::roles($uid);
+        return $kind === 'announcement' ? $roles : array_values(array_intersect($roles, array_keys($needs ?? self::needs($event))));
+    }
+    static function candidates($event, $kind = 'reminder') {
         $users = []; $excluded = 0;
+        $needs = self::needs($event);
         foreach (SDR_Coulisses::member_email_recipients() as $user) {
             $roles = self::roles($user->ID);
             if (!$roles || !get_user_meta($user->ID, 'sdr_stage_opt_in', true) || !user_can($user, 'sdr_member') || self::response($event, $user->ID)) continue;
+            $target_roles = self::target_roles($event, $user->ID, $kind, $needs);
+            if (!$target_roles) continue;
             if (!self::personal_email($user)) { $excluded++; continue; }
-            $users[$user->ID] = ['id' => (int) $user->ID, 'name' => $user->display_name, 'email' => $user->user_email, 'roles' => $roles];
+            $users[$user->ID] = ['id' => (int) $user->ID, 'name' => $user->display_name, 'email' => $user->user_email, 'roles' => $roles, 'targetRoles' => $target_roles];
         }
         return ['users' => $users, 'excluded' => $excluded];
     }
@@ -112,10 +135,13 @@ final class SDR_Event_Reminders {
         $kind = self::kind($request);
         if (is_wp_error($kind)) return $kind;
         if ($error = self::event_error($id)) return $error;
-        $audience = self::candidates($id);
         $last = get_user_meta(get_current_user_id(), self::meta_key($id), true);
         $campaign = $last ? get_option(self::PREFIX . $last) : false;
+        if ($campaign && self::summary($campaign)['pending']) $kind = $campaign['kind'] ?? 'reminder';
+        $audience = self::candidates($id, $kind);
         $result = rest_ensure_response([
+            'kind' => $kind, 'needs' => self::needs($id),
+            'hasCapacity' => array_sum(array_map(static fn($role) => (int) SDR_Coulisses::meta($id, 'capacity_' . $role, 0), array_keys(SDR_Coulisses::ROLES))) > 0,
             'users' => array_values($audience['users']), 'excluded' => $audience['excluded'],
             'event' => SDR_Coulisses::event_email_details(get_post($id)),
             'campaign' => $campaign && (int) $campaign['author'] === get_current_user_id() ? self::summary($campaign) : null,
@@ -140,10 +166,10 @@ final class SDR_Event_Reminders {
             $ids = $request['recipients'] ?? [];
             if (!is_array($ids) || !$ids || count($ids) > 5000) return SDR_Coulisses::error('Sélectionne au moins une personne à relancer.');
             foreach ($ids as $id) if ((!is_int($id) && !(is_string($id) && ctype_digit($id))) || (int) $id < 1) return SDR_Coulisses::error('La sélection est invalide.');
-            $audience = self::candidates($event)['users'];
+            $audience = self::candidates($event, $kind)['users'];
             $recipients = [];
             foreach (array_unique(array_map('intval', $ids)) as $id) {
-                if (!isset($audience[$id])) return SDR_Coulisses::error('Une personne a répondu ou son profil a changé. Actualise la liste avant l’envoi.', 409);
+                if (!isset($audience[$id])) return SDR_Coulisses::error('Les besoins de l’équipe, un profil ou une réponse ont changé. Actualise la liste avant l’envoi.', 409);
                 $recipients[$id] = ['status' => 'pending', 'name' => $audience[$id]['name'], 'email' => $audience[$id]['email']];
             }
             $campaign = ['id' => wp_generate_uuid4(), 'event' => $event, 'author' => $author, 'created' => time(), 'requestId' => $request_id, 'kind' => $kind, 'recipients' => $recipients];
@@ -182,6 +208,9 @@ final class SDR_Event_Reminders {
                 if (!$user || $user->user_email !== $recipient['email'] || !user_can($user, 'sdr_member') || !self::roles($id) || !get_user_meta($id, 'sdr_stage_opt_in', true) || !self::personal_email($user) || get_user_meta($id, 'sdr_demo', true) || self::response($event, $id)) {
                     $recipient['status'] = 'skipped';
                     $recipient['error'] = 'Déjà répondu ou profil modifié depuis la sélection : email non envoyé.';
+                } elseif (!self::target_roles($event, $id, $campaign['kind'] ?? 'reminder')) {
+                    $recipient['status'] = 'skipped';
+                    $recipient['error'] = 'Les rôles de ce profil ne sont plus recherchés : email non envoyé.';
                 } else {
                     // Persist before transport: a lost connection must never cause a duplicate email.
                     $recipient['status'] = 'processing';
@@ -203,7 +232,9 @@ final class SDR_Event_Reminders {
     static function deliver($event, $user, $kind = 'reminder') {
         if (!($user instanceof WP_User) || !user_can($user, 'sdr_member') || !self::roles($user->ID) || !get_user_meta($user->ID, 'sdr_stage_opt_in', true) || !self::personal_email($user) || get_user_meta($user->ID, 'sdr_demo', true) || self::response($event, $user->ID)) return SDR_Coulisses::error('Le profil ou la réponse a changé avant l’envoi.', 409);
         if ($error = self::event_error($event)) return $error;
-        $token = self::issue_token($event, $user);
+        $roles = self::target_roles($event, $user->ID, $kind);
+        if (!$roles) return SDR_Coulisses::error('Les rôles de ce profil ne sont plus recherchés.', 409);
+        $token = self::issue_token($event, $user, $roles);
         if (is_wp_error($token)) return $token;
         $mail = self::email($event, $user, $token['secret'], $token['expires'], $kind);
         $plain = static function ($mailer) use ($mail) { $mailer->AltBody = $mail['plain']; };
@@ -218,7 +249,7 @@ final class SDR_Event_Reminders {
             $sent_ids = array_map('intval', (array) get_post_meta($event, '_sdr_date_announcement_sent_users', true));
             $processing = array_map('intval', (array) get_post_meta($event, '_sdr_date_announcement_processing_users', true));
             $sent = 0; $failed = 0; $uncertain = 0;
-            foreach (self::candidates($event)['users'] as $uid => $row) {
+            foreach (self::candidates($event, 'announcement')['users'] as $uid => $row) {
                 if (in_array($uid, $sent_ids, true)) continue;
                 if (in_array($uid, $processing, true)) { $uncertain++; continue; }
                 $processing[] = $uid;
@@ -241,11 +272,17 @@ final class SDR_Event_Reminders {
         });
     }
     static function token_key($event) { return '_sdr_response_link_' . $event; }
-    static function issue_token($event, $user) {
+    static function issue_token($event, $user, $roles = null) {
+        if ($roles !== null) {
+            $roles = array_values(array_intersect(self::roles($user->ID), $roles));
+            if (!$roles) return SDR_Coulisses::error('Aucun rôle à proposer pour cette invitation.', 409);
+        }
         $secret = bin2hex(random_bytes(32));
         $end = (new DateTimeImmutable(SDR_Coulisses::meta($event, 'date') . ' 23:59:59', wp_timezone()))->getTimestamp();
         $expires = min(time() + 14 * DAY_IN_SECONDS, $end);
-        if (!update_user_meta($user->ID, self::token_key($event), ['hash' => hash('sha256', $secret), 'expires' => $expires, 'email' => $user->user_email])) return SDR_Coulisses::error('Le lien personnel n’a pas pu être créé.', 500);
+        $stored = ['hash' => hash('sha256', $secret), 'expires' => $expires, 'email' => $user->user_email];
+        if ($roles !== null) $stored['roles'] = $roles;
+        if (!update_user_meta($user->ID, self::token_key($event), $stored)) return SDR_Coulisses::error('Le lien personnel n’a pas pu être créé.', 500);
         return ['secret' => $secret, 'expires' => $expires];
     }
     static function link($event, $user, $secret, $choice = 'yes') {
@@ -261,7 +298,10 @@ final class SDR_Event_Reminders {
         $user = get_userdata($uid);
         if (!$user || !user_can($user, 'sdr_member') || get_user_meta($uid, 'sdr_demo', true) || !self::roles($uid) || !self::personal_email($user) || $stored['email'] !== $user->user_email) return $invalid();
         if ($error = self::event_error($event)) return $error;
-        return ['event' => get_post($event), 'user' => $user, 'roles' => self::roles($uid), 'expires' => $stored['expires'], 'used' => !empty($stored['used'])];
+        $roles = self::roles($uid);
+        if (isset($stored['roles'])) $roles = array_values(array_intersect($roles, (array) $stored['roles']));
+        if (!$roles) return $invalid();
+        return ['event' => get_post($event), 'user' => $user, 'roles' => $roles, 'expires' => $stored['expires'], 'used' => !empty($stored['used'])];
     }
     static function link_permission($request) {
         $context = self::context($request);
@@ -293,12 +333,18 @@ final class SDR_Event_Reminders {
         $announcement = $kind === 'announcement';
         $details = SDR_Coulisses::event_email_details(get_post($event));
         $name = SDR_Coulisses::email_name($user);
-        $roles = array_map(static fn($key) => SDR_Coulisses::ROLES[$key], self::roles($user->ID));
+        $needs = self::needs($event);
+        $target_roles = self::target_roles($event, $user->ID, $kind, $needs);
+        $roles = array_map(static fn($key) => SDR_Coulisses::ROLES[$key], $target_roles ?: self::roles($user->ID));
+        $needs_text = $announcement ? '' : self::need_summary(array_intersect_key($needs, array_flip($target_roles)));
+        $targeted = $needs_text !== '';
+        $heading = $announcement ? 'Une nouvelle date. Et si tu en étais ?' : ($targeted ? 'Il manque encore ' . $needs_text . ' !' : 'On te garde une place dans l’imprévu ?');
+        $intro = $announcement ? 'Une nouvelle soirée vient d’arriver au planning. On a la date, on a la scène… il ne manque plus que tes envies !' : ($targeted ? 'Il reste ' . $needs_text . ' à trouver pour cette soirée. Ton profil correspond : ça te dit de rejoindre l’aventure ?' : 'Une soirée se prépare et ta réponse manque encore au casting. Ça te dit de rejoindre l’aventure ?');
         $yes = self::link($event, $user->ID, $secret);
         $no = self::link($event, $user->ID, $secret, 'no');
         ob_start(); require __DIR__ . '/email.php'; $html = ob_get_clean();
-        $plain = "Bonjour $name,\n\n" . ($announcement ? "Une nouvelle date. Et si tu en étais ?" : "On te garde une place dans l’imprévu ?") . "\n\n" . $details['title'] . "\n" . $details['date'] . "\n" . $details['venue'] . "\nSpectacle : " . $details['time'] . " — Rendez-vous troupe : " . $details['callTime'] . "\n\nEnvie de participer comme " . implode(', ', $roles) . " ?\n\nOK, je me lance : $yes\n\nJe ne suis pas dispo : $no\n\nAucun mot de passe : tu confirmes ta réponse sur la petite fiche. Ce lien personnel expire le " . wp_date('d/m/Y', $expires) . ". Ne le transfère pas.\n\nUne disponibilité n’est pas une sélection : l’organisation compose ensuite l’équipe.\nÀ bientôt,\nLes Sorties de Route";
-        return ['subject' => ($announcement ? 'Nouvelle date : ' : 'On joue ensemble ? ') . sanitize_text_field($details['title']) . ' — ' . $details['date'], 'html' => $html, 'plain' => $plain];
+        $plain = "Bonjour $name,\n\n$heading\n\n$intro\n\n" . $details['title'] . "\n" . $details['date'] . "\n" . $details['venue'] . "\nSpectacle : " . $details['time'] . " — Rendez-vous troupe : " . $details['callTime'] . "\n\nEnvie de participer comme " . implode(', ', $roles) . " ?\n\nOK, je me lance : $yes\n\nJe ne suis pas dispo : $no\n\nAucun mot de passe : tu confirmes ta réponse sur la petite fiche. Ce lien personnel expire le " . wp_date('d/m/Y', $expires) . ". Ne le transfère pas.\n\nUne disponibilité n’est pas une sélection : l’organisation compose ensuite l’équipe.\nÀ bientôt,\nLes Sorties de Route";
+        return ['subject' => ($announcement ? 'Nouvelle date : ' : 'On joue ensemble ? ' . ($targeted ? 'Recherche : ' . $needs_text . ' — ' : '')) . sanitize_text_field($details['title']) . ' — ' . $details['date'], 'html' => $html, 'plain' => $plain];
     }
     static function response_page() {
         if (!isset($_GET['sdr-reponse'])) return;
