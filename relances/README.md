@@ -122,3 +122,12 @@ emails et nettoient leurs données. Ils vérifient les permissions REST, filtres
 variables, reprises, échecs, annulations et absence de double envoi. Ils couvrent
 aussi les accès organisateur sans droits de gestion des comptes, les brouillons
 personnels et l’isolation des campagnes entre organisateurs et administrateurs.
+
+## Présentation Gutenberg partagée
+
+Lorsque les Coulisses sont actives, l’enveloppe des messages libres se modifie dans
+**Modèles d’emails → Messages libres**. Le bloc **Message libre** reçoit le texte
+personnalisé composé ici, avec les mêmes filtres et variables qu’auparavant.
+Le modèle est figé à la préparation de chaque campagne. Les versions HTML et texte
+passent par le service commun des Coulisses ; le plugin conserve son rendu autonome
+si les Coulisses sont désactivées. Voir [le guide des modèles](../emails/README.md).

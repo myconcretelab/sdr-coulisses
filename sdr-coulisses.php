@@ -2,7 +2,7 @@
 /**
  * Plugin Name: SDR — Les Coulisses
  * Description: Agenda public, disponibilités et composition des équipes des Sorties de Route.
- * Version: 1.8.0
+ * Version: 1.9.0
  * Requires PHP: 8.1
  * Text Domain: sdr
  */
@@ -48,7 +48,7 @@ final class SDR_Coulisses {
             if($pagenow==='post.php' && $id && get_post_type($id)==='sdr_event' && self::organizer() && current_user_can('edit_post',$id)) return;
             wp_safe_redirect(home_url('/coulisses/')); exit;
         });
-        add_action('wp_enqueue_scripts', function(){ wp_enqueue_style('sdr-ui',plugins_url('assets/app.css',__FILE__),[], '1.8.0'); });
+        add_action('wp_enqueue_scripts', function(){ wp_enqueue_style('sdr-ui',plugins_url('assets/app.css',__FILE__),[], '1.9.0'); });
         add_shortcode('sdr_agenda', [__CLASS__, 'agenda']);
         add_shortcode('sdr_coulisses', [__CLASS__, 'app']);
         add_shortcode('sdr_facebook', [__CLASS__, 'facebook']);
@@ -534,24 +534,32 @@ final class SDR_Coulisses {
             if(!$data['notify']) return ['saved'=>true,'notified'=>0,'failed'=>0,'skipped'=>0,'silent'=>true];
             $wasNotified=hash_equals((string)get_post_meta($id,'_sdr_team_notified_hash',true),$signature);
             $state=(array)get_post_meta($id,'_sdr_team_notification_state',true);
-            $sentIds=($state['hash']??'')===$signature?array_map('intval',(array)($state['sent']??[])):[];
-            $notified=0; $failed=0; $skipped=[];
+            if(($state['hash']??'')!==$signature) $state=['hash'=>$signature,'sent'=>[],'processing'=>[],'template'=>SDR_Email_Templates::snapshot('team')];
+            if(!isset($state['template'])) $state['template']=SDR_Email_Defaults::snapshot('team');
+            $sentIds=array_map('intval',(array)($state['sent']??[]));
+            $processing=array_map('intval',(array)($state['processing']??[]));
+            $notified=0; $failed=0; $uncertain=0; $skipped=[];
             foreach($rows as $row){
                 $user=get_userdata((int)$row['user_id']); if(!$user) continue;
                 if(!self::email_available($user)){ $skipped[]=$user->display_name; continue; }
                 if(in_array($user->ID,$sentIds,true)) continue;
-                $role=self::ROLES[$row['selected_role']]??$row['selected_role'];
-                $subject='Équipe finalisée : '.$details['date'].' — Les Sorties de Route';
-                $lines=['L’équipe de cette soirée est finalisée : tu es retenu·e en tant que '.$role.'.','','Spectacle : '.$details['title'],'Date : '.$details['date'],'Lieu : '.$details['venue'],'Rendez-vous de la troupe : '.$details['callTime'],'Début du spectacle : '.$details['time']];
-                if($details['team']) $lines[]='Troupe invitée : '.$details['team'];
-                $lines[]=''; $lines[]='Retrouve la date dans les Coulisses : '.$details['url'];
-                if(self::send_plain_email($user,$subject,$lines)){ $sentIds[]=$user->ID; $notified++; update_post_meta($id,'_sdr_team_notification_state',['hash'=>$signature,'sent'=>array_values(array_unique($sentIds))]); }
+                if(in_array($user->ID,$processing,true)){ $uncertain++; continue; }
+                $mail=SDR_Email_Templates::render_kind('team',$id,$user,['selected_role'=>$row['selected_role']],$state['template']);
+                if(is_wp_error($mail)){ $failed++; continue; }
+                // Save before transport: never resend automatically after an interrupted transmission.
+                $processing[]=$user->ID; $state['processing']=$processing;
+                if(!update_post_meta($id,'_sdr_team_notification_state',wp_slash($state))){ array_pop($processing); $failed++; continue; }
+                if(SDR_Email_Templates::transport($user->user_email,$mail)){ $sentIds[]=$user->ID; $notified++; }
                 else $failed++;
+                $state['sent']=array_values(array_unique($sentIds));
+                $state['processing']=array_values(array_diff($processing,[$user->ID]));
+                if(!update_post_meta($id,'_sdr_team_notification_state',wp_slash($state))){ $uncertain++; continue; }
+                $processing=$state['processing'];
             }
-            if($failed===0) update_post_meta($id,'_sdr_team_notified_hash',$signature);
+            if($failed===0 && $uncertain===0) update_post_meta($id,'_sdr_team_notified_hash',$signature);
             update_post_meta($id,'_sdr_team_notified_at',current_time('mysql'));
-            if($wasNotified && $notified===0 && $failed===0) return ['saved'=>true,'notified'=>0,'failed'=>0,'skipped'=>count($skipped),'skippedNames'=>$skipped,'alreadyNotified'=>true];
-            return ['saved'=>true,'notified'=>$notified,'failed'=>$failed,'skipped'=>count($skipped),'skippedNames'=>$skipped];
+            if($wasNotified && $notified===0 && $failed===0 && $uncertain===0) return ['saved'=>true,'notified'=>0,'failed'=>0,'uncertain'=>0,'skipped'=>count($skipped),'skippedNames'=>$skipped,'alreadyNotified'=>true];
+            return ['saved'=>true,'notified'=>$notified,'failed'=>$failed,'uncertain'=>$uncertain,'skipped'=>count($skipped),'skippedNames'=>$skipped];
         });
     }
     static function event_settings($req){
@@ -608,8 +616,8 @@ final class SDR_Coulisses {
     }
     static function app(){
         if(!self::member()) return '<div class="login-callout"><h2>Bienvenue dans les coulisses.</h2><p>Cet espace est réservé aux membres de la troupe.</p><a class="button primary" href="'.esc_url(wp_login_url(home_url('/coulisses/'))).'">Se connecter →</a></div>';
-        wp_enqueue_script('sdr-event-reminders',plugins_url('assets/event-reminders.js',__FILE__),[], '1.8.0',true);
-        wp_enqueue_script('sdr-app',plugins_url('assets/app.js',__FILE__),['sdr-event-reminders'], '1.8.0',true);
+        wp_enqueue_script('sdr-event-reminders',plugins_url('assets/event-reminders.js',__FILE__),[], '1.9.0',true);
+        wp_enqueue_script('sdr-app',plugins_url('assets/app.js',__FILE__),['sdr-event-reminders'], '1.9.0',true);
         wp_add_inline_script('sdr-app','window.SDR='.wp_json_encode(['api'=>rest_url('sdr/v1/'),'nonce'=>wp_create_nonce('wp_rest'),'home'=>home_url('/'),'logo'=>get_theme_file_uri('/assets/sdr-logo.jpeg'),'admin'=>admin_url(),'relances'=>class_exists('SDR_Relances') && SDR_Relances::allowed()?SDR_Relances::workspace_url():'','adminLogin'=>add_query_arg('sdr_admin','1',wp_login_url(admin_url(),true)),'logout'=>html_entity_decode(wp_logout_url(home_url('/')),ENT_QUOTES,'UTF-8')]).';','before');
         return '<div id="sdr-app"><div class="app-loading"><span class="loading-star">✳</span><p>On ouvre les coulisses…</p></div></div><noscript>Active JavaScript pour gérer tes disponibilités.</noscript>';
     }
@@ -624,6 +632,7 @@ final class SDR_Coulisses {
 }
 require_once __DIR__.'/editor.php';
 require_once __DIR__.'/reminders/class-sdr-event-reminders.php';
+require_once __DIR__.'/emails/class-sdr-email-templates.php';
 SDR_Event_Reminders::boot();
 SDR_Coulisses::boot();
 register_activation_hook(__FILE__,['SDR_Coulisses','activate']);

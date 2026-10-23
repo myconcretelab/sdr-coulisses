@@ -340,11 +340,12 @@
         else{
           const parts=[`${result.notified} joueur${result.notified>1?'s':''} informé${result.notified>1?'s':''}`];
           if(result.skipped)parts.push(`${result.skipped} sans adresse email`);
+          if(result.uncertain)parts.push(`${result.uncertain} transmission(s) interrompue(s) : vérifier la réception avant une nouvelle notification`);
           if(result.failed)parts.push(`${result.failed} envoi${result.failed>1?'s':''} en échec`);
           message.textContent='✓ Équipe sauvegardée · '+parts.join(' · ')+'.';
-          if(result.failed)message.classList.add('error');
+          if(result.failed||result.uncertain)message.classList.add('error');
         }
-        toast(notify?'Équipe finalisée.':'Équipe sauvegardée sans notification.',!!result.failed);
+        toast(notify?'Équipe finalisée.':'Équipe sauvegardée sans notification.',!!(result.failed||result.uncertain));
       }catch(err){message.classList.add('error');message.textContent=err.message;toast(err.message,true);}
       finally{buttons.forEach(item=>item.disabled=false);dialog.querySelectorAll('[data-select-user]').forEach(input=>input.disabled=false);refreshNeeds();}
     });

@@ -157,3 +157,9 @@ fermetures, réponses et sélections existantes, et maintien des réponses habit
 La suite des besoins vérifie aussi le ciblage par rôle, la dernière place pourvue
 avant envoi, le texte personnalisé, les réponses limitées aux rôles invités et
 le maintien des annonces générales de nouvelles dates.
+
+## Personnaliser les emails
+
+Les annonces, relances et confirmations d’équipe utilisent désormais les modèles
+Gutenberg partagés dans **Modèles d’emails**. Voir [le guide des modèles](../emails/README.md)
+pour les blocs, variables, conditions, aperçus et règles de reprise des campagnes.

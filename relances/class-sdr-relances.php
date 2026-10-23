@@ -3,7 +3,7 @@
 defined('ABSPATH') || exit;
 
 final class SDR_Relances {
-    const VERSION = '1.1.2';
+    const VERSION = '1.2.0';
     const API = 'sdr-relances/v1';
     const CAPABILITY = 'manage_options';
 
@@ -217,6 +217,7 @@ final class SDR_Relances {
             return preg_replace_callback('/\{\{\s*([^{}]+?)\s*\}\}/u', static fn($m) => $html ? esc_html($map[$m[1]] ?? '') : sanitize_text_field($map[$m[1]] ?? ''), $text);
         };
         $body = wp_kses_post(wpautop($replace($message['body'], true)));
+        if (class_exists('SDR_Email_Templates')) return SDR_Email_Templates::render_kind('message', $message['event'], $user, ['message'=>$body,'subject'=>$replace($message['subject'], false)], $message['template'] ?? null);
         $document = '<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;padding:24px;background:#f0f0f1;color:#1d2327;font:16px/1.65 Arial,sans-serif"><div style="max-width:600px;margin:auto;padding:28px;background:#fff;border:1px solid #dcdcde;border-radius:4px">' . $body . '</div></body></html>';
         return ['subject' => $replace($message['subject'], false), 'html' => $document];
     }
@@ -239,8 +240,12 @@ final class SDR_Relances {
         $rendered = self::preview($request);
         if (is_wp_error($rendered)) return $rendered;
         $email = wp_get_current_user()->user_email;
-        if (!wp_mail($email, '[TEST] ' . $rendered['subject'], $rendered['html'], ['Content-Type: text/html; charset=UTF-8'])) return self::error('WordPress n’a pas pu transmettre l’email de test.', 502);
+        $rendered['subject'] = '[TEST] ' . $rendered['subject'];
+        if (!self::transport($email, $rendered)) return self::error('WordPress n’a pas pu transmettre l’email de test.', 502);
         return ['message' => 'Email de test transmis à ' . $email . '. Vérifie sa réception.'];
+    }
+    static function transport($email, $mail) {
+        return class_exists('SDR_Email_Templates') ? SDR_Email_Templates::transport($email, $mail) : wp_mail($email, $mail['subject'], $mail['html'], ['Content-Type: text/html; charset=UTF-8']);
     }
     static function create_campaign($request) {
         global $wpdb;
@@ -267,6 +272,7 @@ final class SDR_Relances {
         $active = get_user_meta(get_current_user_id(), 'sdr_relances_active', true);
         $previous = $active ? get_option('sdr_relances_campaign_' . $active) : false;
         if ($previous && in_array('pending', array_column($previous['recipients'], 'status'), true)) return self::error('Un envoi est déjà en cours. Reprends-le ou annule-le avant de créer un nouvel envoi.', 409);
+        if (class_exists('SDR_Email_Templates')) $message['template'] = SDR_Email_Templates::snapshot('message');
         $campaign = ['id' => wp_generate_uuid4(), 'author' => get_current_user_id(), 'created' => time(), 'message' => $message, 'recipients' => $recipients];
         add_option('sdr_relances_campaign_' . $campaign['id'], $campaign, '', false);
         update_user_meta(get_current_user_id(), 'sdr_relances_active', $campaign['id']);
@@ -308,14 +314,15 @@ final class SDR_Relances {
                     $c['recipients'][$id]['status'] = 'failed';
                     $c['recipients'][$id]['error'] = 'Compte supprimé ou adresse modifiée depuis la sélection.';
                 } else {
+                    if (class_exists('SDR_Email_Templates') && !isset($c['message']['template'])) $c['message']['template'] = SDR_Email_Defaults::snapshot('message');
                     $rendered = self::render($c['message'], $user);
                     if (is_wp_error($rendered)) {
                         $c['recipients'][$id]['status'] = 'failed';
                         $c['recipients'][$id]['error'] = $rendered->get_error_message();
                     } else {
                         $c['recipients'][$id]['status'] = 'processing';
-                        update_option('sdr_relances_campaign_' . $c['id'], $c, false);
-                        $c['recipients'][$id]['status'] = wp_mail($c['recipients'][$id]['email'], $rendered['subject'], $rendered['html'], ['Content-Type: text/html; charset=UTF-8']) ? 'accepted' : 'failed';
+                        if (!update_option('sdr_relances_campaign_' . $c['id'], $c, false)) return self::error('Impossible de sauvegarder l’état de transmission. Aucun nouvel email envoyé.', 500);
+                        $c['recipients'][$id]['status'] = self::transport($c['recipients'][$id]['email'], $rendered) ? 'accepted' : 'failed';
                     }
                 }
                 update_option('sdr_relances_campaign_' . $c['id'], $c, false);
