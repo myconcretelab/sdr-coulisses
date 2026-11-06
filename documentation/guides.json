@@ -303,6 +303,7 @@
                     "access": "organizer",
                     "summary": "Se proposer et être retenu sont deux étapes différentes.",
                     "steps": [
+                        "Dans le planning, lire les grands compteurs « places à pourvoir » pour repérer les rôles encore incomplets. Les candidatures et le nombre retenu sur l’effectif prévu restent indiqués en dessous. Un rôle « Complet » n’a plus de place libre.",
                         "Dans la carte du spectacle, cliquer sur « Composer l’équipe ».",
                         "Consulter le tableau : chaque rôle indique les places prévues, les personnes retenues et les places encore libres.",
                         "Dans les candidatures, consulter les colonnes « Joueur·ses », « MC » et « DJ ». Seuls les rôles avec des places prévues sont affichés. Cliquer sur la carte d’une personne « Partant·e » ou « Si besoin » pour la retenir dans cette colonne ; le choix est enregistré immédiatement.",
@@ -329,7 +330,7 @@
                     "notes": [
                         "Les places déjà attribuées constituent le minimum autorisé pour chaque rôle.",
                         "Une modification des besoins ne sélectionne personne et ne déclenche pas d’email.",
-                        "Après enregistrement, les colonnes de candidatures et le tableau de composition affichent uniquement les rôles ayant au moins une place prévue."
+                        "Après enregistrement, le planning, les colonnes de candidatures et le tableau de composition affichent uniquement les rôles ayant au moins une place prévue. Un spectacle sans besoins définis affiche « Besoins à préciser » dans le planning."
                     ]
                 },
                 {
@@ -451,7 +452,8 @@
                     "notes": [
                         "Si aucun rôle n’est proposé, les renseigner d’abord dans « Mon profil ».",
                         "Les réponses sont bloquées pour une date passée ou fermée. Contacter l’organisation si un changement est nécessaire.",
-                        "Si tu es déjà retenu·e, prévenir aussi l’organisation avant de retirer une disponibilité ou un rôle."
+                        "Si tu es déjà retenu·e, prévenir aussi l’organisation avant de retirer une disponibilité ou un rôle.",
+                        "Dans le planning, le grand chiffre de chaque rôle indique les places restant à pourvoir. Il diminue avec les sélections de l’organisation, pas avec les candidatures. « Complet » et une coche verte indiquent que les places du rôle sont attribuées ; les rôles sans besoin sont masqués."
                     ]
                 },
                 {

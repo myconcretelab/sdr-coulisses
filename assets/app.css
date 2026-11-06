@@ -36,12 +36,25 @@ body.sdr-workspace{--ink:#292823;--cream:#faf9f4;--paper:#fffefa;--muted:#74756f
 :where(body.sdr-workspace) .team-role-option input:disabled{cursor:wait}:where(body.sdr-workspace) .team-role-option input:disabled+span{opacity:.6}
 :where(body.sdr-workspace) .selection-message{font-size:11px;min-height:18px;margin:12px 0;color:#40591f;line-height:1.6}:where(body.sdr-workspace) .selection-message.error{color:#a04624}
 @media(max-width:560px){:where(body.sdr-workspace) .candidate{align-items:flex-start;gap:14px;padding:18px 0}:where(body.sdr-workspace) .team-role-options{max-width:48%;padding-top:2px}:where(body.sdr-workspace) .team-role-option>span{padding:10px;font-size:11px}:where(body.sdr-workspace) .candidate-info>b{font-size:14px}}
-:where(body.sdr-workspace) .role-meters{gap:10px}:where(body.sdr-workspace) .role-summary{min-width:0}:where(body.sdr-workspace) .role-summary h4{font-family:var(--font);font-size:11px;font-weight:600;letter-spacing:0;margin:0 0 10px}
-:where(body.sdr-workspace) .role-proposed{display:flex;align-items:center;justify-content:center;gap:3px;padding:7px 3px;margin:0;border-radius:7px;background:#f0f0e9;color:#757669;font-size:10px;white-space:nowrap}
-:where(body.sdr-workspace) .role-proposed.has-volunteers{background:#ebf2d4;color:#40591f}:where(body.sdr-workspace) .role-proposed>span{font-size:15px;line-height:1}:where(body.sdr-workspace) .role-proposed strong{font-size:13px}
-:where(body.sdr-workspace) .role-maybe{font-size:9px;color:#80531d;line-height:1.4;min-height:13px;margin:5px 0 11px}
-:where(body.sdr-workspace) .role-selected{display:flex;align-items:center;justify-content:space-between;gap:3px;margin-bottom:8px;font-size:9px;color:#655779}:where(body.sdr-workspace) .role-selected b{font-size:11px;font-weight:600}:where(body.sdr-workspace) .role-selected i{font-style:normal;color:var(--muted);font-weight:400}
-@media(max-width:360px){:where(body.sdr-workspace) .role-meters{gap:7px}:where(body.sdr-workspace) .role-proposed{font-size:9px}:where(body.sdr-workspace) .role-proposed>span{display:none}:where(body.sdr-workspace) .role-maybe{font-size:8px}}
+/* In planning cards, remaining places lead; applications and selections stay secondary. */
+:where(body.sdr-workspace) .role-meters{grid-template-columns:repeat(var(--role-count,3),minmax(0,1fr));gap:9px}
+:where(body.sdr-workspace) .role-summary{--need-bg:#f8ecdf;--need-line:#e6cfb7;--need-ink:#865634;display:flex;flex-direction:column;min-width:0;padding:12px 10px 10px;border:1px solid var(--need-line);border-radius:7px 11px 6px 9px;background:var(--need-bg)}
+:where(body.sdr-workspace) .role-need-mc{--need-bg:#eee8f8;--need-line:#d7c8e9;--need-ink:#69508a}
+:where(body.sdr-workspace) .role-need-dj{--need-bg:#f0f2e1;--need-line:#d4dab7;--need-ink:#5a6b34}
+:where(body.sdr-workspace) .role-summary.complete{--need-bg:#eaf1d5;--need-line:#becf95;--need-ink:#465e29}
+:where(body.sdr-workspace) .role-summary h4{font-family:var(--font);font-size:12px;font-weight:600;letter-spacing:0;margin:0 0 9px;color:var(--need-ink)}
+:where(body.sdr-workspace) .role-need{display:flex;flex-direction:column;gap:4px;margin:0 0 12px;color:var(--need-ink)}
+:where(body.sdr-workspace) .role-need>strong{font-family:var(--heading);font-size:38px;line-height:1;font-weight:600;letter-spacing:-.04em}
+:where(body.sdr-workspace) .role-need>span{font-size:10px;line-height:1.35;min-height:2.7em;max-width:85px}
+:where(body.sdr-workspace) .role-candidatures{font-size:10px;line-height:1.4;color:#65645d;margin:0}
+:where(body.sdr-workspace) .role-maybe{font-size:9px;color:#80531d;line-height:1.4;margin:3px 0 0}
+:where(body.sdr-workspace) .role-selected{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:3px;margin-top:auto;padding-top:9px;margin-bottom:7px;font-size:9px;color:#655779}
+:where(body.sdr-workspace) .role-selected b{font-size:11px;font-weight:600}
+:where(body.sdr-workspace) .role-selected i{font-style:normal;color:#746d7e;font-weight:400}
+:where(body.sdr-workspace) .role-summary .meter{background:#ffffffb3}
+:where(body.sdr-workspace) .role-summary.complete .meter>span{background:#7d9850}
+:where(body.sdr-workspace) .role-needs-empty{font-size:12px;color:var(--muted);padding:14px 0;margin:0;border-bottom:1px dashed var(--line)}
+@media(max-width:360px){:where(body.sdr-workspace) .role-meters{gap:6px}:where(body.sdr-workspace) .role-summary{padding:10px 7px}:where(body.sdr-workspace) .role-summary h4{font-size:11px}:where(body.sdr-workspace) .role-candidatures{font-size:9px}}
 :where(body.sdr-workspace) .composition-progress{position:sticky;top:0;z-index:3;display:flex;justify-content:space-between;gap:7px;padding:12px 0;background:var(--paper);border-bottom:1px solid var(--line);margin:0 0 20px}
 :where(body.sdr-workspace) .composition-progress>span{display:flex;align-items:center;gap:5px;font-size:11px;padding:7px 10px;background:#efe9f8;color:#5b4480;border-radius:8px}:where(body.sdr-workspace) .composition-progress>span.complete{background:#eaf1d2;color:#40591f}:where(body.sdr-workspace) .composition-progress b{margin-left:3px}
 :where(body.sdr-workspace) .composition-board{background:#f3effa;border:1px solid #e0d6ed;border-radius:15px;padding:20px}:where(body.sdr-workspace) .composition-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}:where(body.sdr-workspace) .composition-heading .eyebrow{font-size:8px}:where(body.sdr-workspace) .composition-heading h3{font-size:24px;margin:8px 0 0}:where(body.sdr-workspace) .composition-heading h3>span{display:inline-block;color:#9f7dce;margin-left:8px;transform:rotate(13deg)}:where(body.sdr-workspace) .composition-total{font-family:var(--heading);font-size:38px;letter-spacing:-.06em;color:#674c92;white-space:nowrap}:where(body.sdr-workspace) .composition-total small{font-size:21px;color:#a28bbf}:where(body.sdr-workspace) .composition-caption{font-size:11px;color:#756488;margin:8px 0 18px}
