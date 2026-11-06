@@ -1,0 +1,26 @@
+/* Public blocks inherit the host site's typography and colours. No global selectors. */
+.public-agenda { display:flex;flex-direction:column; }
+.public-agenda .public-event { display:flex;align-items:center;gap:24px;padding:25px 0;border-bottom:1px solid currentColor;text-decoration:none;color:inherit; }
+.public-agenda .date-stamp { display:flex;flex-direction:column;align-items:center;min-width:60px;line-height:1.2; }
+.public-agenda .date-stamp strong { font-size:2em; }
+.public-agenda .date-stamp :is(span,small) { font-size:.8em; }
+.public-agenda .event-line-main { flex:1;min-width:0; }
+.public-agenda .event-line-main h3 { margin:.5em 0;font:inherit;font-weight:700;font-size:1.25em; }
+.public-agenda .event-line-main p { margin:0;font-size:.9em; }
+.public-agenda .tag { font-size:.8em; }
+.public-agenda .round-arrow { flex-shrink:0;font-size:1.5em; }
+.public-agenda a:hover,.sdr-related-events a:hover { text-decoration:underline; }
+.public-agenda a:focus-visible,.sdr-detail-ticket a:focus-visible,.sdr-detail-actions a:focus-visible,.sdr-detail-members a:focus-visible,.sdr-related-events a:focus-visible { outline:3px solid currentColor;outline-offset:4px; }
+.sdr-detail-ticket { margin:1.5em 0;padding:1.25em;border:1px solid currentColor;border-radius:6px;color:inherit;font:inherit; }
+.sdr-detail-ticket-date { font-weight:700; }
+.sdr-detail-facts { display:flex;flex-wrap:wrap;gap:1em 2em; }
+.sdr-detail-facts p { margin:0;display:flex;gap:.6em; }
+.sdr-detail-facts small { display:block; }
+.sdr-detail-actions a { display:inline-block;padding:.7em 1em;border:1px solid currentColor;border-radius:4px;color:inherit;text-decoration:none; }
+.sdr-detail-members { font-size:.9em; }
+.sdr-related-events { margin:2em 0; }
+.sdr-related-list { display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:16px; }
+.sdr-related-card { display:flex;flex-direction:column;gap:.7em;padding:1em;border:1px solid currentColor;border-radius:6px;color:inherit;text-decoration:none; }
+.sdr-related-date { font-size:.85em; }
+.sdr-related-arrow { align-self:flex-end; }
+@media(max-width:480px) { .public-agenda .public-event { gap:15px; }.public-agenda .round-arrow { display:none; } }

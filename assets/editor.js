@@ -69,7 +69,7 @@
                 relation('venue','Lieu','sdr_venue'),relation('team','Troupe invitée','sdr_team'),relation('format','Format','sdr_format')
             ]));
             panels.push(group('Équipe et inscriptions',[
-                el('p',{key:'help',className:'sdr-editor-help'},'Les places concernent les SDR, hors troupe invitée.'),
+                el('p',{key:'help',className:'sdr-editor-help'},'Les places concernent les membres de la troupe, hors troupe invitée.'),
                 ...Object.entries(roleNames).map(([key,label])=>{
                     const count=SDREditor.selected[key]||0,value=Number(get('capacity_'+key))||0;
                     return el('div',{key,className:'sdr-editor-capacity'},
@@ -106,12 +106,12 @@
             el('p',{key:'image',className:'sdr-editor-help'},'L’image principale se choisit dans « Image mise en avant », dans les réglages de la fiche.')
         ],type==='sdr_format'));
         return el(Fragment,null,
-            el(PluginDocumentSettingPanel,{name:'sdr-info',title:'Informations SDR',initialOpen:true},
-                el('p',null,'Dates, liens et informations de cette fiche se règlent dans le panneau SDR.'),
-                el(Button,{variant:'secondary',onClick:openSidebar},'Ouvrir les réglages SDR')
+            el(PluginDocumentSettingPanel,{name:'sdr-info',title:'Informations Coulisse',initialOpen:true},
+                el('p',null,'Dates, liens et informations de cette fiche se règlent dans le panneau Coulisse.'),
+                el(Button,{variant:'secondary',onClick:openSidebar},'Ouvrir les réglages Coulisse')
             ),
-            el(PluginSidebarMoreMenuItem,{target:'sdr-settings',icon:'calendar-alt'},'Informations SDR'),
-            el(PluginSidebar,{name:'sdr-settings',title:'SDR · '+names[type],icon:'calendar-alt',className:'sdr-editor-sidebar'},
+            el(PluginSidebarMoreMenuItem,{target:'sdr-settings',icon:'calendar-alt'},'Informations Coulisse'),
+            el(PluginSidebar,{name:'sdr-settings',title:'Coulisse · '+names[type],icon:'calendar-alt',className:'sdr-editor-sidebar'},
                 el('div',{className:'sdr-editor-intro'},el('strong',null,'✳ Les détails qui font la soirée'),el('p',null,'Ces champs sont enregistrés avec le bouton WordPress « Enregistrer » ou « Publier ».')),
                 ...panels
             )

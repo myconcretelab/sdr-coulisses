@@ -1,0 +1,18 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "sdr-scene/related-events",
+  "title": "Spectacles liés",
+  "description": "Les prochaines dates de cette troupe, de ce lieu ou de ce format.",
+  "category": "widgets",
+  "icon": "calendar-alt",
+  "editorScript": "sdr-public-block-editor",
+  "usesContext": [
+    "postId",
+    "postType"
+  ],
+  "supports": {
+    "html": false
+  },
+  "style": "sdr-public"
+}

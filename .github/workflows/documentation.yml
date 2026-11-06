@@ -11,3 +11,10 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y php-cli
       - name: Vérifier les guides et leur relecture
         run: php tools/check-documentation.php --check
+      - name: Construire le plugin installable
+        run: python3 tools/build-release.py --output release
+      - name: Conserver le ZIP et son empreinte
+        uses: actions/upload-artifact@v4
+        with:
+          name: coulisse-plugin
+          path: release/

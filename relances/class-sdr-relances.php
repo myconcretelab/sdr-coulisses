@@ -7,7 +7,9 @@ final class SDR_Relances {
     const API = 'sdr-relances/v1';
     const CAPABILITY = 'manage_options';
 
+    private static $booted = false;
     static function boot() {
+        if(self::$booted)return;self::$booted=true;
         add_action('admin_menu', [__CLASS__, 'menu']);
         add_action('admin_enqueue_scripts', [__CLASS__, 'assets']);
         add_action('template_redirect', [__CLASS__, 'embedded_page'], 0);
@@ -22,7 +24,7 @@ final class SDR_Relances {
     static function record_login($id) { update_user_meta($id, 'sdr_relances_last_login', time()); }
     static function admin_allowed() { return current_user_can(self::CAPABILITY) && current_user_can('list_users'); }
     static function allowed() { return self::admin_allowed() || (class_exists('SDR_Coulisses') && SDR_Coulisses::organizer()); }
-    static function workspace_url() { return add_query_arg('sdr-relances', '1', home_url('/coulisses/')); }
+    static function workspace_url() { return add_query_arg('sdr-relances', '1', (class_exists('SDR_Settings') ? SDR_Settings::workspace_url() : home_url('/coulisses/'))); }
     static function error($message, $status = 400) { return new WP_Error('sdr_relances_error', $message, ['status' => $status]); }
     static function menu() {
         add_users_page('Relances utilisateurs', 'Relances utilisateurs', self::CAPABILITY, 'sdr-relances', [__CLASS__, 'page']);
@@ -45,7 +47,7 @@ final class SDR_Relances {
         require __DIR__ . '/page.php';
     }
     static function embedded_page() {
-        if (!is_page('coulisses') || !isset($_GET['sdr-relances'])) return;
+        if (!(class_exists('SDR_Settings') ? SDR_Settings::is_workspace() : is_page('coulisses')) || !isset($_GET['sdr-relances'])) return;
         nocache_headers();
         if (!self::allowed()) wp_die('Les relances sont réservées à l’organisation SDR.', 'Accès réservé', ['response' => is_user_logged_in() ? 403 : 401]);
         send_frame_options_header();
@@ -122,8 +124,8 @@ final class SDR_Relances {
             'nom_complet' => ['label' => 'Nom complet', 'resolve' => static fn($u) => trim($u->first_name . ' ' . $u->last_name) ?: $u->display_name],
             'nom_affiche' => ['label' => 'Nom affiché', 'resolve' => static fn($u) => $u->display_name],
             'email' => ['label' => 'Adresse email', 'resolve' => static fn($u) => $u->user_email],
-            'lien_profil' => ['label' => 'Lien vers le profil dans les Coulisses', 'resolve' => static fn() => home_url('/coulisses/?vue=profil')],
-            'lien_coulisses' => ['label' => 'Lien vers les Coulisses', 'resolve' => static fn() => home_url('/coulisses/')],
+            'lien_profil' => ['label' => 'Lien vers le profil dans les Coulisses', 'resolve' => static fn() => (class_exists('SDR_Settings') ? SDR_Settings::workspace_url(['vue'=>'profil']) : home_url('/coulisses/?vue=profil'))],
+            'lien_coulisses' => ['label' => 'Lien vers les Coulisses', 'resolve' => static fn() => (class_exists('SDR_Settings') ? SDR_Settings::workspace_url() : home_url('/coulisses/'))],
             'nom_site' => ['label' => 'Nom du site', 'resolve' => static fn() => self::text(get_bloginfo('name'))],
             'date_du_jour' => ['label' => 'Date du jour', 'resolve' => static fn() => wp_date(get_option('date_format'))],
             'spectacle' => ['label' => 'Titre du spectacle', 'event' => true, 'resolve' => static fn($u, $e) => self::text(get_the_title($e))],

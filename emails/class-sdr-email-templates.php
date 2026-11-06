@@ -87,7 +87,7 @@ final class SDR_Email_Templates {
         if(is_wp_error($mail)||!is_email($email))return false;
         $plain=static function($mailer)use($mail){$mailer->AltBody=$mail['plain']??SDR_Email_Renderer::plain($mail['html']);};
         add_action('phpmailer_init',$plain);
-        try{return wp_mail($email,$mail['subject'],$mail['html'],['Content-Type: text/html; charset=UTF-8']);}
+        try{return wp_mail($email,$mail['subject'],$mail['html'],SDR_Settings::mail_headers(['Content-Type: text/html; charset=UTF-8']));}
         finally{remove_action('phpmailer_init',$plain);}
     }
     static function validate_save($post,$request) {

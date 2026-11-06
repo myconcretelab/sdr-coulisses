@@ -1,0 +1,56 @@
+=== Coulisse — Gestion de troupe ===
+Contributors: myconcretelab
+Tags: theatre, events, members, availability
+Requires at least: 6.5
+Requires PHP: 8.1
+Stable tag: 1.11.0
+License: GPL-2.0-or-later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+
+Spectacles, disponibilités, équipes, lieux et emails pour les troupes. Conserve le thème du site et propose un espace membres personnalisable.
+
+== Description ==
+
+Coulisse s’installe sur le WordPress de chaque troupe. Il fournit un agenda public,
+un espace membres, la composition des équipes, les invitations et relances ciblées,
+des messages libres et une documentation intégrée.
+
+Le nom, le logo, la couleur d’accent et la page des Coulisses se configurent dans
+Réglages → Coulisse. Les styles de l’espace privé sont limités à sa page dédiée.
+Les blocs publics reprennent les polices et couleurs du site.
+
+Les relances utilisateurs sont intégrées ; un seul plugin est à activer.
+Les comptes, réponses et contacts sont stockés dans ce WordPress.
+
+== Installation ==
+
+1. Téléverser le ZIP depuis Extensions → Ajouter une extension, puis l’activer.
+2. Ouvrir Réglages → Coulisse, personnaliser l’identité et enregistrer.
+3. Créer la page des Coulisses ou choisir une page contenant son bloc.
+4. Configurer les comptes Membre de la troupe et Organisation.
+5. Vérifier les emails avec l’aperçu adressé à son propre compte administrateur.
+
+== Frequently Asked Questions ==
+
+= Faut-il changer de thème ? =
+Non. L’espace privé utilise un gabarit fourni par le plugin. Les pages publiques
+conservent le thème choisi. L’habillage SDR reste dans son thème spécifique.
+
+= Le plugin envoie-t-il les emails par un service externe ? =
+Il utilise le service d’envoi de WordPress, éventuellement configuré par une extension
+SMTP. Aucune donnée n’est transmise à un service central de Coulisse.
+
+= Les mises à jour sont-elles automatiques ? =
+Cette version pilote se met à jour manuellement depuis un ZIP. Aucun fournisseur
+externe de mises à jour n’est encore raccordé.
+
+= Que deviennent les données à la désactivation ? =
+Elles sont conservées. Aucun effacement automatique n’est exécuté.
+
+== Changelog ==
+
+= 1.11.0 =
+* Identité de troupe et page des Coulisses configurables.
+* Styles privés isolés, gabarit indépendant du thème et blocs publics dans le plugin.
+* Liens et emails adaptés à chaque troupe, relances intégrées dans une seule installation.
+* Compatibilité avec les contenus et données historiques SDR.

@@ -8,7 +8,7 @@ final class SDR_Email_Defaults {
     static function snapshot($kind) {
         $b=[__CLASS__,'block'];
         $badge=['announcement'=>'LA PROCHAINE SORTIE','reminder'=>'LE PETIT RAPPEL','team'=>'L’ÉQUIPE EST PRÊTE','message'=>'UN PETIT MOT DE LA TROUPE'][$kind];
-        $blocks=[$b('text',['content'=>'LES SORTIES DE ROUTE ✳ '.$badge,'fontSize'=>12]),$b('divider')];
+        $blocks=[$b('text',['content'=>'{{nom_troupe}} ✳ '.$badge,'fontSize'=>12]),$b('divider')];
         if($kind==='announcement'){
             $subject='Nouvelle date : {{spectacle}} — {{date}}';$preheader='Une date, une scène, et peut-être toi. Ta réponse sans mot de passe.';
             $blocks[]=$b('heading',['content'=>'Une nouvelle date.<br>Et si tu en étais ?']);
@@ -25,7 +25,7 @@ final class SDR_Email_Defaults {
             $blocks[]=$b('text',['content'=>'Bonjour {{prenom}},']);
             $blocks[]=$b('section',['background'=>'#edf0da','padding'=>18],[$b('text',['content'=>'Tu es retenu·e en tant que <strong>{{role_retenu|membre de l’équipe}}</strong>. Voici les informations pour préparer la soirée.'])]);
         }else{
-            $subject='{{objet_message}}';$preheader='Un message personnel des Sorties de Route.';
+            $subject='{{objet_message}}';$preheader='Un message personnel de votre troupe.';
             $blocks[]=$b('message');
         }
         if($kind!=='message')$blocks[]=$b('event');
@@ -35,7 +35,7 @@ final class SDR_Email_Defaults {
             $blocks[]=$b('condition',['rules'=>['can_reply'],'invert'=>true],[$b('text',['content'=>'Les réponses par email ne sont pas disponibles dans cette situation. Retrouve les informations du spectacle dans les Coulisses.']),$b('button',['target'=>'coulisses','label'=>'Retrouver les Coulisses ↗'])]);
         }elseif($kind==='team')$blocks[]=$b('button',['target'=>'coulisses','label'=>'Retrouver ma soirée dans les Coulisses ↗']);
         $blocks[]=$b('divider');
-        $blocks[]=$b('section',['background'=>'#f1eddf','padding'=>18],[$b('heading',['content'=>'Le meilleur plan ? Ne pas en avoir. ✳','level'=>2,'fontSize'=>22]),$b('text',['content'=>'Sur scène, en tout cas.<br>Les Sorties de Route','fontSize'=>12,'color'=>'#736b60'])]);
+        $blocks[]=$b('section',['background'=>'#f1eddf','padding'=>18],[$b('text',['content'=>'{{nom_troupe}}','fontSize'=>12,'color'=>'#736b60'])]);
         return ['id'=>0,'kind'=>$kind,'content'=>serialize_blocks($blocks),'subject'=>$subject,'preheader'=>$preheader,'style'=>['background'=>'#eee9de','surface'=>'#fffdf6','color'=>'#302e28','font'=>'Arial','width'=>600,'padding'=>24]];
     }
 }

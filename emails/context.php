@@ -5,7 +5,7 @@ defined('ABSPATH') || exit;
 final class SDR_Email_Context {
     static function variables() {
         return [
-            'prenom'=>'Prénom', 'nom'=>'Nom de famille', 'nom_affiche'=>'Nom affiché', 'nom_complet'=>'Nom complet', 'email'=>'Adresse email', 'nom_site'=>'Nom du site',
+            'prenom'=>'Prénom', 'nom'=>'Nom de famille', 'nom_affiche'=>'Nom affiché', 'nom_complet'=>'Nom complet', 'email'=>'Adresse email', 'nom_site'=>'Nom du site', 'nom_troupe'=>'Nom de la troupe',
             'spectacle'=>'Titre du spectacle', 'date'=>'Date du spectacle', 'heure'=>'Heure du spectacle', 'rdv'=>'Rendez-vous troupe',
             'date_du_jour'=>'Date du jour', 'date_spectacle'=>'Date du spectacle (alias)', 'jours_avant_spectacle'=>'Jours avant la date (négatif si passée)', 'heure_spectacle'=>'Heure du spectacle (alias)', 'heure_rendez_vous'=>'Rendez-vous troupe (alias)', 'lieu_spectacle'=>'Lieu (alias)',
             'lieu'=>'Lieu', 'adresse'=>'Adresse', 'ville'=>'Ville', 'format'=>'Format', 'troupe'=>'Troupe invitée',
@@ -51,7 +51,7 @@ final class SDR_Email_Context {
         $vars = array_fill_keys(array_keys(self::variables()),'');
         $vars = array_merge($vars,[
             'prenom'=>$name, 'nom'=>$user instanceof WP_User?$user->last_name:'Exemple', 'nom_affiche'=>$user instanceof WP_User?$user->display_name:'Camille Exemple', 'nom_complet'=>$user instanceof WP_User?(trim($user->first_name.' '.$user->last_name)?:$user->display_name):'Camille Exemple', 'email'=>$user instanceof WP_User?$user->user_email:'camille@example.org',
-            'nom_site'=>wp_specialchars_decode(get_bloginfo('name'),ENT_QUOTES), 'spectacle'=>$details['title'], 'date'=>$details['date'],
+            'nom_site'=>wp_specialchars_decode(get_bloginfo('name'),ENT_QUOTES), 'nom_troupe'=>SDR_Settings::name(), 'spectacle'=>$details['title'], 'date'=>$details['date'],
             'heure'=>!empty($data['time'])?$details['time']:'', 'rdv'=>!empty($data['callTime'])?$details['callTime']:'', 'lieu'=>$id&&SDR_Coulisses::meta($id,'venue')?($data['venue']??''):'', 'adresse'=>$data['address']??'', 'ville'=>$data['city']??'',
             'format'=>$id&&SDR_Coulisses::meta($id,'format')?($data['format']??''):'', 'troupe'=>$details['team']??'',
             'roles'=>self::role_names($profile_roles), 'roles_proposes'=>self::role_names($roles), 'role_retenu'=>SDR_Coulisses::ROLES[$selected_role]??'',
@@ -59,7 +59,7 @@ final class SDR_Email_Context {
             'places_joueur'=>(string)($needs['joueur']??0), 'places_mc'=>(string)($needs['mc']??0), 'places_dj'=>(string)($needs['dj']??0), 'places_libres'=>(string)array_sum($needs),
             'personnes_retenues'=>(string)max(0,$capacity-array_sum($needs)), 'reponse'=>['yes'=>'Partant·e','maybe'=>'Si besoin','no'=>'Pas disponible'][$response->availability??'']??'',
             'expiration'=>!empty($extra['expires'])?wp_date('d/m/Y',(int)$extra['expires']):'',
-            'lien_coulisses'=>home_url('/coulisses/'.($id?'?spectacle='.$id:'')), 'lien_spectacle'=>$post?get_permalink($post):'', 'lien_profil'=>home_url('/coulisses/?vue=profil'),
+            'lien_coulisses'=>SDR_Settings::workspace_url($id?['spectacle'=>$id]:[]), 'lien_spectacle'=>$post?get_permalink($post):'', 'lien_profil'=>SDR_Settings::workspace_url(['vue'=>'profil']),
             'lien_billetterie'=>$id?SDR_Coulisses::meta($id,'booking_url'):'', 'objet_message'=>$extra['subject']??'',
         ]);
         $date=$id?SDR_Coulisses::meta($id,'date'):'';

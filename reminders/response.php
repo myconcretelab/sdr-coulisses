@@ -3,8 +3,8 @@ $valid = !is_wp_error($context);
 $done = $saved || $existing;
 $can_answer = $valid && !$done && (!$error || (($error->get_error_data()['status'] ?? 400) === 400));
 ?>
-<!doctype html><html lang="fr"><head><meta charset="<?php bloginfo('charset'); ?>"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Ta réponse — Les Sorties de Route</title><link rel="stylesheet" href="<?php echo esc_url(plugins_url('response.css', __FILE__) . '?ver=' . self::VERSION); ?>"></head>
-<body><main class="reply-ticket"><div class="reply-brand">LES SORTIES DE ROUTE <span aria-hidden="true">✳</span></div>
+<!doctype html><html lang="fr"><head><meta charset="<?php bloginfo('charset'); ?>"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Ta réponse — <?php echo esc_html(SDR_Settings::name()); ?></title><link rel="stylesheet" href="<?php echo esc_url(plugins_url('response.css', __FILE__) . '?ver=' . self::VERSION); ?>"></head>
+<body><main class="reply-ticket"><div class="reply-brand"><?php echo esc_html(SDR_Settings::name()); ?> <span aria-hidden="true">✳</span></div>
 <div class="reply-inner"><div class="reply-label"><?php echo $can_answer ? 'RÉPONSE À CONFIRMER' : 'L’IMPRÉVU, ÇA SE PRÉPARE.'; ?></div>
 <?php if (!$valid): ?>
 <h1>Petit contretemps<span aria-hidden="true">.</span></h1><p role="alert"><?php echo esc_html($error->get_error_message()); ?></p>
@@ -33,4 +33,4 @@ $can_answer = $valid && !$done && (!$error || (($error->get_error_data()['status
 <?php endif; ?>
 <?php endif; ?>
 <?php endif; ?>
-</div><footer><a href="<?php echo esc_url(home_url('/coulisses/' . ($valid ? '?spectacle=' . $context['event']->ID : ''))); ?>">Retrouver les Coulisses ↗</a><p>Le meilleur plan ? Ne pas en avoir.<br>Sur scène, en tout cas.</p></footer></main></body></html>
+</div><footer><a href="<?php echo esc_url(SDR_Settings::workspace_url($valid ? ['spectacle'=>$context['event']->ID] : [])); ?>">Retrouver les Coulisses ↗</a><p><?php echo esc_html(SDR_Settings::name()); ?></p></footer></main></body></html>

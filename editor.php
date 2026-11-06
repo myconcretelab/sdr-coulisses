@@ -69,7 +69,7 @@ final class SDR_Editor {
     static function assets() {
         $screen = get_current_screen();
         if (!$screen || !in_array($screen->post_type, self::TYPES, true)) return;
-        wp_enqueue_script('sdr-editor', plugins_url('assets/editor.js', __FILE__), ['wp-plugins','wp-editor','wp-element','wp-components','wp-data','wp-api-fetch','wp-html-entities'], '1.9.2', true);
+        wp_enqueue_script('sdr-editor', plugins_url('assets/editor.js', __FILE__), ['wp-plugins','wp-editor','wp-element','wp-components','wp-data','wp-api-fetch','wp-html-entities'], '1.11.0', true);
         wp_enqueue_style('sdr-editor', plugins_url('assets/editor.css', __FILE__), ['wp-components'], '1.1.1');
         global $post, $wpdb;
         $selected = array_fill_keys(array_keys(SDR_Coulisses::ROLES), 0);
@@ -79,7 +79,7 @@ final class SDR_Editor {
             }
         }
         wp_add_inline_script('sdr-editor', 'window.SDREditor='.wp_json_encode([
-            'admin' => admin_url(), 'coulisses' => home_url('/coulisses/?vue=equipes'),
+            'admin' => admin_url(), 'coulisses' => SDR_Settings::workspace_url(['vue'=>'equipes']),
             'selected' => $selected,
             'manageRelations' => current_user_can('edit_sdr_items'),
         ]).';', 'before');

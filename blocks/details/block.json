@@ -1,0 +1,18 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "sdr/details",
+  "title": "Informations pratiques",
+  "description": "Date, lieu, format et réservation du spectacle ou coordonnées du lieu et de la troupe.",
+  "category": "widgets",
+  "icon": "tickets-alt",
+  "editorScript": "sdr-public-block-editor",
+  "usesContext": [
+    "postId",
+    "postType"
+  ],
+  "supports": {
+    "html": false
+  },
+  "style": "sdr-public"
+}

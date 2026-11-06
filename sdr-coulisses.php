@@ -1,12 +1,17 @@
 <?php
 /**
- * Plugin Name: SDR — Les Coulisses
- * Description: Agenda public, disponibilités et composition des équipes des Sorties de Route.
- * Version: 1.10.0
+ * Plugin Name: Coulisse — Gestion de troupe
+ * Description: Spectacles, disponibilités, équipes, invitations et documentation pour les troupes.
+ * Version: 1.11.0
+ * Requires at least: 6.5
  * Requires PHP: 8.1
+ * License: GPL-2.0-or-later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: sdr
  */
 defined('ABSPATH') || exit;
+require_once __DIR__.'/includes/class-sdr-settings.php';
+require_once __DIR__.'/includes/class-sdr-public-blocks.php';
 
 final class SDR_Coulisses {
     const ROLES = ['joueur'=>'Joueur·se', 'mc'=>'MC', 'dj'=>'DJ'];
@@ -25,30 +30,33 @@ final class SDR_Coulisses {
         add_action('personal_options_update', [__CLASS__, 'save_user_fields']);
         add_action('edit_user_profile_update', [__CLASS__, 'save_user_fields']);
         add_filter('get_avatar_data', [__CLASS__, 'avatar_data'], 20, 2);
-        add_filter('nsl_is_register_allowed','__return_false',100);
-        add_filter('nsl_disabled_register_error_message',fn()=> 'L’accès est réservé à la troupe. Connecte-toi à ton compte membre pour y associer Facebook.');
-        add_filter('wp_mail_from',function($from){$email=sanitize_email(get_option('admin_email'));return is_email($email)?$email:$from;});
-        add_filter('wp_mail_from_name',fn()=>wp_specialchars_decode(get_bloginfo('name'),ENT_QUOTES));
-        add_action('admin_menu',function(){add_management_page('Import SDR','Import SDR','manage_options','sdr-import',[__CLASS__,'import_report']);});
+        add_action('admin_menu',function(){if(current_theme_supports('sdr-coulisses-skin'))add_management_page('Import SDR','Import SDR','manage_options','sdr-import',[__CLASS__,'import_report']);});
         add_action('admin_menu',function(){
             $hook=add_submenu_page('edit.php?post_type=sdr_event','Le planning','Le planning','sdr_organize','sdr-equipes','__return_null');
-            add_action('load-'.$hook,function(){wp_safe_redirect(home_url('/coulisses/'));exit;});
+            add_action('load-'.$hook,function(){wp_safe_redirect(SDR_Settings::workspace_url());exit;});
         });
-        add_filter('post_row_actions',function($actions,$post){if($post->post_type==='sdr_event' && self::organizer())$actions['sdr_team']='<a href="'.esc_url(add_query_arg(['spectacle'=>$post->ID,'composer'=>'1'],home_url('/coulisses/'))).'">Composer l’équipe</a>';return $actions;},10,2);
+        add_filter('post_row_actions',function($actions,$post){if($post->post_type==='sdr_event' && self::organizer())$actions['sdr_team']='<a href="'.esc_url(add_query_arg(['spectacle'=>$post->ID,'composer'=>'1'],SDR_Settings::workspace_url())).'">Composer l’équipe</a>';return $actions;},10,2);
         add_action('template_redirect', function() {
-            if (is_page(['coulisses','connexion-facebook'])) { nocache_headers(); if (!is_user_logged_in()) { auth_redirect(); exit; } if(!self::member()) wp_die('Cet espace est réservé aux membres de la troupe.','Accès réservé',['response'=>403]); }
+            if (SDR_Settings::is_workspace() || (is_page('connexion-facebook') && has_shortcode(get_post_field('post_content', get_queried_object_id()), 'sdr_facebook'))) { nocache_headers(); if (!is_user_logged_in()) { auth_redirect(); exit; } if(!self::member()) wp_die('Cet espace est réservé aux membres de la troupe.','Accès réservé',['response'=>403]); }
         });
-        add_filter('login_redirect', function($to,$requested,$user) { return !is_wp_error($user) && $user instanceof WP_User && !user_can($user,'manage_options') ? home_url('/coulisses/') : $to; },10,3);
+        add_filter('login_redirect', function($to,$requested,$user) { return !is_wp_error($user) && $user instanceof WP_User && user_can($user,'sdr_member') && !user_can($user,'manage_options') ? SDR_Settings::workspace_url() : $to; },10,3);
         add_filter('login_message',function($message){return isset($_GET['sdr_admin'])?'<div class="message"><p>L’administration WordPress est réservée aux comptes « Administrateur ». Les membres et l’organisation utilisent les Coulisses.</p></div>'.$message:$message;});
-        add_filter('show_admin_bar', function($show) { return current_user_can('manage_options') ? $show : false; });
+        add_filter('show_admin_bar', function($show) { return self::member() && !current_user_can('manage_options') ? false : $show; });
         add_action('admin_init', function(){
             if(wp_doing_ajax() || !current_user_can('sdr_member') || current_user_can('manage_options')) return;
             global $pagenow;
             $id=absint($_GET['post']??$_POST['post_ID']??0);
             if($pagenow==='post.php' && $id && get_post_type($id)==='sdr_event' && self::organizer() && current_user_can('edit_post',$id)) return;
-            wp_safe_redirect(home_url('/coulisses/')); exit;
+            wp_safe_redirect(SDR_Settings::workspace_url()); exit;
         });
-        add_action('wp_enqueue_scripts', function(){ wp_enqueue_style('sdr-ui',plugins_url('assets/app.css',__FILE__),[], '1.9.2'); wp_enqueue_style('sdr-documentation',plugins_url('assets/documentation.css',__FILE__),['sdr-ui'], '1.10.0'); });
+        add_action('wp_enqueue_scripts', function(){
+            wp_register_style('sdr-ui',plugins_url('assets/app.css',__FILE__),[], '1.11.0');
+            wp_enqueue_style('sdr-public');
+            if(SDR_Settings::is_workspace()){
+                wp_enqueue_style('sdr-ui');wp_enqueue_style('sdr-documentation',plugins_url('assets/documentation.css',__FILE__),['sdr-ui'], '1.11.0');
+                $accent=SDR_Settings::get('accent');if(sanitize_hex_color($accent))wp_add_inline_style('sdr-ui','body.sdr-workspace{--purple:'.$accent.';--sdr-accent:'.$accent.';}');
+            }
+        });
         add_shortcode('sdr_agenda', [__CLASS__, 'agenda']);
         add_shortcode('sdr_coulisses', [__CLASS__, 'app']);
         add_shortcode('sdr_facebook', [__CLASS__, 'facebook']);
@@ -90,7 +98,7 @@ final class SDR_Coulisses {
         foreach(['sdr_event'=>['Spectacles','Spectacle','calendar-alt','spectacles'], 'sdr_venue'=>['Lieux','Lieu','location-alt','lieux'], 'sdr_team'=>['Troupes invitées','Troupe','groups','troupes'], 'sdr_format'=>['Formats','Format','format-video','formats']] as $type=>$d) {
             register_post_type($type,['labels'=>['name'=>$d[0],'singular_name'=>$d[1],'add_new_item'=>'Ajouter : '.$d[1],'edit_item'=>'Modifier : '.$d[1]],'capability_type'=>$type==='sdr_event'?['sdr_event','sdr_events']:['sdr_item','sdr_items'],'map_meta_cap'=>true,'public'=>true,'show_in_rest'=>true,'menu_icon'=>'dashicons-'.$d[2],'supports'=>['title','editor','thumbnail','excerpt'],'rewrite'=>['slug'=>$d[3]],'has_archive'=>false]);
         }
-        wp_register_style('sdr-roster',plugins_url('assets/roster.css',__FILE__),[], '1.4.1');
+        wp_register_style('sdr-roster',plugins_url('assets/roster.css',__FILE__),[], '1.11.0');
         register_block_type(__DIR__.'/blocks/agenda',['render_callback'=>[__CLASS__,'agenda']]);
         register_block_type(__DIR__.'/blocks/coulisses',['render_callback'=>[__CLASS__,'app']]);
         register_block_type(__DIR__.'/blocks/trombinoscope',['render_callback'=>[__CLASS__,'roster']]);
@@ -102,7 +110,7 @@ final class SDR_Coulisses {
     static function error($text,$status=400){ return new WP_Error('sdr_error',$text,['status'=>$status]); }
     static function meta($id,$key,$default=''){ $v=get_post_meta($id,'_sdr_'.$key,true); return $v==='' ? $default : $v; }
     static function fields($type) {
-        if($type==='sdr_event') return ['date'=>['Date','date'],'time'=>['Début du spectacle','time'],'call_time'=>['Rendez-vous des membres','time'],'venue'=>['Lieu','sdr_venue'],'team'=>['Troupe invitée','sdr_team'],'format'=>['Format','sdr_format'],'capacity_joueur'=>['Places de joueurs SDR','number'],'capacity_mc'=>['Places MC','number'],'capacity_dj'=>['Places DJ','number'],'booking_url'=>['Lien de billetterie (facultatif)','url'],'closed'=>['Réponses fermées','boolean'],'intermission'=>['Avec entracte','boolean']];
+        if($type==='sdr_event') return ['date'=>['Date','date'],'time'=>['Début du spectacle','time'],'call_time'=>['Rendez-vous des membres','time'],'venue'=>['Lieu','sdr_venue'],'team'=>['Troupe invitée','sdr_team'],'format'=>['Format','sdr_format'],'capacity_joueur'=>['Places de joueurs de la troupe','number'],'capacity_mc'=>['Places MC','number'],'capacity_dj'=>['Places DJ','number'],'booking_url'=>['Lien de billetterie (facultatif)','url'],'closed'=>['Réponses fermées','boolean'],'intermission'=>['Avec entracte','boolean']];
         if($type==='sdr_venue') return ['address'=>['Adresse publique','text'],'city'=>['Commune','text'],'website'=>['Site internet','url'],'contact'=>['Contact interne (réservé à l’administration)','text'],'phone'=>['Téléphone du contact (privé)','tel'],'email'=>['E-mail du contact (privé)','email'],'contact_notes'=>['Autres informations de contact (privées)','textarea']];
         if($type==='sdr_team') return ['city'=>['Ville','text'],'website'=>['Site internet','url']];
         return [];
@@ -149,7 +157,7 @@ final class SDR_Coulisses {
         return $args;
     }
     static function user_fields($user){
-        if(!current_user_can('manage_options')) return; echo '<h2>Profil SDR (privé)</h2><p><strong>Rôles artistiques</strong> — plusieurs choix possibles.</p>'; wp_nonce_field('sdr_user','sdr_user_nonce'); $p=self::profile($user->ID);
+        if(!current_user_can('manage_options')) return; echo '<h2>Profil de troupe (privé)</h2><p><strong>Rôles artistiques</strong> — plusieurs choix possibles.</p>'; wp_nonce_field('sdr_user','sdr_user_nonce'); $p=self::profile($user->ID);
         foreach(self::ROLES as $k=>$label) echo '<label style="margin-right:20px"><input type="checkbox" name="sdr_roles[]" value="'.$k.'" '.checked(in_array($k,$p['roles']),true,false).'> '.esc_html($label).'</label>';
         echo '<p><label><input type="checkbox" name="sdr_stage_opt_in" value="1" '.checked($p['stageOptIn'],true,false).'> <strong>OK pour la scène</strong> — souhaite recevoir les invitations à jouer, faire le MC ou le DJ.</label></p>';
         echo '<p><label>Téléphone <input type="tel" name="sdr_phone" inputmode="tel" autocomplete="tel" maxlength="30" value="'.esc_attr(get_user_meta($user->ID,'sdr_phone',true)).'" placeholder="06 12 34 56 78"></label></p><p><label>Repas <select name="sdr_diet">';foreach(['unspecified'=>'À préciser','standard'=>'Sans préférence','vegetarian'=>'Végétarien','vegan'=>'Végétalien'] as $k=>$v)echo '<option value="'.esc_attr($k).'" '.selected($p['diet'],$k,false).'>'.esc_html($v).'</option>';echo '</select></label></p><p><label>Années d’impro <input type="number" min="0" max="80" name="sdr_experience" value="'.esc_attr($p['experience']).'"></label></p><p><label>Genre / désignation (facultatif) <input name="sdr_gender" maxlength="80" value="'.esc_attr($p['gender']).'"></label></p><p>Le téléphone et ces informations restent privés. Les membres peuvent compléter leurs préférences depuis leur espace personnel.</p>';
@@ -408,12 +416,12 @@ final class SDR_Coulisses {
             'time'=>$data['time']?str_replace(':','h',$data['time']):'à préciser',
             'callTime'=>$data['callTime']?str_replace(':','h',$data['callTime']):'à préciser',
             'team'=>$data['team'],
-            'url'=>home_url('/coulisses/'),
+            'url'=>SDR_Settings::workspace_url(),
         ];
     }
     static function send_plain_email($user,$subject,$lines){
-        $body='Bonjour '.self::email_name($user).",\n\n".implode("\n",$lines)."\n\nÀ bientôt,\nLes Sorties de Route";
-        return wp_mail($user->user_email,$subject,$body,['Content-Type: text/plain; charset=UTF-8']);
+        $body='Bonjour '.self::email_name($user).",\n\n".implode("\n",$lines)."\n\nÀ bientôt,\n".SDR_Settings::name();
+        return wp_mail($user->user_email,$subject,$body,SDR_Settings::mail_headers(['Content-Type: text/plain; charset=UTF-8']));
     }
     static function queue_new_event_email($newStatus,$oldStatus,$post){
         if($post->post_type!=='sdr_event' || $newStatus!=='publish' || $oldStatus==='publish') return;
@@ -602,7 +610,7 @@ final class SDR_Coulisses {
     }
     static function agenda(){
         ob_start(); echo '<div class="public-agenda">'; $events=self::events();
-        foreach($events as $i=>$p){ $e=self::event_data($p); $date=new DateTime($e['date']); $format=$e['format']; $detail=$e['venue'].' · '.($e['time']?str_replace(':','h',$e['time']):'Horaire à venir');if($e['intermissionSet'])$detail.=$e['intermission']?' · Avec entracte':' · Sans entracte';$title=$e['team']?"Sortie d'route VS ".$e['team']:$p->post_title;echo '<a class="public-event" href="'.esc_url($e['url']).'"><div class="date-stamp"><span>'.esc_html(wp_date('M',$date->getTimestamp())).'</span><strong>'.esc_html($date->format('d')).'</strong><small>'.esc_html($date->format('Y')).'</small></div><div class="event-line-main"><span class="tag tag-'.($i%3).'">'.esc_html($format).'</span><h3>'.self::event_title($title).'</h3><p>'.esc_html($detail).'</p></div><span class="round-arrow" aria-label="Voir le spectacle">↗</span></a>'; }
+        foreach($events as $i=>$p){ $e=self::event_data($p); $date=new DateTime($e['date']); $format=$e['format']; $detail=$e['venue'].' · '.($e['time']?str_replace(':','h',$e['time']):'Horaire à venir');if($e['intermissionSet'])$detail.=$e['intermission']?' · Avec entracte':' · Sans entracte';$title=$e['team']?SDR_Settings::match_name().' VS '.$e['team']:$p->post_title;echo '<a class="public-event" href="'.esc_url($e['url']).'"><div class="date-stamp"><span>'.esc_html(wp_date('M',$date->getTimestamp())).'</span><strong>'.esc_html($date->format('d')).'</strong><small>'.esc_html($date->format('Y')).'</small></div><div class="event-line-main"><span class="tag tag-'.($i%3).'">'.esc_html($format).'</span><h3>'.self::event_title($title).'</h3><p>'.esc_html($detail).'</p></div><span class="round-arrow" aria-label="Voir le spectacle">↗</span></a>'; }
         if(!$events) echo '<p>Les prochaines dates arrivent bientôt. On vous prépare de belles surprises.</p>';
         echo '</div>'; return ob_get_clean();
     }
@@ -646,11 +654,13 @@ final class SDR_Coulisses {
         return array_map(static fn($user)=>['id'=>(int)$user->ID,'name'=>$user->display_name,'organizer'=>in_array('sdr_organizer',$user->roles,true)||user_can($user,'sdr_organize')],self::roster_users(true));
     }
     static function app(){
-        if(!self::member()) return '<div class="login-callout"><h2>Bienvenue dans les coulisses.</h2><p>Cet espace est réservé aux membres de la troupe.</p><a class="button primary" href="'.esc_url(wp_login_url(home_url('/coulisses/'))).'">Se connecter →</a></div>';
+        if(!self::member()) return '<div class="login-callout"><h2>Bienvenue dans les coulisses.</h2><p>Cet espace est réservé aux membres de la troupe.</p><a class="button primary" href="'.esc_url(wp_login_url(SDR_Settings::workspace_url())).'">Se connecter →</a></div>';
         wp_enqueue_script('sdr-event-reminders',plugins_url('assets/event-reminders.js',__FILE__),[], '1.9.4',true);
         wp_enqueue_script('sdr-documentation',plugins_url('assets/documentation.js',__FILE__),[], '1.10.0',true);
-        wp_enqueue_script('sdr-app',plugins_url('assets/app.js',__FILE__),['sdr-event-reminders','sdr-documentation'], '1.10.0',true);
-        wp_add_inline_script('sdr-app','window.SDR='.wp_json_encode(['api'=>rest_url('sdr/v1/'),'nonce'=>wp_create_nonce('wp_rest'),'home'=>home_url('/'),'logo'=>get_theme_file_uri('/assets/sdr-logo.jpeg'),'admin'=>admin_url(),'relances'=>class_exists('SDR_Relances') && SDR_Relances::allowed()?SDR_Relances::workspace_url():'','adminLogin'=>add_query_arg('sdr_admin','1',wp_login_url(admin_url(),true)),'logout'=>html_entity_decode(wp_logout_url(home_url('/')),ENT_QUOTES,'UTF-8')]).';','before');
+        wp_enqueue_script('sdr-app',plugins_url('assets/app.js',__FILE__),['sdr-event-reminders','sdr-documentation'], '1.11.0',true);
+        $facebook = get_page_by_path('connexion-facebook');
+        $facebook_url = $facebook && $facebook->post_status === 'publish' && has_shortcode($facebook->post_content, 'sdr_facebook') ? get_permalink($facebook) : '';
+        wp_add_inline_script('sdr-app','window.SDR='.wp_json_encode(['api'=>rest_url('sdr/v1/'),'nonce'=>wp_create_nonce('wp_rest'),'home'=>home_url('/'),'facebookUrl'=>$facebook_url,'logo'=>SDR_Settings::identity()['logo'],'identity'=>SDR_Settings::identity(),'admin'=>admin_url(),'relances'=>class_exists('SDR_Relances') && SDR_Relances::allowed()?SDR_Relances::workspace_url():'','adminLogin'=>add_query_arg('sdr_admin','1',wp_login_url(admin_url(),true)),'logout'=>html_entity_decode(wp_logout_url(home_url('/')),ENT_QUOTES,'UTF-8')]).';','before');
         return '<div id="sdr-app"><div class="app-loading"><span class="loading-star">✳</span><p>On ouvre les coulisses…</p></div></div><noscript>Active JavaScript pour gérer tes disponibilités.</noscript>';
     }
     static function facebook(){
@@ -666,6 +676,8 @@ require_once __DIR__.'/editor.php';
 require_once __DIR__.'/reminders/class-sdr-event-reminders.php';
 require_once __DIR__.'/emails/class-sdr-email-templates.php';
 require_once __DIR__.'/documentation/class-sdr-documentation.php';
+require_once __DIR__.'/relances/class-sdr-relances.php';
+SDR_Relances::boot();
 SDR_Event_Reminders::boot();
 SDR_Coulisses::boot();
 register_activation_hook(__FILE__,['SDR_Coulisses','activate']);

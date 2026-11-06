@@ -3,6 +3,68 @@
     "updated": "2026-11-06",
     "domains": [
         {
+            "id": "installation",
+            "title": "Installer et configurer Coulisse",
+            "summary": "Installer les fonctionnalités sur le WordPress de sa troupe, avec son propre thème.",
+            "guides": [
+                {
+                    "id": "installer-coulisse",
+                    "title": "Installer le plugin sur un site WordPress",
+                    "access": "administrator",
+                    "summary": "Le ZIP installe une seule extension et conserve le thème du site.",
+                    "steps": [
+                        "Télécharger le ZIP de la version à installer. Une sauvegarde du site est recommandée avant toute mise à jour.",
+                        "Dans WordPress, ouvrir Extensions → Ajouter une extension, téléverser le ZIP puis activer « Coulisse — Gestion de troupe ».",
+                        "Ouvrir Réglages → Coulisse et enregistrer le nom de la troupe, son logo et sa couleur d’accent.",
+                        "Cliquer sur « Créer la page des Coulisses ». Le site conserve son accueil et son menu ; ajouter un lien vers cette page au menu si nécessaire.",
+                        "Créer ou configurer les comptes « Membre de la troupe » et « Organisation » dans Comptes / Utilisateurs.",
+                        "Ouvrir les Coulisses puis tester un aperçu d’email vers son propre compte administrateur avant d’envoyer des invitations."
+                    ],
+                    "notes": [
+                        "Un seul plugin est nécessaire : les relances utilisateurs sont intégrées. Les anciennes installations peuvent conserver leur extension de relances déjà activée.",
+                        "La version pilote se met à jour manuellement avec un nouveau ZIP. Les données sont conservées lors de la désactivation."
+                    ]
+                },
+                {
+                    "id": "identite-de-la-troupe",
+                    "title": "Configurer le nom, le logo et les emails de la troupe",
+                    "access": "administrator",
+                    "summary": "Les réglages concernent l’outil de gestion ; le thème du site public conserve son identité.",
+                    "steps": [
+                        "Ouvrir Réglages → Coulisse.",
+                        "Renseigner « Nom de la troupe » et, si nécessaire, « Nom court pour les rencontres », utilisé devant « VS ».",
+                        "Cliquer sur « Choisir un logo » pour sélectionner une image dans la médiathèque, ou « Afficher seulement le nom » pour utiliser une identité textuelle.",
+                        "Choisir la couleur de l’espace membres puis enregistrer les réglages.",
+                        "Pour les emails, renseigner éventuellement un nom et une adresse d’expédition autorisée par le service d’envoi. Une adresse vide conserve le fonctionnement habituel des emails du site.",
+                        "Dans les modèles d’emails, utiliser {{nom_troupe}} pour afficher automatiquement l’identité choisie."
+                    ],
+                    "notes": [
+                        "Les modèles d’emails déjà personnalisés ne sont pas réécrits. Corriger leurs anciennes mentions de troupe si nécessaire.",
+                        "Le réglage d’expédition ne modifie pas les emails des autres extensions WordPress. La réception dépend toujours de l’hébergeur ou du service SMTP configuré.",
+                        "Si le nom, l’adresse d’expédition, la couleur, le logo ou la page sont invalides, les réglages précédents sont conservés. Corriger le champ indiqué puis enregistrer à nouveau."
+                    ]
+                },
+                {
+                    "id": "page-et-blocs-publics",
+                    "title": "Choisir la page privée et ajouter les blocs publics",
+                    "access": "administrator",
+                    "summary": "Le plugin fournit son espace privé et des blocs intégrables dans les pages publiques.",
+                    "steps": [
+                        "Pour une nouvelle page privée, insérer le bloc « Coulisses de la troupe », publier la page puis la choisir dans Réglages → Coulisse.",
+                        "L’outil utilise cette page pour les liens de connexion, les invitations et le profil. Les visiteurs doivent se connecter avec un compte membre.",
+                        "Pour présenter les dates sur le site public, insérer le bloc « Agenda public ».",
+                        "Pour présenter les membres volontaires, insérer « Trombinoscope » et régler les comptes affichés.",
+                        "Dans les fiches de spectacles, lieux ou troupes, utiliser les blocs « Informations pratiques » et « Spectacles liés » selon les besoins."
+                    ],
+                    "notes": [
+                        "Les blocs publics reprennent les couleurs et polices du thème. Le plugin ne fournit pas les photos, logos ni illustrations des Sorties de Route.",
+                        "Le gabarit privé fourni par le plugin fonctionne sans le thème SDR. Les anciens contenus et noms de blocs restent reconnus.",
+                        "Les fiches publiques ajoutent les informations pratiques et les spectacles liés lorsque leurs blocs sont absents du contenu. Insérer ces blocs dans Gutenberg permet de choisir leur emplacement. Le texte enregistré n’est pas modifié."
+                    ]
+                }
+            ]
+        },
+        {
             "id": "demarrer",
             "title": "Prendre en main les Coulisses",
             "summary": "Comprendre les accès et les étapes de préparation d’un spectacle.",
@@ -54,11 +116,11 @@
                         "Dans la navigation, cliquer sur « Nouveau spectacle ».",
                         "Renseigner un titre explicite et la date. Choisir le format, le lieu et, le cas échéant, la troupe invitée.",
                         "Distinguer « Rendez-vous de la troupe » et « Début du spectacle ». Cocher « Avec entracte » uniquement si une pause est prévue.",
-                        "Dans « Combien de places sur scène ? », définir les places pour les membres SDR : joueurs, MC et DJ. Utiliser les boutons + et − ou saisir une valeur.",
+                        "Dans « Combien de places sur scène ? », définir les places pour les membres de la troupe : joueurs, MC et DJ. Utiliser les boutons + et − ou saisir une valeur.",
                         "Cliquer sur « Enregistrer le spectacle » pour publier la date sans email ; « Enregistrer et prévenir les joueurs » pour choisir les destinataires d’une annonce ; ou « Enregistrer et ouvrir Gutenberg » pour travailler la présentation."
                     ],
                     "notes": [
-                        "Les effectifs concernent les SDR, pas la troupe invitée. Zéro signifie qu’aucune place n’est prévue pour ce rôle.",
+                        "Les effectifs concernent les membres de la troupe, pas la troupe invitée. Zéro signifie qu’aucune place n’est prévue pour ce rôle.",
                         "Le choix « prévenir les joueurs » est disponible pour une date à venir ou aujourd’hui, avec les réponses ouvertes. La sélection des destinataires ne déclenche aucun envoi tant qu’il n’est pas confirmé.",
                         "Cliquer hors du formulaire ne le ferme pas. La croix, « Annuler » et Échap permettent de quitter ; la saisie non enregistrée est alors abandonnée."
                     ]
@@ -395,11 +457,11 @@
                     "steps": [
                         "Ouvrir le spectacle, le lieu, la troupe ou le format dans WordPress.",
                         "Modifier le titre et les blocs de présentation. Utiliser les réglages du bloc pour les images et la mise en forme.",
-                        "Modifier les informations pratiques dans les champs de la fiche, puis enregistrer ou mettre à jour.",
+                        "Ouvrir « Informations Coulisse » ou « Ouvrir les réglages Coulisse », modifier les informations pratiques de la fiche, puis enregistrer ou mettre à jour.",
                         "Pour les en-têtes, le menu et le pied de page communs, passer par « Apparence → Éditeur » et ouvrir l’élément de modèle concerné."
                     ],
                     "notes": [
-                        "Le billet pratique et les listes de spectacles liés reprennent les données des fiches. Corriger la donnée dans la fiche plutôt que recopier une deuxième version dans le texte.",
+                        "Le bloc Informations pratiques et les listes de spectacles liés reprennent les données des fiches. Corriger la donnée dans la fiche plutôt que recopier une deuxième version dans le texte.",
                         "Le formulaire des Coulisses préserve les présentations déjà composées de blocs Gutenberg."
                     ]
                 }
