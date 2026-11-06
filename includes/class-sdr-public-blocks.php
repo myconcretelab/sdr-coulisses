@@ -11,7 +11,8 @@ final class SDR_Public_Blocks {
             return $args;
         }, 10, 2);
         add_action('init', static function () {
-            wp_register_style('sdr-public', plugins_url('../assets/public.css', __FILE__), [], '1.11.0');
+            // A troupe-specific skin owns its public blocks as well as its workspace.
+            wp_register_style('sdr-public', current_theme_supports('sdr-coulisses-skin') ? false : plugins_url('../assets/public.css', __FILE__), [], '1.11.0');
             wp_register_script('sdr-public-block-editor', plugins_url('../assets/public-blocks.js', __FILE__), ['wp-blocks', 'wp-block-editor', 'wp-element', 'wp-server-side-render'], '1.11.0', true);
             foreach (['details', 'related-events', 'legacy-details', 'legacy-related-events'] as $folder) {
                 register_block_type(__DIR__.'/../blocks/'.$folder, ['render_callback' => [__CLASS__, str_contains($folder, 'related-events') ? 'related_events' : 'details']]);
