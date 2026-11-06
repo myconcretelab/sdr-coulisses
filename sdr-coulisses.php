@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Coulisse — Gestion de troupe
  * Description: Spectacles, disponibilités, équipes, invitations et documentation pour les troupes.
- * Version: 1.13.2
+ * Version: 1.14.0
  * Requires at least: 6.5
  * Requires PHP: 8.1
  * License: GPL-2.0-or-later
@@ -25,6 +25,9 @@ final class SDR_Coulisses {
         add_action('rest_after_insert_sdr_event', [__CLASS__, 'send_pending_event_email'], 10, 3);
         add_action('sdr_notify_new_event', [__CLASS__, 'notify_new_event']);
         add_action('rest_api_init', [__CLASS__, 'routes']);
+        add_action('wp_insert_post',static function($id,$post,$update){
+            if(!$update && $post->post_type==='sdr_event' && !metadata_exists('post',$id,'_sdr_team_title_style')) update_post_meta($id,'_sdr_team_title_style','with');
+        },10,3);
         add_filter('wp_insert_post_empty_content',static fn($empty,$post)=>($post['post_type']??'')==='sdr_event'?false:$empty,10,2);
         add_filter('the_title',static function($title,$id){$post=$id?get_post($id):null;return $post && $post->post_type==='sdr_event' && trim($post->post_title)===''?self::event_name($post):$title;},10,2);
         add_action('enqueue_block_editor_assets', [__CLASS__, 'editor_block_data']);
@@ -53,7 +56,7 @@ final class SDR_Coulisses {
             wp_safe_redirect(SDR_Settings::workspace_url()); exit;
         });
         add_action('wp_enqueue_scripts', function(){
-            wp_register_style('sdr-ui',plugins_url('assets/app.css',__FILE__),[], '1.13.2');
+            wp_register_style('sdr-ui',plugins_url('assets/app.css',__FILE__),[], '1.14.0');
             wp_enqueue_style('sdr-public');
             if(SDR_Settings::is_workspace()){
                 wp_enqueue_style('sdr-ui');wp_enqueue_style('sdr-documentation',plugins_url('assets/documentation.css',__FILE__),['sdr-ui'], '1.11.0');
@@ -98,7 +101,7 @@ final class SDR_Coulisses {
         update_option('sdr_role_permissions_version','1.4.5',false);
     }
     static function register() {
-        foreach(['sdr_event'=>['Spectacles','Spectacle','calendar-alt','spectacles'], 'sdr_venue'=>['Lieux','Lieu','location-alt','lieux'], 'sdr_team'=>['Troupes invitées','Troupe','groups','troupes'], 'sdr_format'=>['Formats','Format','format-video','formats']] as $type=>$d) {
+        foreach(['sdr_event'=>['Spectacles','Spectacle','calendar-alt','spectacles'], 'sdr_venue'=>['Lieux','Lieu','location-alt','lieux'], 'sdr_team'=>['Troupes','Troupe','groups','troupes'], 'sdr_format'=>['Formats','Format','format-video','formats']] as $type=>$d) {
             register_post_type($type,['labels'=>['name'=>$d[0],'singular_name'=>$d[1],'add_new_item'=>'Ajouter : '.$d[1],'edit_item'=>'Modifier : '.$d[1]],'capability_type'=>$type==='sdr_event'?['sdr_event','sdr_events']:['sdr_item','sdr_items'],'map_meta_cap'=>true,'public'=>true,'show_in_rest'=>true,'menu_icon'=>'dashicons-'.$d[2],'supports'=>['title','editor','thumbnail','excerpt'],'rewrite'=>['slug'=>$d[3]],'has_archive'=>false]);
         }
         wp_register_style('sdr-roster',plugins_url('assets/roster.css',__FILE__),[], '1.11.0');
@@ -113,7 +116,7 @@ final class SDR_Coulisses {
     static function error($text,$status=400){ return new WP_Error('sdr_error',$text,['status'=>$status]); }
     static function meta($id,$key,$default=''){ $v=get_post_meta($id,'_sdr_'.$key,true); return $v==='' ? $default : $v; }
     static function fields($type) {
-        if($type==='sdr_event') return ['date'=>['Date','date'],'time'=>['Début du spectacle','time'],'call_time'=>['Rendez-vous des membres','time'],'venue'=>['Lieu','sdr_venue'],'teams'=>['Troupes invitées','sdr_team_list'],'format'=>['Format','sdr_format'],'capacity_joueur'=>['Places de joueurs de la troupe','number'],'capacity_mc'=>['Places MC','number'],'capacity_dj'=>['Places DJ','number'],'booking_url'=>['Lien de billetterie (facultatif)','url'],'closed'=>['Réponses fermées','boolean'],'intermission'=>['Avec entracte','boolean']];
+        if($type==='sdr_event') return ['date'=>['Date','date'],'time'=>['Début du spectacle','time'],'call_time'=>['Rendez-vous des membres','time'],'venue'=>['Lieu','sdr_venue'],'teams'=>['Troupes participantes','sdr_team_list'],'team_title_style'=>['Titre automatique : avec ou VS','team_title_style'],'format'=>['Format','sdr_format'],'capacity_joueur'=>['Places de joueurs de la troupe','number'],'capacity_mc'=>['Places MC','number'],'capacity_dj'=>['Places DJ','number'],'booking_url'=>['Lien de billetterie (facultatif)','url'],'closed'=>['Réponses fermées','boolean'],'intermission'=>['Avec entracte','boolean']];
         if($type==='sdr_venue') return ['address'=>['Adresse publique','text'],'city'=>['Commune','text'],'website'=>['Site internet','url'],'contact'=>['Contact interne (réservé à l’administration)','text'],'phone'=>['Téléphone du contact (privé)','tel'],'email'=>['E-mail du contact (privé)','email'],'contact_notes'=>['Autres informations de contact (privées)','textarea']];
         if($type==='sdr_team') return ['city'=>['Ville','text'],'website'=>['Site internet','url']];
         return [];
@@ -264,18 +267,27 @@ final class SDR_Coulisses {
         delete_post_meta($id,'_sdr_event_team');
         foreach($teams as $team) add_post_meta($id,'_sdr_event_team',$team);
     }
-    static function automatic_event_title($teams,$format=0,$date=''){
+    static function event_team_title_style($id){
+        if(!metadata_exists('post',$id,'_sdr_team_title_style')) return 'versus';
+        $style=get_post_meta($id,'_sdr_team_title_style',true);
+        return in_array($style,['with','versus'],true)?$style:'versus';
+    }
+    static function automatic_event_title($teams,$format=0,$date='',$style='with'){
         $names=[];
         foreach($teams as $id){$post=get_post($id);if($post && $post->post_type==='sdr_team' && $post->post_status==='publish') $names[]=$post->post_title;}
-        if($names) return implode(' VS ',array_merge([SDR_Settings::match_name()],$names));
+        if($names){
+            if($style==='versus') return implode(' VS ',array_merge([SDR_Settings::match_name()],$names));
+            $last=array_pop($names);
+            return SDR_Settings::match_name().' avec '.($names?implode(', ',$names).' et '.$last:$last);
+        }
         $post=$format?get_post($format):null;
         $name=$post && $post->post_type==='sdr_format' && $post->post_status==='publish'?$post->post_title:'Spectacle';
         return $name.(self::valid_date($date)?' du '.wp_date('j F Y',(new DateTimeImmutable($date.' 12:00:00',wp_timezone()))->getTimestamp()):'');
     }
     static function event_name($post){
-        return trim($post->post_title)!==''?$post->post_title:self::automatic_event_title(self::event_team_ids($post->ID),(int)self::meta($post->ID,'format'),self::meta($post->ID,'date'));
+        return trim($post->post_title)!==''?$post->post_title:self::automatic_event_title(self::event_team_ids($post->ID),(int)self::meta($post->ID,'format'),self::meta($post->ID,'date'),self::event_team_title_style($post->ID));
     }
-    static function event_form_fields($data){
+    static function event_form_fields($data,$event_id=0){
         if(!is_array($data)) return self::error('Le formulaire est incomplet.');
         foreach(['title','date','time','callTime','bookingUrl','description'] as $key){
             if(array_key_exists($key,$data) && !is_string($data[$key])) return self::error('Le champ « '.$key.' » est invalide.');
@@ -305,6 +317,9 @@ final class SDR_Coulisses {
         foreach($teams as $team) if(!is_int($team)||$team<1||get_post_type($team)!=='sdr_team'||get_post_status($team)!=='publish') return self::error('Une troupe choisie n’est plus disponible. Actualise la liste.');
         $meta['_sdr_teams']=array_values(array_unique($teams));
         $meta['_sdr_team']=$meta['_sdr_teams'][0]??0;
+        $style=array_key_exists('teamTitleStyle',$data)?$data['teamTitleStyle']:($event_id?self::event_team_title_style($event_id):'with');
+        if(!is_string($style)||!in_array($style,['with','versus'],true)) return self::error('Choisis « Avec » ou « VS » pour le titre automatique.');
+        $meta['_sdr_team_title_style']=$style;
         if(!is_array($data['capacity']??null)) return self::error('Précise le nombre de places pour chaque rôle.');
         foreach(self::ROLES as $key=>$label){
             $value=$data['capacity'][$key]??null;
@@ -342,6 +357,7 @@ final class SDR_Coulisses {
     static function event_edit_revision($post){
         $values=[$post->post_title,$post->post_content,$post->post_modified_gmt];
         foreach(['date','time','call_time','venue','team','teams','format','booking_url','closed','intermission','capacity_joueur','capacity_mc','capacity_dj'] as $key) $values[]=self::meta($post->ID,$key);
+        $values[]=self::event_team_title_style($post->ID);
         return hash('sha256',wp_json_encode($values));
     }
     static function edit_event_data($req){
@@ -351,6 +367,7 @@ final class SDR_Coulisses {
         $hasBlocks=has_blocks($post);
         $result=['id'=>$id,'title'=>$post->post_title,'date'=>self::meta($id,'date'),'time'=>self::meta($id,'time'),'callTime'=>self::meta($id,'call_time'),'venue'=>(int)self::meta($id,'venue'),'team'=>(int)self::meta($id,'team'),'format'=>(int)self::meta($id,'format'),'capacity'=>[],'closed'=>(bool)self::meta($id,'closed',false),'intermission'=>(bool)self::meta($id,'intermission',false),'bookingUrl'=>self::meta($id,'booking_url'),'hasBlocks'=>$hasBlocks,'revision'=>self::event_edit_revision($post),'editUrl'=>get_edit_post_link($id,'raw')];
         $result['teams']=self::event_team_ids($id);
+        $result['teamTitleStyle']=self::event_team_title_style($id);
         if(!$hasBlocks) $result['description']=$post->post_content;
         foreach(self::ROLES as $key=>$label) $result['capacity'][$key]=(int)self::meta($id,'capacity_'.$key,0);
         $response=rest_ensure_response($result);
@@ -363,7 +380,7 @@ final class SDR_Coulisses {
         return self::locked($id,function()use($req,$id){
             global $wpdb;
             $data=$req->get_json_params();
-            $fields=self::event_form_fields($data);
+            $fields=self::event_form_fields($data,$id);
             if(is_wp_error($fields)) return $fields;
             $post=get_post($id);
             if(!is_string($data['revision']??null) || $data['revision']!==self::event_edit_revision($post)) return self::error('Ce spectacle a changé depuis l’ouverture de la fenêtre. Ferme-la puis rouvre-la avant de réessayer.',409);
@@ -737,7 +754,7 @@ final class SDR_Coulisses {
         if(!self::member()) return '<div class="login-callout"><h2>Bienvenue dans les coulisses.</h2><p>Cet espace est réservé aux membres de la troupe.</p><a class="button primary" href="'.esc_url(wp_login_url(SDR_Settings::workspace_url())).'">Se connecter →</a></div>';
         wp_enqueue_script('sdr-event-reminders',plugins_url('assets/event-reminders.js',__FILE__),[], '1.9.4',true);
         wp_enqueue_script('sdr-documentation',plugins_url('assets/documentation.js',__FILE__),[], '1.10.0',true);
-        wp_enqueue_script('sdr-app',plugins_url('assets/app.js',__FILE__),['sdr-event-reminders','sdr-documentation'], '1.13.1',true);
+        wp_enqueue_script('sdr-app',plugins_url('assets/app.js',__FILE__),['sdr-event-reminders','sdr-documentation'], '1.14.0',true);
         $facebook = get_page_by_path('connexion-facebook');
         $facebook_url = $facebook && $facebook->post_status === 'publish' && has_shortcode($facebook->post_content, 'sdr_facebook') ? get_permalink($facebook) : '';
         wp_add_inline_script('sdr-app','window.SDR='.wp_json_encode(['api'=>rest_url('sdr/v1/'),'nonce'=>wp_create_nonce('wp_rest'),'home'=>home_url('/'),'facebookUrl'=>$facebook_url,'logo'=>SDR_Settings::identity()['logo'],'identity'=>SDR_Settings::identity(),'admin'=>admin_url(),'relances'=>class_exists('SDR_Relances') && SDR_Relances::allowed()?SDR_Relances::workspace_url():'','adminLogin'=>add_query_arg('sdr_admin','1',wp_login_url(admin_url(),true)),'logout'=>html_entity_decode(wp_logout_url(home_url('/')),ENT_QUOTES,'UTF-8')]).';','before');

@@ -3,7 +3,7 @@ Contributors: myconcretelab
 Tags: theatre, events, members, availability
 Requires at least: 6.5
 Requires PHP: 8.1
-Stable tag: 1.13.2
+Stable tag: 1.14.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -48,6 +48,11 @@ externe de mises à jour n’est encore raccordé.
 Elles sont conservées. Aucun effacement automatique n’est exécuté.
 
 == Changelog ==
+
+= 1.14.0 =
+* Champ neutre « Troupes participantes » pour les rencontres et spectacles partagés.
+* Choix « Avec » ou « VS » pour le titre automatique ; le titre saisi reste prioritaire.
+* Les spectacles existants conservent leur présentation jusqu’à modification explicite.
 
 = 1.13.2 =
 * Compteurs de candidatures légèrement plus gras dans le planning.

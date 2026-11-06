@@ -131,7 +131,7 @@ final class SDR_Settings {
         echo '<table class="form-table"><tbody>';
         foreach (['name' => 'Nom de la troupe', 'match_name' => 'Nom court pour les rencontres', 'sender_name' => 'Nom d’expédition des emails', 'sender_email' => 'Adresse d’expédition des emails'] as $key => $label) {
             echo '<tr><th><label for="sdr-'.$key.'">'.esc_html($label).'</label></th><td><input class="regular-text" type="'.($key === 'sender_email' ? 'email' : 'text').'" id="sdr-'.$key.'" name="'.self::OPTION.'['.$key.']" value="'.esc_attr($s[$key]).'" '.($key === 'name' ? 'required' : '').'>';
-            if ($key === 'match_name') echo '<p class="description">Facultatif. Utilisé devant « VS » lorsqu’une troupe est invitée.</p>';
+            if ($key === 'match_name') echo '<p class="description">Facultatif. Utilisé dans les titres automatiques avec d’autres troupes, en mode « Avec » ou « VS ».</p>';
             if ($key === 'sender_email') echo '<p class="description">Facultative : vide, les réglages d’email du site sont utilisés. Une adresse personnalisée doit être autorisée par ton hébergeur ou ton service d’envoi. Ce réglage ne concerne que les emails de Coulisse.</p>';
             echo '</td></tr>';
         }

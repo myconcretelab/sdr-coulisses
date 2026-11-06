@@ -1,9 +1,9 @@
 (function(wp){
     'use strict';
     const el=wp.element.createElement, {useState,useEffect,Fragment}=wp.element;
-    const {PanelBody,TextControl,TextareaControl,ComboboxControl,CheckboxControl,ToggleControl,Button,Notice,Spinner}=wp.components;
+    const {PanelBody,TextControl,TextareaControl,ComboboxControl,CheckboxControl,SelectControl,ToggleControl,Button,Notice,Spinner}=wp.components;
     const {PluginSidebar,PluginSidebarMoreMenuItem,PluginDocumentSettingPanel}=wp.editor;
-    const names={sdr_event:'Spectacle',sdr_venue:'Lieu',sdr_team:'Troupe invitée',sdr_format:'Format'};
+    const names={sdr_event:'Spectacle',sdr_venue:'Lieu',sdr_team:'Troupe',sdr_format:'Format'};
     const roleNames={joueur:'Joueur·se',mc:'MC',dj:'DJ'};
     const common={__next40pxDefaultSize:true,__nextHasNoMarginBottom:true};
 
@@ -67,11 +67,12 @@
                 el(ToggleControl,{...common,key:'intermission',label:'Avec entracte',checked:!!get('intermission'),onChange:value=>set('intermission',value),help:'Indique au public si une pause est prévue pendant le spectacle.'})
             ]));
             panels.push(group('Lieu, troupe et format',[
-                relation('venue','Lieu','sdr_venue'),el(Relation,{key:'teams',label:'Troupes invitées',type:'sdr_team',multiple:true,value:Array.isArray(get('teams'))?get('teams'):(get('team')?[get('team')]:[]),onChange:teams=>editPost({meta:{...(wp.data.select('core/editor').getEditedPostAttribute('meta')||{}),_sdr_teams:teams,_sdr_team:teams[0]||0}})}),relation('format','Format','sdr_format')
+                relation('venue','Lieu','sdr_venue'),el(Relation,{key:'teams',label:'Troupes participantes',type:'sdr_team',multiple:true,value:Array.isArray(get('teams'))?get('teams'):(get('team')?[get('team')]:[]),onChange:teams=>editPost({meta:{...(wp.data.select('core/editor').getEditedPostAttribute('meta')||{}),_sdr_teams:teams,_sdr_team:teams[0]||0}})}),relation('format','Format','sdr_format')
             ]));
-            panels.push(el('p',{key:'automatic-title',className:'sdr-editor-help'},'Le titre saisi en haut de la page est prioritaire. Laisse-le vide pour utiliser un titre automatique : troupe(s) invitée(s), ou format et date.'));
+            panels.push(el(SelectControl,{...common,key:'team_title_style',label:'Titre automatique',value:get('team_title_style')||'with',options:[{value:'with',label:'Avec — spectacle partagé'},{value:'versus',label:'VS — match'}],onChange:value=>set('team_title_style',value),help:'Utilisé si le titre est vide et si des troupes sont sélectionnées.'}));
+            panels.push(el('p',{key:'automatic-title',className:'sdr-editor-help'},'Le titre saisi en haut de la page est prioritaire. Laisse-le vide pour utiliser un titre automatique : troupes participantes, ou format et date.'));
             panels.push(group('Équipe et inscriptions',[
-                el('p',{key:'help',className:'sdr-editor-help'},'Les places concernent les membres de la troupe, hors troupe invitée.'),
+                el('p',{key:'help',className:'sdr-editor-help'},'Les places concernent les membres de la troupe, hors autres troupes participantes.'),
                 ...Object.entries(roleNames).map(([key,label])=>{
                     const count=SDREditor.selected[key]||0,value=Number(get('capacity_'+key))||0;
                     return el('div',{key,className:'sdr-editor-capacity'},

@@ -32,7 +32,7 @@
                     "summary": "Les réglages concernent l’outil de gestion ; le thème du site public conserve son identité.",
                     "steps": [
                         "Ouvrir Réglages → Coulisse.",
-                        "Renseigner « Nom de la troupe » et, si nécessaire, « Nom court pour les rencontres », utilisé devant « VS ».",
+                        "Renseigner « Nom de la troupe » et, si nécessaire, « Nom court pour les rencontres », utilisé dans les titres automatiques « avec » et « VS ».",
                         "Cliquer sur « Choisir un logo » pour sélectionner une image dans la médiathèque, ou « Afficher seulement le nom » pour utiliser une identité textuelle.",
                         "Choisir la couleur de l’espace membres puis enregistrer les réglages.",
                         "Pour les emails, renseigner éventuellement un nom et une adresse d’expédition autorisée par le service d’envoi. Une adresse vide conserve le fonctionnement habituel des emails du site.",
@@ -163,7 +163,7 @@
                     "access": "organizer",
                     "summary": "Le parcours complet, avec le bon type de message à chaque étape.",
                     "steps": [
-                        "Créer le spectacle : date, lieu, horaires et effectifs recherchés. Le titre est facultatif et plusieurs troupes invitées peuvent être cochées.",
+                        "Créer le spectacle : date, lieu, horaires et effectifs recherchés. Le titre est facultatif et plusieurs troupes participantes peuvent être cochées.",
                         "Si nécessaire, annoncer la nouvelle date aux membres volontaires avec « Enregistrer et prévenir les joueurs ».",
                         "Consulter les réponses puis ouvrir « Composer l’équipe » depuis la carte du spectacle.",
                         "Retenir une personne pour chaque place. Relancer les non-inscrits si des rôles manquent encore.",
@@ -187,14 +187,15 @@
                     "summary": "La date est obligatoire. Le titre est facultatif et plusieurs troupes peuvent participer.",
                     "steps": [
                         "Dans la navigation, cliquer sur « Nouveau spectacle ».",
-                        "Renseigner la date. Saisir un titre si tu souhaites imposer un nom ; sinon, le laisser vide et vérifier « Titre affiché ». Choisir le format et le lieu, puis cocher toutes les « Troupes invitées » concernées.",
+                        "Renseigner la date. Saisir un titre si tu souhaites imposer un nom ; sinon, le laisser vide et vérifier « Titre affiché ». Choisir le format et le lieu, puis cocher toutes les « Troupes participantes » concernées.",
+                        "Dans « Titre automatique », choisir « Avec — spectacle partagé » ou « VS — match ». « Avec » est proposé pour les nouveaux spectacles ; ce choix agit seulement si le champ du titre reste vide et si des troupes sont sélectionnées.",
                         "Distinguer « Rendez-vous de la troupe » et « Début du spectacle ». Cocher « Avec entracte » uniquement si une pause est prévue.",
                         "Dans « Combien de places sur scène ? », définir les places pour les membres de la troupe : joueurs, MC et DJ. Utiliser les boutons + et − ou saisir une valeur.",
                         "Cliquer sur « Enregistrer le spectacle » pour publier la date sans email ; « Enregistrer et prévenir les joueurs » pour choisir les destinataires d’une annonce ; ou « Enregistrer et ouvrir Gutenberg » pour travailler la présentation."
                     ],
                     "notes": [
-                        "Un titre saisi est utilisé dans le planning, les fiches publiques et les emails. Sans titre, les troupes produisent un intitulé « Nom de la troupe VS Troupe A VS Troupe B ». Sans troupe invitée, le format et la date sont utilisés, ou « Spectacle du… » si aucun format n’est choisi.",
-                        "Les effectifs concernent les membres de la troupe, pas la troupe invitée. Zéro signifie qu’aucune place n’est prévue pour ce rôle.",
+                        "Un titre saisi est utilisé dans le planning, les fiches publiques et les emails. Sans titre, « Avec » produit « Nom de la troupe avec Troupe A et Troupe B » ; « VS » produit « Nom de la troupe VS Troupe A VS Troupe B ». Sans autre troupe, le format et la date sont utilisés, ou « Spectacle du… » si aucun format n’est choisi.",
+                        "Les effectifs concernent les membres de la troupe, pas les autres troupes participantes. Zéro signifie qu’aucune place n’est prévue pour ce rôle.",
                         "Le choix « prévenir les joueurs » est disponible pour une date à venir ou aujourd’hui, avec les réponses ouvertes. La sélection des destinataires ne déclenche aucun envoi tant qu’il n’est pas confirmé.",
                         "Cliquer hors du formulaire ne le ferme pas. La croix, « Annuler » et Échap permettent de quitter ; la saisie non enregistrée est alors abandonnée."
                     ]
@@ -206,7 +207,7 @@
                     "summary": "Les corrections sont visibles dans le planning et dans l’agenda public après enregistrement.",
                     "steps": [
                         "Dans « Le planning », trouver la date puis cliquer sur « Modifier » dans sa carte.",
-                        "Corriger les informations pratiques, les effectifs, l’entracte ou l’ouverture des réponses. Cocher ou décocher les troupes invitées. Saisir un titre pour le rendre prioritaire, ou effacer le champ pour revenir au titre automatique.",
+                        "Corriger les informations pratiques, les effectifs, l’entracte ou l’ouverture des réponses. Cocher ou décocher les troupes participantes. Saisir un titre pour le rendre prioritaire, ou effacer le champ pour revenir au titre automatique.",
                         "Cliquer sur « Enregistrer les modifications ». Attendre la confirmation avant de fermer.",
                         "Pour modifier une présentation composée de blocs, utiliser « Ouvrir dans Gutenberg ». Le formulaire des Coulisses préserve ce contenu."
                     ],
@@ -214,7 +215,8 @@
                         "Modifier un spectacle n’envoie pas automatiquement d’email. Prévenir les personnes concernées séparément si un horaire ou un lieu change.",
                         "Les effectifs ne peuvent pas passer sous le nombre de personnes déjà retenues. Retirer d’abord les sélections concernées.",
                         "Si une autre personne a modifié la fiche entre-temps, recharger le formulaire avant de ressaisir les corrections.",
-                        "Les spectacles existants conservent leur titre saisi et leur troupe invitée. Les choix de troupes sont aussi disponibles dans les réglages Coulisse de Gutenberg."
+                        "Les spectacles existants conservent leur titre saisi et leurs troupes associées. Les choix de troupes sont aussi disponibles dans les réglages Coulisse de Gutenberg.",
+                        "Les spectacles enregistrés avant l’ajout de ce choix gardent le mode « VS ». Choisir explicitement « Avec » pour une soirée partagée, puis enregistrer. Un titre saisi conserve toujours la priorité."
                     ]
                 },
                 {
@@ -223,19 +225,21 @@
                     "access": "organizer",
                     "summary": "Cette liste reprend les champs définis par la version installée du site.",
                     "steps": [
-                        "Le lieu et le format sont choisis dans les fiches enregistrées. Les troupes invitées acceptent plusieurs choix ; ne rien cocher signifie qu’aucune troupe n’est invitée.",
+                        "Le lieu et le format sont choisis dans les fiches enregistrées. Les troupes participantes acceptent plusieurs choix ; ne rien cocher signifie qu’aucune autre troupe n’est associée au spectacle.",
                         "Le lien de billetterie est facultatif et doit être une adresse complète commençant par http:// ou https://.",
                         "« Fermer les réponses » empêche les membres de changer leur disponibilité ; cela ne retire pas leurs réponses existantes."
                     ],
-                    "notes": [],
+                    "notes": [
+                        "« Titre automatique : avec ou VS » choisit la liaison entre les noms des troupes, si le titre est vide. Ce réglage est aussi disponible dans les Informations Coulisse de Gutenberg."
+                    ],
                     "reference": "sdr_event"
                 }
             ]
         },
         {
             "id": "lieux",
-            "title": "Lieux et troupes invitées",
-            "summary": "Créer les lieux et les troupes invitées depuis les formulaires des spectacles, et distinguer les informations publiques des contacts privés.",
+            "title": "Lieux et troupes participantes",
+            "summary": "Créer les lieux et les troupes participantes depuis les formulaires des spectacles, et distinguer les informations publiques des contacts privés.",
             "guides": [
                 {
                     "id": "ajouter-un-lieu",
@@ -274,11 +278,11 @@
                 },
                 {
                     "id": "ajouter-une-troupe",
-                    "title": "Ajouter et sélectionner des troupes invitées",
+                    "title": "Ajouter et sélectionner des troupes participantes",
                     "access": "organizer",
                     "summary": "Créer une troupe dans le formulaire du spectacle et en sélectionner plusieurs sans perdre sa saisie.",
                     "steps": [
-                        "Dans le formulaire de création ou de modification du spectacle, aller à « Troupes invitées » et cocher les troupes participantes.",
+                        "Dans le formulaire de création ou de modification du spectacle, aller à « Troupes participantes » et cocher les troupes participantes.",
                         "Si une troupe manque, cliquer sur « Ajouter une troupe ». Renseigner son nom et, si possible, sa ville et son site web.",
                         "Cliquer sur « Enregistrer la troupe ». La nouvelle fiche est sélectionnée, en conservant les autres troupes déjà cochées.",
                         "Enregistrer ensuite le spectacle pour conserver ces associations. Pour retirer une troupe, décocher sa case avant d’enregistrer."
@@ -287,7 +291,8 @@
                         "Le nom est obligatoire. Le site web doit commencer par http:// ou https://. Un nom et une ville déjà enregistrés sont réutilisés sans modifier la fiche existante.",
                         "La croix, Échap et « Annuler et revenir au spectacle » ferment seulement la fenêtre de la troupe. Créer une troupe ne sauvegarde pas encore le spectacle.",
                         "La création est réservée à l’organisation et à l’administration ; elle ne donne pas de droits généraux sur les fiches WordPress.",
-                        "Jusqu’à 20 troupes peuvent être associées à un spectacle. Une troupe supprimée ou dépubliée doit être retirée ou remplacée avant d’enregistrer à nouveau le spectacle."
+                        "Jusqu’à 20 troupes peuvent être associées à un spectacle. Une troupe supprimée ou dépubliée doit être retirée ou remplacée avant d’enregistrer à nouveau le spectacle.",
+                        "« Troupes participantes » désigne les autres troupes présentes, qu’elles soient invitées, partenaires ou coorganisatrices. Le champ ne définit pas un statut d’invitation."
                     ]
                 }
             ]
@@ -561,7 +566,7 @@
                     "notes": [
                         "Le bloc Informations pratiques et les listes de spectacles liés reprennent les données des fiches. Corriger la donnée dans la fiche plutôt que recopier une deuxième version dans le texte.",
                         "Le formulaire des Coulisses préserve les présentations déjà composées de blocs Gutenberg.",
-                        "Sur un spectacle, le titre saisi est prioritaire. Un titre laissé vide est généré à partir des troupes invitées, ou du format et de la date. Chaque troupe liée affiche le spectacle dans ses prochaines dates."
+                        "Sur un spectacle, le titre saisi est prioritaire. Un titre laissé vide est généré à partir des troupes participantes, ou du format et de la date. Chaque troupe liée affiche le spectacle dans ses prochaines dates."
                     ]
                 }
             ]

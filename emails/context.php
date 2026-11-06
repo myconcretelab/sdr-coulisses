@@ -8,7 +8,7 @@ final class SDR_Email_Context {
             'prenom'=>'Prénom', 'nom'=>'Nom de famille', 'nom_affiche'=>'Nom affiché', 'nom_complet'=>'Nom complet', 'email'=>'Adresse email', 'nom_site'=>'Nom du site', 'nom_troupe'=>'Nom de la troupe',
             'spectacle'=>'Titre du spectacle', 'date'=>'Date du spectacle', 'heure'=>'Heure du spectacle', 'rdv'=>'Rendez-vous troupe',
             'date_du_jour'=>'Date du jour', 'date_spectacle'=>'Date du spectacle (alias)', 'jours_avant_spectacle'=>'Jours avant la date (négatif si passée)', 'heure_spectacle'=>'Heure du spectacle (alias)', 'heure_rendez_vous'=>'Rendez-vous troupe (alias)', 'lieu_spectacle'=>'Lieu (alias)',
-            'lieu'=>'Lieu', 'adresse'=>'Adresse', 'ville'=>'Ville', 'format'=>'Format', 'troupe'=>'Troupe invitée',
+            'lieu'=>'Lieu', 'adresse'=>'Adresse', 'ville'=>'Ville', 'format'=>'Format', 'troupe'=>'Troupes participantes',
             'roles'=>'Rôles du profil', 'roles_proposes'=>'Rôles proposés dans cet email', 'role_retenu'=>'Rôle retenu',
             'besoins_manquants'=>'Tous les rôles encore recherchés', 'besoins_cibles'=>'Besoins correspondant au destinataire',
             'places_joueur'=>'Places libres de joueur·se', 'places_mc'=>'Places libres de MC', 'places_dj'=>'Places libres de DJ',
@@ -28,7 +28,7 @@ final class SDR_Email_Context {
             'selected'=>'La personne est sélectionnée', 'has_response'=>'La personne a répondu', 'response_yes'=>'La personne est partante',
             'response_maybe'=>'La personne est disponible si besoin', 'response_no'=>'La personne est indisponible',
             'has_venue'=>'Le lieu est renseigné', 'has_time'=>'L’horaire est renseigné', 'has_call_time'=>'Le rendez-vous est renseigné',
-            'has_guest'=>'Une troupe est invitée', 'has_booking'=>'La billetterie est renseignée', 'intermission'=>'Avec entracte',
+            'has_guest'=>'D’autres troupes participent', 'has_booking'=>'La billetterie est renseignée', 'intermission'=>'Avec entracte',
             'stage_opt_in'=>'Le profil est OK pour la scène', 'responses_open'=>'Les réponses sont ouvertes', 'can_reply'=>'Les boutons de réponse sont disponibles',
             'has_message'=>'Un message libre est fourni',
         ];
@@ -88,7 +88,7 @@ final class SDR_Email_Context {
     static function role_names($roles) { return implode(' · ',array_map(static fn($role)=>SDR_Coulisses::ROLES[$role]??'', $roles)); }
     static function demo($kind, $scenario = 'missing_mc') {
         $context=self::build($kind,0,null,['preview'=>true,'message'=>'<p>Voici un exemple de message libre, personnalisé pour cette personne.</p>','subject'=>'Un petit mot de la troupe']);
-        $context['vars']=array_merge($context['vars'],['spectacle'=>'SDR × La troupe invitée','date'=>'Samedi 14 novembre 2026','heure'=>'20h30','rdv'=>'19h30','lieu'=>'Le Champ commun','adresse'=>'1 rue du Clos Bily','ville'=>'Augan','format'=>'Rencontre improvisée','troupe'=>'La troupe invitée','expiration'=>'28/10/2026','lien_spectacle'=>home_url('/'),'lien_billetterie'=>home_url('/'),'personnes_retenues'=>'5']);
+        $context['vars']=array_merge($context['vars'],['spectacle'=>'SDR avec Les Voisins','date'=>'Samedi 14 novembre 2026','heure'=>'20h30','rdv'=>'19h30','lieu'=>'Le Champ commun','adresse'=>'1 rue du Clos Bily','ville'=>'Augan','format'=>'Rencontre improvisée','troupe'=>'Les Voisins','expiration'=>'28/10/2026','lien_spectacle'=>home_url('/'),'lien_billetterie'=>home_url('/'),'personnes_retenues'=>'5']);
         $context['conditions']=array_merge($context['conditions'],['has_event'=>true,'has_venue'=>true,'has_time'=>true,'has_call_time'=>true,'has_guest'=>true,'has_booking'=>true,'no_capacity'=>false,'responses_open'=>true,'stage_opt_in'=>true]);
         $needs=$scenario==='multiple'?['joueur'=>2,'mc'=>1,'dj'=>1]:['mc'=>1];
         if(in_array($scenario,['complete','no_capacity'],true))$needs=[];
