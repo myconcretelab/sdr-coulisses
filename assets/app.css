@@ -144,6 +144,16 @@ body.sdr-workspace.sdr-relances-open{overflow:hidden}
 :where(body.sdr-workspace) .nav-item.active{color:var(--sdr-accent,#4d3b89);box-shadow:inset 3px 0 var(--sdr-accent,#6551b5)}
 
 /* One column per required role; the whole colored card selects the person. */
+:where(body.sdr-workspace) .new-event-team-field{min-width:0;border:0;padding:0;margin:20px 0}
+:where(body.sdr-workspace) .new-event-team-field>legend{font-family:var(--font);font-size:13px;font-weight:600;letter-spacing:0}
+:where(body.sdr-workspace) .event-team-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-height:240px;overflow:auto;margin:12px 0;padding:3px}
+:where(body.sdr-workspace) .event-team-choice{display:flex;align-items:center;gap:9px;min-width:0;min-height:44px;padding:10px 12px;border:1px solid #d8cfe4;border-radius:7px;background:#fffefa;font-size:12px;cursor:pointer}
+:where(body.sdr-workspace) .event-team-choice:has(input:checked){background:#e8dff6;border-color:#8061b2;color:#4b3378}
+:where(body.sdr-workspace) .event-team-choice input{flex-shrink:0;accent-color:#7653ac;width:17px;height:17px}
+:where(body.sdr-workspace) .event-team-choice>span{min-width:0;overflow-wrap:anywhere}
+:where(body.sdr-workspace) .event-team-choice small{display:block;font-size:10px;margin-top:3px;color:var(--muted)}
+:where(body.sdr-workspace) #new-event-title-preview{display:block;line-height:1.5;overflow-wrap:anywhere}
+@media(max-width:560px){:where(body.sdr-workspace) .event-team-options{grid-template-columns:1fr}}
 :where(body.sdr-workspace) .candidate-board{position:relative;isolation:isolate}
 :where(body.sdr-workspace) .candidate-links{position:absolute;inset:0;width:100%;height:100%;z-index:1;overflow:visible;pointer-events:none}
 :where(body.sdr-workspace) .candidate-links path{fill:none;stroke-width:2;opacity:.55}

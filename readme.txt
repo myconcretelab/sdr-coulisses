@@ -3,7 +3,7 @@ Contributors: myconcretelab
 Tags: theatre, events, members, availability
 Requires at least: 6.5
 Requires PHP: 8.1
-Stable tag: 1.12.1
+Stable tag: 1.13.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -48,6 +48,11 @@ externe de mises à jour n’est encore raccordé.
 Elles sont conservées. Aucun effacement automatique n’est exécuté.
 
 == Changelog ==
+
+= 1.13.0 =
+* Bouton « Mes disponibilités » dans le planning.
+* Création de troupes depuis le formulaire de spectacle, avec sélection de plusieurs troupes.
+* Titre saisi prioritaire ; titre automatique si le champ reste vide, dans le planning, les fiches publiques et les emails.
 
 = 1.12.1 =
 * Candidatures regroupées par rôle, avec des cartes compactes entièrement cliquables.

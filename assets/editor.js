@@ -1,13 +1,13 @@
 (function(wp){
     'use strict';
     const el=wp.element.createElement, {useState,useEffect,Fragment}=wp.element;
-    const {PanelBody,TextControl,TextareaControl,ComboboxControl,ToggleControl,Button,Notice,Spinner}=wp.components;
+    const {PanelBody,TextControl,TextareaControl,ComboboxControl,CheckboxControl,ToggleControl,Button,Notice,Spinner}=wp.components;
     const {PluginSidebar,PluginSidebarMoreMenuItem,PluginDocumentSettingPanel}=wp.editor;
     const names={sdr_event:'Spectacle',sdr_venue:'Lieu',sdr_team:'Troupe invitée',sdr_format:'Format'};
     const roleNames={joueur:'Joueur·se',mc:'MC',dj:'DJ'};
     const common={__next40pxDefaultSize:true,__nextHasNoMarginBottom:true};
 
-    function Relation({label,type,value,onChange}){
+    function Relation({label,type,value,onChange,multiple=false}){
         const [options,setOptions]=useState([]),[loading,setLoading]=useState(true),[error,setError]=useState(''),[refresh,setRefresh]=useState(0);
         useEffect(()=>{
             let cancelled=false;
@@ -30,11 +30,12 @@
             })().catch(()=>{if(!cancelled)setError('Impossible de charger les fiches. Réessaie.');}).finally(()=>{if(!cancelled)setLoading(false);});
             return ()=>{cancelled=true;};
         },[type,refresh]);
-        const selected=String(value||0);
+        const selected=String(value||0),selectedMany=multiple?(Array.isArray(value)?value:[]).map(String):[];
         const choices=[{value:'0',label:'À préciser'},...options];
-        if(value&&!options.some(option=>option.value===selected))choices.push({value:selected,label:'Fiche liée n°'+value+(loading?' · chargement…':' · indisponible')});
+        for(const id of multiple?selectedMany:(value?[selected]:[])) if(!options.some(option=>option.value===id))choices.push({value:id,label:'Fiche liée n°'+id+(loading?' · chargement…':' · indisponible')});
         return el('div',{className:'sdr-editor-relation'},
-            el(ComboboxControl,{...common,label,value:selected,options:choices,onChange:v=>onChange(Number(v)||0),help:loading?'Chargement des fiches…':undefined}),
+            multiple?el('fieldset',null,el('legend',null,label),choices.filter(option=>option.value!=='0').map(option=>el(CheckboxControl,{...common,key:option.value,label:option.label,checked:selectedMany.includes(option.value),onChange:checked=>onChange(checked?[...selectedMany,option.value].map(Number):selectedMany.filter(id=>id!==option.value).map(Number))})),!loading&&choices.length===1&&el('p',null,'Aucune troupe enregistrée.'))
+                :el(ComboboxControl,{...common,label,value:selected,options:choices,onChange:v=>onChange(Number(v)||0),help:loading?'Chargement des fiches…':undefined}),
             loading&&el(Spinner),
             error&&el(Notice,{status:'warning',isDismissible:false},error),
             el('div',{className:'sdr-editor-links'},
@@ -66,8 +67,9 @@
                 el(ToggleControl,{...common,key:'intermission',label:'Avec entracte',checked:!!get('intermission'),onChange:value=>set('intermission',value),help:'Indique au public si une pause est prévue pendant le spectacle.'})
             ]));
             panels.push(group('Lieu, troupe et format',[
-                relation('venue','Lieu','sdr_venue'),relation('team','Troupe invitée','sdr_team'),relation('format','Format','sdr_format')
+                relation('venue','Lieu','sdr_venue'),el(Relation,{key:'teams',label:'Troupes invitées',type:'sdr_team',multiple:true,value:Array.isArray(get('teams'))?get('teams'):(get('team')?[get('team')]:[]),onChange:teams=>editPost({meta:{...(wp.data.select('core/editor').getEditedPostAttribute('meta')||{}),_sdr_teams:teams,_sdr_team:teams[0]||0}})}),relation('format','Format','sdr_format')
             ]));
+            panels.push(el('p',{key:'automatic-title',className:'sdr-editor-help'},'Le titre saisi en haut de la page est prioritaire. Laisse-le vide pour utiliser un titre automatique : troupe(s) invitée(s), ou format et date.'));
             panels.push(group('Équipe et inscriptions',[
                 el('p',{key:'help',className:'sdr-editor-help'},'Les places concernent les membres de la troupe, hors troupe invitée.'),
                 ...Object.entries(roleNames).map(([key,label])=>{

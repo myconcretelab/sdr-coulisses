@@ -54,7 +54,7 @@ static function details($attributes, $content, $block) {
             $output .= '<p><span aria-hidden="true">✳</span><span>'.$format.'</span></p>';
         }
         if (!empty($event['team'])) {
-            $team = !empty($event['teamUrl']) ? '<a href="'.esc_url($event['teamUrl']).'">'.esc_html($event['team']).'</a>' : esc_html($event['team']);
+            $team = implode(' · ',array_map(static fn($team)=>'<a href="'.esc_url($team['url']).'">'.esc_html($team['name']).'</a>',$event['teams']));
             $output .= '<p><span aria-hidden="true">↗</span><span>Avec '.$team.'</span></p>';
         }
         $output .= '</div></section>';
@@ -86,7 +86,9 @@ static function related_events($attributes, $content, $block) {
         'post_type' => 'sdr_event', 'post_status' => 'publish', 'numberposts' => 6,
         'meta_key' => '_sdr_date', 'orderby' => 'meta_value', 'order' => 'ASC',
         'meta_query' => [
-            ['key' => '_sdr_'.$meta[$post->post_type], 'value' => (string) $post_id],
+            $post->post_type==='sdr_team'
+                ? ['relation'=>'OR',['key'=>'_sdr_team','value'=>(string)$post_id],['key'=>'_sdr_event_team','value'=>(string)$post_id]]
+                : ['key' => '_sdr_'.$meta[$post->post_type], 'value' => (string) $post_id],
             ['key' => '_sdr_date', 'value' => current_time('Y-m-d'), 'compare' => '>=', 'type' => 'DATE'],
         ],
     ]);
