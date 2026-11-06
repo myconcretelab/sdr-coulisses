@@ -2,7 +2,7 @@
 /**
  * Plugin Name: SDR — Les Coulisses
  * Description: Agenda public, disponibilités et composition des équipes des Sorties de Route.
- * Version: 1.9.0
+ * Version: 1.9.2
  * Requires PHP: 8.1
  * Text Domain: sdr
  */
@@ -48,7 +48,7 @@ final class SDR_Coulisses {
             if($pagenow==='post.php' && $id && get_post_type($id)==='sdr_event' && self::organizer() && current_user_can('edit_post',$id)) return;
             wp_safe_redirect(home_url('/coulisses/')); exit;
         });
-        add_action('wp_enqueue_scripts', function(){ wp_enqueue_style('sdr-ui',plugins_url('assets/app.css',__FILE__),[], '1.9.0'); });
+        add_action('wp_enqueue_scripts', function(){ wp_enqueue_style('sdr-ui',plugins_url('assets/app.css',__FILE__),[], '1.9.2'); });
         add_shortcode('sdr_agenda', [__CLASS__, 'agenda']);
         add_shortcode('sdr_coulisses', [__CLASS__, 'app']);
         add_shortcode('sdr_facebook', [__CLASS__, 'facebook']);
@@ -103,7 +103,7 @@ final class SDR_Coulisses {
     static function meta($id,$key,$default=''){ $v=get_post_meta($id,'_sdr_'.$key,true); return $v==='' ? $default : $v; }
     static function fields($type) {
         if($type==='sdr_event') return ['date'=>['Date','date'],'time'=>['Début du spectacle','time'],'call_time'=>['Rendez-vous des membres','time'],'venue'=>['Lieu','sdr_venue'],'team'=>['Troupe invitée','sdr_team'],'format'=>['Format','sdr_format'],'capacity_joueur'=>['Places de joueurs SDR','number'],'capacity_mc'=>['Places MC','number'],'capacity_dj'=>['Places DJ','number'],'booking_url'=>['Lien de billetterie (facultatif)','url'],'closed'=>['Réponses fermées','boolean'],'intermission'=>['Avec entracte','boolean']];
-        if($type==='sdr_venue') return ['address'=>['Adresse publique','text'],'city'=>['Commune','text'],'website'=>['Site internet','url'],'contact'=>['Contact interne (réservé à l’administration)','text']];
+        if($type==='sdr_venue') return ['address'=>['Adresse publique','text'],'city'=>['Commune','text'],'website'=>['Site internet','url'],'contact'=>['Contact interne (réservé à l’administration)','text'],'phone'=>['Téléphone du contact (privé)','tel'],'email'=>['E-mail du contact (privé)','email'],'contact_notes'=>['Autres informations de contact (privées)','textarea']];
         if($type==='sdr_team') return ['city'=>['Ville','text'],'website'=>['Site internet','url']];
         return [];
     }
@@ -168,6 +168,7 @@ final class SDR_Coulisses {
         register_rest_route('sdr/v1','/dashboard',['methods'=>'GET','permission_callback'=>[__CLASS__,'member'],'callback'=>[__CLASS__,'dashboard']]);
         register_rest_route('sdr/v1','/archives',['methods'=>'GET','permission_callback'=>[__CLASS__,'member'],'callback'=>[__CLASS__,'archives']]);
         register_rest_route('sdr/v1','/event-options',['methods'=>'GET','permission_callback'=>[__CLASS__,'organizer'],'callback'=>[__CLASS__,'event_options']]);
+        register_rest_route('sdr/v1','/venues',['methods'=>'POST','permission_callback'=>[__CLASS__,'organizer'],'callback'=>[__CLASS__,'create_venue']]);
         register_rest_route('sdr/v1','/events',['methods'=>'POST','permission_callback'=>[__CLASS__,'organizer'],'callback'=>[__CLASS__,'create_event']]);
         register_rest_route('sdr/v1','/events/(?P<id>\d+)/edit',[
             ['methods'=>'GET','permission_callback'=>[__CLASS__,'organizer'],'callback'=>[__CLASS__,'edit_event_data']],
@@ -187,6 +188,36 @@ final class SDR_Coulisses {
             $result[$key]=array_map(fn($post)=>['id'=>$post->ID,'name'=>$post->post_title,'address'=>$type==='sdr_venue'?self::meta($post->ID,'address'):'','city'=>$type==='sdr_venue'?self::meta($post->ID,'city'):''],get_posts(['post_type'=>$type,'post_status'=>'publish','numberposts'=>-1,'orderby'=>'title','order'=>'ASC']));
         }
         return $result;
+    }
+    static function venue_option($post){
+        return ['id'=>(int)$post->ID,'name'=>$post->post_title,'address'=>self::meta($post->ID,'address'),'city'=>self::meta($post->ID,'city')];
+    }
+    static function create_venue($req){
+        // A bounded creation action for organizers, without access to item administration.
+        if(!self::organizer()) return self::error('Seule l’organisation peut ajouter un lieu.',403);
+        $data=$req->get_json_params();
+        if(!is_array($data)) return self::error('Le formulaire du lieu est incomplet.');
+        $fields=[];
+        foreach(['name'=>200,'city'=>120,'address'=>300,'website'=>2048,'contact'=>200,'phone'=>50,'email'=>254,'contact_notes'=>2000] as $key=>$limit){
+            $value=$data[$key]??'';
+            if(!is_string($value)) return self::error('Le champ « '.$key.' » est invalide.');
+            $fields[$key]=trim($key==='contact_notes'?sanitize_textarea_field($value):sanitize_text_field($value));
+            if(mb_strlen($fields[$key])>$limit) return self::error('Le champ « '.$key.' » est trop long.');
+        }
+        if($fields['name']==='') return self::error('Indique le nom du lieu.');
+        if($fields['website']!=='' && (!filter_var($fields['website'],FILTER_VALIDATE_URL) || !in_array(strtolower(wp_parse_url($fields['website'],PHP_URL_SCHEME)??''),['http','https'],true))) return self::error('Indique un site web commençant par https:// ou http://.');
+        if($fields['email']!=='' && !is_email($fields['email'])) return self::error('Indique une adresse e-mail valide pour le contact.');
+        $normalize=static fn($value)=>mb_strtolower(preg_replace('/\s+/u',' ',trim($value)),'UTF-8');
+        foreach(get_posts(['post_type'=>'sdr_venue','post_status'=>'publish','numberposts'=>-1]) as $post){
+            if($normalize($post->post_title)===$normalize($fields['name']) && $normalize(self::meta($post->ID,'city'))===$normalize($fields['city'])){
+                return ['created'=>false,'venue'=>self::venue_option($post)];
+            }
+        }
+        $meta=[];
+        foreach(['address','city','website','contact','phone','email','contact_notes'] as $key)$meta['_sdr_'.$key]=$fields[$key];
+        $id=wp_insert_post(wp_slash(['post_type'=>'sdr_venue','post_status'=>'publish','post_author'=>get_current_user_id(),'post_title'=>$fields['name'],'meta_input'=>$meta]),true);
+        if(is_wp_error($id) || !$id) return self::error('Impossible d’enregistrer le lieu. Réessaie.',500);
+        return ['created'=>true,'venue'=>self::venue_option(get_post($id))];
     }
     static function event_form_fields($data){
         if(!is_array($data)) return self::error('Le formulaire est incomplet.');
@@ -617,7 +648,7 @@ final class SDR_Coulisses {
     static function app(){
         if(!self::member()) return '<div class="login-callout"><h2>Bienvenue dans les coulisses.</h2><p>Cet espace est réservé aux membres de la troupe.</p><a class="button primary" href="'.esc_url(wp_login_url(home_url('/coulisses/'))).'">Se connecter →</a></div>';
         wp_enqueue_script('sdr-event-reminders',plugins_url('assets/event-reminders.js',__FILE__),[], '1.9.0',true);
-        wp_enqueue_script('sdr-app',plugins_url('assets/app.js',__FILE__),['sdr-event-reminders'], '1.9.0',true);
+        wp_enqueue_script('sdr-app',plugins_url('assets/app.js',__FILE__),['sdr-event-reminders'], '1.9.2',true);
         wp_add_inline_script('sdr-app','window.SDR='.wp_json_encode(['api'=>rest_url('sdr/v1/'),'nonce'=>wp_create_nonce('wp_rest'),'home'=>home_url('/'),'logo'=>get_theme_file_uri('/assets/sdr-logo.jpeg'),'admin'=>admin_url(),'relances'=>class_exists('SDR_Relances') && SDR_Relances::allowed()?SDR_Relances::workspace_url():'','adminLogin'=>add_query_arg('sdr_admin','1',wp_login_url(admin_url(),true)),'logout'=>html_entity_decode(wp_logout_url(home_url('/')),ENT_QUOTES,'UTF-8')]).';','before');
         return '<div id="sdr-app"><div class="app-loading"><span class="loading-star">✳</span><p>On ouvre les coulisses…</p></div></div><noscript>Active JavaScript pour gérer tes disponibilités.</noscript>';
     }

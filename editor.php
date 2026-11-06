@@ -26,6 +26,8 @@ final class SDR_Editor {
                     'sanitize_callback' => static function($value) use ($kind, $control) {
                         if ($kind === 'boolean') return rest_sanitize_boolean($value);
                         if ($kind === 'integer') return absint($value);
+                        if ($control === 'textarea') return sanitize_textarea_field($value);
+                        if ($control === 'email') return sanitize_email($value);
                         return $control === 'url' ? esc_url_raw($value) : sanitize_text_field($value);
                     },
                 ]);
@@ -51,6 +53,8 @@ final class SDR_Editor {
                 return new WP_Error('sdr_invalid_time', 'L’horaire doit être compris entre 00:00 et 23:59.', ['status' => 400]);
             if ($control === 'url' && $value !== '' && (!filter_var($value, FILTER_VALIDATE_URL) || !in_array(strtolower(wp_parse_url($value, PHP_URL_SCHEME) ?? ''), ['http', 'https'], true)))
                 return new WP_Error('sdr_invalid_url', 'Indique une adresse web complète commençant par https:// ou http://.', ['status' => 400]);
+            if ($control === 'email' && $value !== '' && !is_email($value))
+                return new WP_Error('sdr_invalid_email', 'Indique une adresse e-mail valide pour le contact.', ['status' => 400]);
             if (str_starts_with($control, 'sdr_') && $value && (get_post_type($value) !== $control || !in_array(get_post_status($value), ['publish','draft','pending','future','private'], true) || !current_user_can('read_post', $value)))
                 return new WP_Error('sdr_invalid_relation', 'La fiche choisie pour « '.$label.' » est introuvable ou inaccessible.', ['status' => 400]);
             if ($id && str_starts_with($key, 'capacity_')) {
@@ -65,7 +69,7 @@ final class SDR_Editor {
     static function assets() {
         $screen = get_current_screen();
         if (!$screen || !in_array($screen->post_type, self::TYPES, true)) return;
-        wp_enqueue_script('sdr-editor', plugins_url('assets/editor.js', __FILE__), ['wp-plugins','wp-editor','wp-element','wp-components','wp-data','wp-api-fetch','wp-html-entities'], '1.4.2', true);
+        wp_enqueue_script('sdr-editor', plugins_url('assets/editor.js', __FILE__), ['wp-plugins','wp-editor','wp-element','wp-components','wp-data','wp-api-fetch','wp-html-entities'], '1.9.2', true);
         wp_enqueue_style('sdr-editor', plugins_url('assets/editor.css', __FILE__), ['wp-components'], '1.1.1');
         global $post, $wpdb;
         $selected = array_fill_keys(array_keys(SDR_Coulisses::ROLES), 0);

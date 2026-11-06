@@ -108,6 +108,45 @@
     dialog.innerHTML=`${dialogBanner('SPECTACLE PASSÉ',{className:'archive-banner',symbol:'↶'})}<div class="dialog-inner">${eventSummary(event)}<p class="archive-readonly">Cette soirée est passée. Les réponses et la composition des équipes sont conservées en lecture seule.</p>${event.mine?`<p class="selection-note">${event.mine.selectedRole?'★ Tu étais dans l’équipe : '+h(roleNames[event.mine.selectedRole]||event.mine.selectedRole)+'.':'Ta réponse : '+h(statusNames[event.mine.availability]||event.mine.availability)+'.'}</p>`:''}<section class="team-preview"><h3>L’équipe de cette soirée <span>${team.length} personne${team.length>1?'s':''}</span></h3>${team.length?`<div class="selected-people">${team.map(person=>`<div><span class="avatar" aria-hidden="true">${h([...person.name][0])}</span><span><b>${h(person.name)}</b><small>${h(roleNames[person.selectedRole]||person.selectedRole)}</small></span></div>`).join('')}</div>`:'<p>Aucune sélection n’a été enregistrée pour cette soirée.</p>'}</section>${data.organizer?`<details class="archive-responses"><summary>Les réponses à l’époque (${event.responses.length})</summary>${event.responses.length?`<ul>${event.responses.map(person=>`<li><strong>${h(person.name)}</strong><span>${h(statusNames[person.availability]||person.availability)}${person.roles.length?' · '+person.roles.map(role=>h(roleNames[role]||role)).join(', '):''}</span></li>`).join('')}</ul>`:'<p>Aucune réponse enregistrée.</p>'}</details>`:''}<a class="button secondary archive-public-link" href="${h(event.url)}">Voir la fiche du spectacle <span aria-hidden="true">↗</span></a></div>`;
     dialog.querySelector('.dialog-close').onclick=()=>dialog.close();dialog.showModal();
   }
+  function openCreateVenue(onSaved){
+    const dialog=document.createElement('dialog');
+    dialog.className='event-dialog new-event-dialog new-venue-dialog';
+    dialog.setAttribute('aria-labelledby','new-venue-title');
+    dialog.innerHTML=`${dialogBanner('UN NOUVEAU LIEU',{closeLabel:'Revenir au spectacle'})}<div class="dialog-inner"><h2 id="new-venue-title">Ajouter un lieu</h2><p class="new-event-intro">Le spectacle reste ouvert. Ce lieu sera disponible pour les prochaines dates.</p><form id="new-venue-form">
+      <label class="new-event-field">Nom du lieu *<input name="name" required maxlength="200" autocomplete="off" autofocus></label>
+      <label class="new-event-field">Commune <span class="optional">(facultatif)</span><input name="city" maxlength="120" autocomplete="address-level2"></label>
+      <label class="new-event-field">Adresse <span class="optional">(facultatif)</span><input name="address" maxlength="300" autocomplete="street-address"></label>
+      <label class="new-event-field">Site web <span class="optional">(facultatif)</span><input name="website" type="url" maxlength="2048" placeholder="https://…" autocomplete="url"></label>
+      <fieldset class="new-event-section"><legend>Contacts du lieu</legend><p class="field-help">Ces coordonnées restent privées et ne sont pas affichées sur le site public. Tous ces champs sont facultatifs.</p>
+        <label class="new-event-field">Personne à contacter<input name="contact" maxlength="200" autocomplete="off" placeholder="Nom, fonction…"></label>
+        <label class="new-event-field">Téléphone<input name="phone" type="tel" maxlength="50" autocomplete="off" placeholder="06 12 34 56 78"></label>
+        <label class="new-event-field">E-mail<input name="email" type="email" maxlength="254" autocomplete="off" placeholder="contact@exemple.fr"></label>
+        <label class="new-event-field">Autres informations de contact<textarea name="contact_notes" maxlength="2000" rows="3" placeholder="Autres contacts, horaires pour appeler, précisions…"></textarea></label>
+      </fieldset>
+      <p class="form-message" role="status" aria-live="polite"></p><div class="new-event-actions"><button type="submit" class="button primary">Enregistrer le lieu <span aria-hidden="true">✓</span></button></div><button type="button" class="new-event-cancel">Annuler et revenir au spectacle</button>
+    </form></div>`;
+    const form=dialog.querySelector('form'),message=form.querySelector('.form-message');
+    let saving=false;
+    const close=()=>{if(!saving)dialog.close();};
+    dialog.querySelector('.dialog-close').onclick=close;
+    dialog.querySelector('.new-event-cancel').onclick=close;
+    dialog.oncancel=event=>{if(saving)event.preventDefault();};
+    dialog.onclick=event=>{if(event.target===dialog){const rect=dialog.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)close();}};
+    dialog.addEventListener('close',()=>dialog.remove(),{once:true});
+    form.onsubmit=async event=>{
+      event.preventDefault();if(saving)return;
+      const fields=new FormData(form),body=Object.fromEntries(['name','city','address','website','contact','phone','email','contact_notes'].map(key=>[key,fields.get(key)]));
+      saving=true;message.textContent='Enregistrement du lieu…';
+      dialog.querySelectorAll('button,input,textarea').forEach(control=>control.disabled=true);
+      let result;
+      try{result=await api('venues',body);}
+      catch(error){saving=false;message.textContent=error.message;dialog.querySelectorAll('button,input,textarea').forEach(control=>control.disabled=false);return;}
+      onSaved(result.venue);
+      dialog.close();
+      toast(result.created?'Le lieu a été ajouté et sélectionné.':'Ce lieu existe déjà : il a été sélectionné.');
+    };
+    root.append(dialog);dialog.showModal();
+  }
   async function openCreateEvent(id=null){
     if(!data.organizer) return;
     const editing=Number.isInteger(id);
@@ -120,12 +159,13 @@
       if(!dialog.open || !dialog.isConnected) return;
       const assigned=Object.fromEntries(Object.keys(roleNames).map(key=>[key,editing?data.events.find(item=>item.id===id)?.responses.filter(person=>person.selectedRole===key).length||0:0]));
       const choices=(items,placeholder,selected=0)=>`<option value="0" ${!selected?'selected':''}>${placeholder}</option>${items.map(item=>`<option value="${item.id}" ${item.id===selected?'selected':''}>${h(item.name)}${item.city?' · '+h(item.city):''}</option>`).join('')}`;
+      const venueChoices=selected=>choices(options.venues,'Lieu à préciser',selected)+'<optgroup label="Nouveau lieu"><option value="new">＋ Ajouter un nouveau lieu…</option></optgroup>';
       dialog.innerHTML=`${dialogBanner(editing?'UNE DATE À AJUSTER':'UNE NOUVELLE DATE',{closeLabel:'Fermer la fenêtre'})}<div class="dialog-inner"><div class="eyebrow">${editing?'LES DÉTAILS DU SPECTACLE':'ON PRÉPARE LA PROCHAINE SOIRÉE'}</div><h2 id="new-event-title">${editing?'Modifier le spectacle':'Et si on jouait…'}</h2><p class="new-event-intro">${editing?'Corrige les informations pratiques sans quitter les coulisses.':'Les infos pratiques d’abord. Le grand récit peut attendre.<br>Le titre et la date sont obligatoires.'}</p>
       <form id="new-event-form">
         <label class="new-event-field">Titre du spectacle *<input name="title" maxlength="200" required placeholder="Cabaret d’impro, rencontre avec…" autocomplete="off" value="${h(existing?.title||'')}"></label>
         <div class="new-event-grid"><label class="new-event-field">Date du spectacle *<input name="date" type="date" required value="${h(existing?.date||'')}"></label><label class="new-event-field">Format<select name="format">${choices(options.formats,'À préciser',existing?.format)}</select></label></div>
         <fieldset class="new-event-section"><legend>Le lieu & les horaires <span aria-hidden="true">↗</span></legend>
-          <label class="new-event-field">Lieu<select name="venue">${choices(options.venues,'Lieu à préciser',existing?.venue)}</select><small id="new-venue-address">Choisis parmi les lieux enregistrés.</small></label>
+          <label class="new-event-field">Lieu<select name="venue" aria-describedby="new-venue-address">${venueChoices(existing?.venue)}</select><small id="new-venue-address">Choisis parmi les lieux enregistrés.</small></label>
           <div class="new-event-grid"><label class="new-event-field">Rendez-vous de la troupe<input name="callTime" type="time" value="${h(existing?.callTime||'')}"></label><label class="new-event-field">Début du spectacle<input name="time" type="time" value="${h(existing?.time||'')}"></label></div>
           <label class="new-event-field">Troupe invitée<select name="team">${choices(options.teams,'Pas de troupe invitée / à préciser',existing?.team)}</select></label><label class="close-switch"><input type="checkbox" name="intermission" ${existing?.intermission?'checked':''}><span class="switch-track" aria-hidden="true"></span><span>Avec entracte<small>À cocher si une pause est prévue pendant le spectacle.</small></span></label>
         </fieldset>
@@ -141,11 +181,24 @@
       dialog.querySelector('.new-event-cancel').onclick=close;
       dialog.oncancel=event=>{if(saving) event.preventDefault();};
       dialog.onclick=event=>{if(event.target===dialog){const rect=dialog.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)close();}};
-      form.elements.venue.onchange=()=>{
+      let selectedVenue=form.elements.venue.value;
+      const refreshVenueAddress=()=>{
         const venue=options.venues.find(item=>item.id===Number(form.elements.venue.value));
         dialog.querySelector('#new-venue-address').textContent=venue?[venue.address,venue.city].filter(Boolean).join(' · ')||'Adresse à compléter dans la fiche du lieu.':'Choisis parmi les lieux enregistrés.';
       };
-      form.elements.venue.onchange();
+      form.elements.venue.onchange=()=>{
+        if(form.elements.venue.value==='new'){
+          form.elements.venue.value=selectedVenue;
+          openCreateVenue(venue=>{
+            options.venues=options.venues.filter(item=>item.id!==venue.id).concat(venue).sort((a,b)=>a.name.localeCompare(b.name,'fr')||a.city.localeCompare(b.city,'fr'));
+            selectedVenue=String(venue.id);form.elements.venue.innerHTML=venueChoices(venue.id);
+            refreshVenueAddress();
+          });
+          return;
+        }
+        selectedVenue=form.elements.venue.value;refreshVenueAddress();
+      };
+      refreshVenueAddress();
       const refreshCapacities=()=>{
         form.querySelectorAll('[data-event-step]').forEach(button=>{
           const input=form.elements['capacity_'+button.dataset.role],value=Number(input.value),min=Number(input.min),max=Number(input.max);
