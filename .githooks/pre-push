@@ -1,0 +1,13 @@
+#!/bin/sh
+set -eu
+while read -r local_ref local_sha remote_ref remote_sha; do
+    case "$local_sha" in 0000000000000000000000000000000000000000) continue ;; esac
+    # Historical branches from before this checker remain pushable.
+    if ! git cat-file -e "$local_sha:tools/check-documentation.php" 2>/dev/null; then continue; fi
+    review_dir=$(mktemp -d)
+    trap 'rm -rf "$review_dir"' EXIT HUP INT TERM
+    git archive "$local_sha" | tar -x -C "$review_dir"
+    php "$review_dir/tools/check-documentation.php" --check
+    rm -rf "$review_dir"
+    trap - EXIT HUP INT TERM
+done

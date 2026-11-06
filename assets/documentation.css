@@ -1,0 +1,83 @@
+/* Guides use the same paper, ink and accent colours as the Coulisses. */
+#sdr-app .documentation-entry {
+    display:flex;align-items:center;gap:11px;width:100%;margin:24px 0 0;padding:15px 13px;
+    border:1px solid #9275b8;border-radius:7px;background:#e5d9f3;color:#44305e;
+    box-shadow:2px 3px 0 #4b345019;text-align:left;
+}
+#sdr-app .documentation-entry:hover { background:#d9c7ee; }
+#sdr-app .documentation-entry[aria-current=page] { background:#563779;color:#fff; }
+#sdr-app .documentation-entry svg { width:25px;height:25px;flex-shrink:0; }
+#sdr-app .documentation-entry strong { display:block;font-size:13px; }
+#sdr-app .documentation-entry small { display:block;margin-top:4px;font-size:10px;line-height:1.4; }
+#sdr-app .documentation-entry + .sidebar-label { margin-top:26px; }
+#sdr-app .app-sidebar { overflow-y:auto; }
+.documentation-heading { margin-bottom:28px; }
+.documentation-heading h1 { font-size:43px;line-height:1.1;margin:0 0 14px; }
+.documentation-heading p { font-size:14px;line-height:1.65;margin:8px 0; }
+.documentation-heading .documentation-meta { color:#746c62;font-size:11px; }
+.documentation-search { padding:20px 23px;margin-bottom:24px;border:1px solid #d9cfe3;background:#f0e9f6;border-radius:10px; }
+.documentation-search label { display:block;font-size:12px;font-weight:700;margin-bottom:10px; }
+.documentation-search > div { display:flex;align-items:center;gap:10px; }
+.documentation-search input { width:100%;min-height:46px;background:#fffdf8;font-size:13px; }
+.documentation-search button { padding:10px;background:transparent;text-decoration:underline;font-size:12px; }
+.documentation-layout { display:grid;grid-template-columns:210px minmax(0,1fr);gap:27px;align-items:start; }
+.documentation-domains { position:sticky;top:24px; }
+.documentation-domains h2 { font-size:15px;margin:0 0 12px;letter-spacing:0; }
+.documentation-domains button { display:flex;align-items:center;justify-content:space-between;gap:9px;width:100%;min-height:48px;padding:11px 13px;margin-bottom:6px;text-align:left;background:transparent;border:1px solid #ded5c7;border-radius:7px;font-size:12px;line-height:1.5; }
+.documentation-domains button:hover { background:#fffaf1; }
+.documentation-domains button.active { border-color:#8e6ab4;background:#e8ddf2;color:#4e326e;font-weight:700; }
+.documentation-domains button small { border-radius:4px;min-width:21px;padding:2px;text-align:center;background:#fffaf2;font-size:10px; }
+.documentation-results { min-width:0; }
+.documentation-results > header { margin:0 0 20px; }
+.documentation-results h2 { font-size:26px;line-height:1.25;margin:0 0 9px; }
+.documentation-result-count { font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#786c7d;margin-bottom:10px; }
+.documentation-domain-summary { font-size:13px;line-height:1.6;color:#70675b;margin:0; }
+.documentation-guide { border:1px solid #d8cfbd;background:#fffdf7;border-radius:9px;margin:0 0 13px;overflow:hidden; }
+.documentation-guide > summary { display:flex;align-items:center;justify-content:space-between;gap:13px;list-style:none;cursor:pointer;padding:20px;font-size:15px;font-weight:700;line-height:1.5; }
+.documentation-guide > summary::-webkit-details-marker { display:none; }
+.documentation-guide > summary::before { content:'+';font-size:21px;font-weight:400;color:#73528d; }
+.documentation-guide[open] > summary::before { content:'−'; }
+.documentation-guide[open] > summary { border-bottom:1px solid #e5dccc; }
+.documentation-guide-title { margin-right:auto; }
+.documentation-access { flex-shrink:0;max-width:130px;padding:4px 7px;border:1px solid #e3d8eb;border-radius:4px;color:#665172;background:#f5edf9;font-size:9px;line-height:1.4;font-weight:500; }
+.documentation-guide-body { padding:4px 23px 23px;font-size:13px;line-height:1.8;overflow-wrap:anywhere; }
+.documentation-summary { font-size:14px;color:#5d5041;margin:17px 0; }
+.documentation-guide-body ol { padding-left:23px; }
+.documentation-guide-body li { padding-left:4px;margin:0 0 12px; }
+.documentation-guide-body li::marker { font-weight:700;color:#73528d; }
+.documentation-guide-body h4 { font-size:13px;letter-spacing:0;margin:0 0 9px; }
+.documentation-note { background:#f1eedc;border-left:3px solid #b7a460;padding:16px 18px;margin:23px 0 20px;border-radius:0 6px 6px 0; }
+.documentation-note ul,.documentation-fields ul { padding-left:18px;margin:0; }
+.documentation-note li:last-child { margin-bottom:0; }
+.documentation-fields { padding:17px 0 4px;border-top:1px dashed #d8cfbd; }
+.documentation-fields ul { columns:2;column-gap:25px; }
+.documentation-fields li { break-inside:avoid;margin-bottom:6px; }
+.documentation-permalink { font-size:11px;color:#684784;text-underline-offset:3px; }
+.documentation-empty { padding:25px;background:#f4efe5;border:1px dashed #d4c5aa;border-radius:8px;font-size:13px;line-height:1.7; }
+.documentation-empty h3 { font-size:21px;margin-bottom:10px; }
+.documentation-loading { padding:30px;font-size:14px; }
+.documentation-search [hidden] { display:none!important; }
+.documentation-guide > summary:focus-visible,.documentation-domains button:focus-visible,.documentation-search button:focus-visible { outline:3px solid #7556bd;outline-offset:3px; }
+@media(max-width:1100px) {
+    .documentation-layout { grid-template-columns:175px minmax(0,1fr);gap:18px; }
+    .documentation-guide > summary { flex-wrap:wrap;gap:9px;padding:17px; }
+    .documentation-access { margin-left:23px; }
+    .documentation-guide-title { flex:1; }
+}
+@media(max-width:800px) {
+    #sdr-app .documentation-entry { width:max-content;max-width:100%;margin:15px 0 0;padding:11px 15px; }
+    #sdr-app .documentation-entry small { display:none; }
+    #sdr-app .documentation-entry strong { font-size:12px; }
+    .documentation-heading h1 { font-size:34px; }
+    .documentation-layout { grid-template-columns:minmax(0,1fr); }
+    .documentation-domains { position:static;display:flex;gap:7px;overflow-x:auto;padding:3px 3px 10px; }
+    .documentation-domains h2 { position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%); }
+    .documentation-domains button { flex:0 0 170px;margin:0; }
+    .documentation-search { padding:16px; }
+}
+@media(max-width:480px) {
+    .documentation-guide-body { padding:2px 16px 19px; }
+    .documentation-guide > summary { font-size:14px;padding:16px; }
+    .documentation-fields ul { columns:1; }
+    .documentation-search input { font-size:16px; }
+}

@@ -1,0 +1,464 @@
+{
+    "schema": 1,
+    "updated": "2026-11-06",
+    "domains": [
+        {
+            "id": "demarrer",
+            "title": "Prendre en main les Coulisses",
+            "summary": "Comprendre les accès et les étapes de préparation d’un spectacle.",
+            "guides": [
+                {
+                    "id": "acces-et-roles",
+                    "title": "Qui peut faire quoi ?",
+                    "access": "all",
+                    "summary": "Les boutons disponibles dépendent du rôle attribué à ton compte.",
+                    "steps": [
+                        "Un membre consulte le planning, renseigne ses disponibilités et modifie son profil.",
+                        "L’organisation crée et modifie les spectacles, compose les équipes et envoie les invitations ou relances.",
+                        "L’administration dispose aussi des réglages WordPress, des comptes, des fiches de référence et des modèles d’emails.",
+                        "Si une action d’organisation manque dans ta navigation, demande à une personne administratrice de vérifier le rôle de ton compte."
+                    ],
+                    "notes": [
+                        "La documentation décrit tous les usages. Lire un guide ne donne pas de droits supplémentaires."
+                    ]
+                },
+                {
+                    "id": "preparer-une-date",
+                    "title": "Préparer un spectacle, du début à la fin",
+                    "access": "organizer",
+                    "summary": "Le parcours complet, avec le bon type de message à chaque étape.",
+                    "steps": [
+                        "Créer le spectacle : titre, date, lieu, horaires et effectifs recherchés.",
+                        "Si nécessaire, annoncer la nouvelle date aux membres volontaires avec « Enregistrer et prévenir les joueurs ».",
+                        "Consulter les réponses puis ouvrir « Composer l’équipe » depuis la carte du spectacle.",
+                        "Retenir une personne pour chaque place. Relancer les non-inscrits si des rôles manquent encore.",
+                        "Finaliser avec « Sauvegarder et informer les joueurs » pour envoyer la composition retenue aux personnes sélectionnées."
+                    ],
+                    "notes": [
+                        "Une invitation sollicite des disponibilités. Une confirmation d’équipe annonce les rôles retenus : ce sont deux messages différents."
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "spectacles",
+            "title": "Créer et modifier un spectacle",
+            "summary": "Enregistrer une date, corriger ses informations et préparer sa présentation publique.",
+            "guides": [
+                {
+                    "id": "creer-un-spectacle",
+                    "title": "Créer un spectacle",
+                    "access": "organizer",
+                    "summary": "Le titre et la date sont obligatoires ; les autres informations peuvent être complétées ensuite.",
+                    "steps": [
+                        "Dans la navigation, cliquer sur « Nouveau spectacle ».",
+                        "Renseigner un titre explicite et la date. Choisir le format, le lieu et, le cas échéant, la troupe invitée.",
+                        "Distinguer « Rendez-vous de la troupe » et « Début du spectacle ». Cocher « Avec entracte » uniquement si une pause est prévue.",
+                        "Dans « Combien de places sur scène ? », définir les places pour les membres SDR : joueurs, MC et DJ. Utiliser les boutons + et − ou saisir une valeur.",
+                        "Cliquer sur « Enregistrer le spectacle » pour publier la date sans email ; « Enregistrer et prévenir les joueurs » pour choisir les destinataires d’une annonce ; ou « Enregistrer et ouvrir Gutenberg » pour travailler la présentation."
+                    ],
+                    "notes": [
+                        "Les effectifs concernent les SDR, pas la troupe invitée. Zéro signifie qu’aucune place n’est prévue pour ce rôle.",
+                        "Le choix « prévenir les joueurs » est disponible pour une date à venir ou aujourd’hui, avec les réponses ouvertes. La sélection des destinataires ne déclenche aucun envoi tant qu’il n’est pas confirmé.",
+                        "Cliquer hors du formulaire ne le ferme pas. La croix, « Annuler » et Échap permettent de quitter ; la saisie non enregistrée est alors abandonnée."
+                    ]
+                },
+                {
+                    "id": "modifier-un-spectacle",
+                    "title": "Modifier les informations d’un spectacle",
+                    "access": "organizer",
+                    "summary": "Les corrections sont visibles dans le planning et dans l’agenda public après enregistrement.",
+                    "steps": [
+                        "Dans « Le planning », trouver la date puis cliquer sur « Modifier » dans sa carte.",
+                        "Corriger les informations pratiques, les effectifs, l’entracte ou l’ouverture des réponses.",
+                        "Cliquer sur « Enregistrer les modifications ». Attendre la confirmation avant de fermer.",
+                        "Pour modifier une présentation composée de blocs, utiliser « Ouvrir dans Gutenberg ». Le formulaire des Coulisses préserve ce contenu."
+                    ],
+                    "notes": [
+                        "Modifier un spectacle n’envoie pas automatiquement d’email. Prévenir les personnes concernées séparément si un horaire ou un lieu change.",
+                        "Les effectifs ne peuvent pas passer sous le nombre de personnes déjà retenues. Retirer d’abord les sélections concernées.",
+                        "Si une autre personne a modifié la fiche entre-temps, recharger le formulaire avant de ressaisir les corrections."
+                    ]
+                },
+                {
+                    "id": "champs-du-spectacle",
+                    "title": "Les informations de la fiche spectacle",
+                    "access": "organizer",
+                    "summary": "Cette liste reprend les champs définis par la version installée du site.",
+                    "steps": [
+                        "Le lieu, la troupe invitée et le format sont choisis dans les fiches enregistrées. « À préciser » permet de compléter plus tard.",
+                        "Le lien de billetterie est facultatif et doit être une adresse complète commençant par http:// ou https://.",
+                        "« Fermer les réponses » empêche les membres de changer leur disponibilité ; cela ne retire pas leurs réponses existantes."
+                    ],
+                    "notes": [],
+                    "reference": "sdr_event"
+                }
+            ]
+        },
+        {
+            "id": "lieux",
+            "title": "Gérer les lieux et leurs contacts",
+            "summary": "Ajouter une salle depuis le spectacle et distinguer les informations publiques des contacts privés.",
+            "guides": [
+                {
+                    "id": "ajouter-un-lieu",
+                    "title": "Ajouter un lieu sans quitter le spectacle",
+                    "access": "organizer",
+                    "summary": "Le spectacle reste ouvert pendant la création de la salle.",
+                    "steps": [
+                        "Dans le formulaire de création ou de modification du spectacle, ouvrir la liste « Lieu ».",
+                        "Choisir « Ajouter un nouveau lieu… ».",
+                        "Renseigner le nom de la salle. Ajouter la commune, l’adresse et le site web si ces informations sont connues.",
+                        "Dans « Contacts du lieu », renseigner la personne à contacter, son téléphone, son email et les éventuelles précisions.",
+                        "Cliquer sur « Enregistrer le lieu ». Le lieu est ajouté à la liste et sélectionné dans le spectacle.",
+                        "Enregistrer ensuite le spectacle : créer le lieu ne sauvegarde pas à lui seul les changements du spectacle."
+                    ],
+                    "notes": [
+                        "Seul le nom est obligatoire. Un lieu ayant déjà le même nom et la même commune est réutilisé, sans écraser son adresse ni ses contacts.",
+                        "La croix, Échap ou « Annuler et revenir au spectacle » ferment uniquement la fenêtre du lieu."
+                    ]
+                },
+                {
+                    "id": "coordonnees-des-lieux",
+                    "title": "Informations publiques, contacts privés et corrections",
+                    "access": "organizer",
+                    "summary": "L’adresse et la commune servent au public. Les coordonnées des contacts restent privées.",
+                    "steps": [
+                        "Utiliser l’adresse et la commune pour les informations pratiques du spectacle et de la fiche publique du lieu.",
+                        "Renseigner les coordonnées d’une personne dans les champs de contact, pas dans le texte public de présentation.",
+                        "Pour corriger une fiche existante, demander à une personne administratrice d’ouvrir le lieu dans WordPress et d’enregistrer les corrections.",
+                        "Le formulaire d’ajout des Coulisses crée un lieu ou réutilise un doublon ; il ne modifie pas les contacts d’un lieu existant."
+                    ],
+                    "notes": [
+                        "Le téléphone, l’email et les notes de contact ne sont pas affichés sur le site public. Leur modification dans WordPress est réservée aux personnes autorisées à gérer la fiche.",
+                        "Le site web doit commencer par http:// ou https://. L’email doit avoir un format valide."
+                    ],
+                    "reference": "sdr_venue"
+                }
+            ]
+        },
+        {
+            "id": "equipes",
+            "title": "Composer et confirmer une équipe",
+            "summary": "Passer des disponibilités aux sélections, ajuster les besoins et informer l’équipe.",
+            "guides": [
+                {
+                    "id": "composer-une-equipe",
+                    "title": "Sélectionner les membres de l’équipe",
+                    "access": "organizer",
+                    "summary": "Se proposer et être retenu sont deux étapes différentes.",
+                    "steps": [
+                        "Dans la carte du spectacle, cliquer sur « Composer l’équipe ».",
+                        "Consulter le tableau : chaque rôle indique les places prévues, les personnes retenues et les places encore libres.",
+                        "Dans les candidatures, cocher le rôle à attribuer à chaque personne « Partant·e » ou « Si besoin ». Les choix sont enregistrés au fur et à mesure.",
+                        "Une personne ne peut occuper qu’un rôle par spectacle. Pour changer son rôle, sélectionner un autre rôle qu’elle a proposé.",
+                        "Pour retirer une personne de la composition, décocher son rôle retenu. Sa disponibilité reste enregistrée."
+                    ],
+                    "notes": [
+                        "Les personnes indisponibles et celles sans réponse ne sont pas sélectionnables. Les listes correspondantes se trouvent en bas de la fenêtre.",
+                        "« Équipe complète » signifie que les places prévues sont attribuées. Un spectacle sans besoins définis n’est pas considéré comme complet."
+                    ]
+                },
+                {
+                    "id": "ajuster-les-besoins",
+                    "title": "Modifier les effectifs ou fermer les réponses",
+                    "access": "organizer",
+                    "summary": "Les besoins doivent être enregistrés avant de reprendre les sélections ou de lancer une relance.",
+                    "steps": [
+                        "Dans « Composer l’équipe », ouvrir « Ajuster les besoins ».",
+                        "Augmenter ou diminuer le nombre de places de joueurs, MC et DJ.",
+                        "Cocher « Fermer les réponses » si les membres ne doivent plus changer leurs disponibilités ; décocher pour les rouvrir.",
+                        "Cliquer sur « Enregistrer les besoins ». Le tableau de composition se met à jour."
+                    ],
+                    "notes": [
+                        "Les places déjà attribuées constituent le minimum autorisé pour chaque rôle.",
+                        "Une modification des besoins ne sélectionne personne et ne déclenche pas d’email."
+                    ]
+                },
+                {
+                    "id": "confirmer-une-equipe",
+                    "title": "Finaliser l’équipe et prévenir les personnes retenues",
+                    "access": "organizer",
+                    "summary": "La confirmation est envoyée aux personnes sélectionnées, avec leur rôle retenu.",
+                    "steps": [
+                        "Vérifier les sélections, le rendez-vous, l’horaire et le lieu.",
+                        "Dans « Finaliser cette équipe », choisir « Sauvegarder et informer les joueurs » pour envoyer les confirmations individuelles.",
+                        "Choisir « Sauvegarder sans informer » pour enregistrer la finalisation sans email.",
+                        "Lire le bilan : il peut indiquer des transmissions acceptées, des échecs ou des adresses inutilisables."
+                    ],
+                    "notes": [
+                        "Il faut au moins une personne retenue. Le libellé « joueurs » couvre ici les membres sélectionnés, y compris le MC et le DJ.",
+                        "Relancer la confirmation d’une composition inchangée ne renvoie pas les messages déjà confirmés comme transmis. Si la composition ou les informations pratiques changent, vérifier avant de confirmer de nouveau.",
+                        "Une transmission incertaine doit être vérifiée avant toute nouvelle tentative."
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "emails",
+            "title": "Invitations et relances",
+            "summary": "Choisir la bonne audience, confirmer l’envoi et comprendre son bilan.",
+            "guides": [
+                {
+                    "id": "relancer-les-non-inscrits",
+                    "title": "Relancer les membres pour les rôles encore libres",
+                    "access": "organizer",
+                    "summary": "Cette relance vise les profils adaptés aux places manquantes, sans réponse au spectacle.",
+                    "steps": [
+                        "Ouvrir « Composer l’équipe » puis cliquer sur « Relancer les non-inscrits ».",
+                        "Vérifier les rôles recherchés et la liste des personnes proposées.",
+                        "Décocher les personnes à ne pas contacter, ou utiliser « Tout sélectionner ».",
+                        "Cliquer sur « Envoyer à N personnes ». Garder la page ouverte pendant le traitement par lots.",
+                        "À la fin, consulter le bilan puis cliquer sur « Terminer » pour revenir à la composition."
+                    ],
+                    "notes": [
+                        "La liste contient les membres « OK pour la scène », avec une adresse personnelle, au moins un rôle recherché et aucune réponse au spectacle.",
+                        "« Pas dispo » et « Si besoin » sont déjà des réponses : ces personnes ne reçoivent pas cette relance.",
+                        "Une équipe complète ou des besoins non définis ne proposent personne à relancer. Les besoins sont revérifiés avant chaque email."
+                    ]
+                },
+                {
+                    "id": "annoncer-une-nouvelle-date",
+                    "title": "Annoncer une nouvelle date aux volontaires",
+                    "access": "organizer",
+                    "summary": "L’annonce d’une date a une audience plus large que la relance ciblée.",
+                    "steps": [
+                        "À la création, choisir « Enregistrer et prévenir les joueurs ».",
+                        "Dans la fenêtre « Prévenir les joueurs », vérifier les destinataires cochés et retirer les personnes à ne pas prévenir.",
+                        "Confirmer avec « Envoyer à N personnes ». Fermer cette fenêtre avant confirmation ne déclenche aucun email ; le spectacle reste enregistré.",
+                        "Lire le bilan puis cliquer sur « Terminer »."
+                    ],
+                    "notes": [
+                        "L’annonce s’adresse aux profils volontaires « OK pour la scène », avec des rôles et une adresse personnelle, sans réponse à cette date. Elle peut être utilisée avant de définir les effectifs.",
+                        "La publication d’une nouvelle fiche directement depuis WordPress conserve son annonce automatique aux volontaires. Pour choisir explicitement les destinataires, passer par la création dans les Coulisses."
+                    ]
+                },
+                {
+                    "id": "relances-utilisateurs",
+                    "title": "Envoyer un message libre à des membres",
+                    "access": "organizer",
+                    "summary": "Utiliser « Relances utilisateurs » pour un message personnalisé qui n’est pas la relance ciblée d’un spectacle.",
+                    "steps": [
+                        "Ouvrir « Relances utilisateurs » dans la navigation, si cet outil est activé.",
+                        "Choisir les critères : rôle, nom ou email, « OK pour la scène », informations de profil ou connexion. Choisir « tous » pour cumuler les critères ou « au moins un » pour les réunir.",
+                        "Choisir un spectacle de référence si le message ou les filtres en dépendent. Le filtre « Sans réponse » exclut aussi les personnes ayant répondu « Pas dispo ».",
+                        "Sélectionner les destinataires. Modifier les critères vide la sélection : vérifier à nouveau qui est coché.",
+                        "Rédiger l’objet et le message. Insérer les variables depuis le menu, puis vérifier l’aperçu avec une personne sélectionnée.",
+                        "Utiliser le test pour recevoir l’aperçu sur l’adresse du compte connecté. Le test n’est pas envoyé à la personne prévisualisée.",
+                        "Confirmer l’envoi et garder la page ouverte. Le brouillon et les campagnes récentes permettent de retrouver le travail."
+                    ],
+                    "notes": [
+                        "Une variable liée à un spectacle exige un spectacle de référence. Une variable inconnue bloque l’envoi.",
+                        "« Aucune connexion connue » ne prouve pas qu’un ancien compte ne s’est jamais connecté.",
+                        "L’organisation accède à cet outil sans obtenir la gestion des comptes WordPress."
+                    ]
+                },
+                {
+                    "id": "bilan-et-reprise",
+                    "title": "Comprendre le bilan et reprendre un envoi interrompu",
+                    "access": "organizer",
+                    "summary": "Une transmission acceptée par WordPress ne prouve pas que le message est arrivé dans la boîte de réception.",
+                    "steps": [
+                        "Après une invitation ou une relance, lire le nombre transmis, le nombre en attente et les éventuels incidents.",
+                        "Si le bilan indique zéro en attente et « Envoi terminé », cliquer sur « Terminer ». Il n’est pas nécessaire de relancer l’envoi.",
+                        "En cas d’interruption avec des messages encore en attente, utiliser « Reprendre N relance(s) ». La campagne reprend les destinataires restants.",
+                        "Pour arrêter une campagne en attente, utiliser « Annuler les envois restants ». Les emails déjà transmis ne peuvent pas être rappelés.",
+                        "Pour une transmission « à vérifier », demander à la personne de contrôler sa réception avant de créer une nouvelle relance."
+                    ],
+                    "notes": [
+                        "Un profil devenu hors cible ou ayant déjà répondu peut être ignoré avant envoi. Un échec signifie que la transmission n’a pas été acceptée.",
+                        "Ne pas actualiser la liste pour « débloquer » un envoi déjà terminé : cela prépare une nouvelle sélection, avec un risque de contacter de nouveau les mêmes personnes.",
+                        "Un destinataire ne reçoit pas d’email simplement parce qu’on ouvre la liste ou qu’on consulte le bilan."
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "membres",
+            "title": "Disponibilités et profil des membres",
+            "summary": "Répondre aux dates, choisir ses rôles et maîtriser les informations de son profil.",
+            "guides": [
+                {
+                    "id": "repondre-au-spectacle",
+                    "title": "Donner ou modifier sa disponibilité",
+                    "access": "all",
+                    "summary": "La réponse indique une disponibilité ; l’organisation attribue ensuite les rôles.",
+                    "steps": [
+                        "Dans « Le planning », ouvrir « Je me lance » ou « Ma réponse » sur le spectacle.",
+                        "Choisir « Partant·e », « Si besoin » ou « Pas dispo ».",
+                        "Si disponible, cocher les rôles proposés pour cette soirée. Plusieurs rôles peuvent être cochés parmi ceux de ton profil.",
+                        "Enregistrer la réponse et attendre la confirmation.",
+                        "Pour la changer, rouvrir « Ma réponse ». Pour la supprimer, utiliser « Retirer ma réponse »."
+                    ],
+                    "notes": [
+                        "Si aucun rôle n’est proposé, les renseigner d’abord dans « Mon profil ».",
+                        "Les réponses sont bloquées pour une date passée ou fermée. Contacter l’organisation si un changement est nécessaire.",
+                        "Si tu es déjà retenu·e, prévenir aussi l’organisation avant de retirer une disponibilité ou un rôle."
+                    ]
+                },
+                {
+                    "id": "repondre-depuis-un-email",
+                    "title": "Répondre avec les boutons de l’email",
+                    "access": "all",
+                    "summary": "Le lien personnel permet une confirmation sans ouvrir de session.",
+                    "steps": [
+                        "Dans l’invitation, cliquer sur « OK, je me lance ! » ou « Je ne suis pas dispo ».",
+                        "Sur la page qui s’ouvre, vérifier le spectacle et le choix proposé. Une simple ouverture du lien n’enregistre aucune réponse.",
+                        "Pour une réponse positive, sélectionner les rôles proposés puis confirmer. Pour une absence, confirmer l’indisponibilité.",
+                        "Après validation, utiliser les Coulisses avec sa connexion habituelle pour une correction."
+                    ],
+                    "notes": [
+                        "Le lien est personnel : ne pas le transférer. Il expire, notamment après le spectacle, et une nouvelle invitation peut remplacer le lien précédent.",
+                        "Une relance ciblée ne propose que les rôles recherchés et compatibles avec le profil.",
+                        "Un lien déjà utilisé ne remplace pas une réponse existante."
+                    ]
+                },
+                {
+                    "id": "modifier-mon-profil",
+                    "title": "Rôles, volontariat, photo et informations publiques",
+                    "access": "all",
+                    "summary": "Les rôles, le volontariat pour les emails et l’affichage public sont trois réglages distincts.",
+                    "steps": [
+                        "Ouvrir « Mon profil ». Renseigner la biographie, les listes « J’aime » et « J’aime pas », les rôles, le repas et les informations facultatives.",
+                        "Cocher « OK pour la scène » pour recevoir les invitations et relances correspondant à ses rôles. Avoir un rôle coché ne suffit pas à activer ces emails.",
+                        "Cocher l’apparition dans le Trombinoscope public uniquement si tu souhaites y afficher ton portrait et ta présentation.",
+                        "Cliquer sur « Enregistrer mon profil ».",
+                        "Pour la photo, choisir un fichier JPG, PNG ou WebP de moins de 5 Mo puis cliquer séparément sur « Envoyer la photo »."
+                    ],
+                    "notes": [
+                        "La biographie est limitée à 600 caractères. Chaque liste accepte jusqu’à 12 éléments de 60 caractères.",
+                        "Le repas, le genre, les rôles et l’expérience ne sont pas affichés dans le Trombinoscope public."
+                    ]
+                },
+                {
+                    "id": "changer-mon-mot-de-passe",
+                    "title": "Changer son mot de passe",
+                    "access": "all",
+                    "summary": "Le changement se fait depuis le profil avec le mot de passe actuel.",
+                    "steps": [
+                        "Dans « Mon profil », ouvrir « Définir ou changer mon mot de passe ».",
+                        "Renseigner le mot de passe actuel, puis le nouveau mot de passe et sa confirmation.",
+                        "Choisir au moins 12 caractères et éviter son nom, son identifiant ou son adresse email.",
+                        "Cliquer sur « Enregistrer mon mot de passe » et attendre la confirmation."
+                    ],
+                    "notes": [
+                        "Le navigateur utilisé conserve une session, mais les autres sessions sont invalidées.",
+                        "Si le mot de passe actuel est oublié, utiliser la récupération de mot de passe de la page de connexion. Après trop d’essais incorrects, attendre quinze minutes."
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "administration",
+            "title": "Administration et contenus",
+            "summary": "Les opérations réservées à l’administration WordPress et les modèles partagés.",
+            "guides": [
+                {
+                    "id": "modeles-emails",
+                    "title": "Modifier et tester les modèles d’emails",
+                    "access": "administrator",
+                    "summary": "Les modèles globaux sont partagés par les envois de la troupe.",
+                    "steps": [
+                        "Dans WordPress, ouvrir « Modèles d’emails » et choisir le modèle : annonce, relance ciblée, confirmation d’équipe ou message libre.",
+                        "Modifier les blocs dans Gutenberg, puis l’objet et l’aperçu de boîte de réception dans « Email · Contenu et usage ».",
+                        "Dans « Email · Aperçu et essais », choisir une situation fictive ou un spectacle et une personne. Vérifier les versions ordinateur, mobile et texte.",
+                        "Utiliser « M’envoyer cet aperçu » : seul le compte administrateur connecté reçoit ce test, avec les boutons de réponse inactifs.",
+                        "Enregistrer le modèle. Pour une nouvelle variante publiée, utiliser « Utiliser pour les nouveaux envois » ou « Modèles utilisés »."
+                    ],
+                    "notes": [
+                        "Enregistrer ou activer un modèle n’envoie aucun email à la troupe. Les campagnes déjà commencées conservent leur copie du modèle.",
+                        "Conserver les boutons de réponse pour les personnes admissibles, et le bloc « Message libre » dans l’enveloppe des messages libres.",
+                        "Les variables et conditions disponibles sont listées dans l’éditeur. Ne jamais copier un lien personnel de réponse dans un modèle."
+                    ]
+                },
+                {
+                    "id": "comptes-et-contacts",
+                    "title": "Gérer les accès et le volontariat des comptes",
+                    "access": "administrator",
+                    "summary": "L’administration gère les comptes ; l’organisation utilise les outils opérationnels des Coulisses.",
+                    "steps": [
+                        "Dans « Comptes » ou « Utilisateurs », ouvrir le compte concerné et vérifier son rôle avant de modifier ses droits.",
+                        "Dans le profil, régler les rôles artistiques et « OK pour la scène » selon le choix du membre.",
+                        "Pour plusieurs comptes, les sélectionner dans la liste puis utiliser « OK pour la scène : activer » ou « désactiver » dans « Actions groupées » et cliquer sur « Appliquer ».",
+                        "Lire le bilan pour distinguer les changements, les comptes déjà dans cet état et les échecs."
+                    ],
+                    "notes": [
+                        "L’action groupée modifie uniquement le choix de contact. Elle n’envoie aucun email.",
+                        "Ne pas attribuer le rôle Administrateur pour donner simplement accès à la création de spectacles : le rôle Organisation est prévu pour cela."
+                    ]
+                },
+                {
+                    "id": "contenus-publics",
+                    "title": "Modifier les présentations et fiches publiques",
+                    "access": "administrator",
+                    "summary": "Les textes publics se modifient dans l’éditeur de blocs WordPress.",
+                    "steps": [
+                        "Ouvrir le spectacle, le lieu, la troupe ou le format dans WordPress.",
+                        "Modifier le titre et les blocs de présentation. Utiliser les réglages du bloc pour les images et la mise en forme.",
+                        "Modifier les informations pratiques dans les champs de la fiche, puis enregistrer ou mettre à jour.",
+                        "Pour les en-têtes, le menu et le pied de page communs, passer par « Apparence → Éditeur » et ouvrir l’élément de modèle concerné."
+                    ],
+                    "notes": [
+                        "Le billet pratique et les listes de spectacles liés reprennent les données des fiches. Corriger la donnée dans la fiche plutôt que recopier une deuxième version dans le texte.",
+                        "Le formulaire des Coulisses préserve les présentations déjà composées de blocs Gutenberg."
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "aide",
+            "title": "Archives et résolution des problèmes",
+            "summary": "Retrouver une ancienne date et vérifier les causes des blocages courants.",
+            "guides": [
+                {
+                    "id": "consulter-les-archives",
+                    "title": "Retrouver un spectacle passé",
+                    "access": "all",
+                    "summary": "Les archives conservent les informations des dates terminées.",
+                    "steps": [
+                        "Ouvrir « Spectacles passés » dans la navigation.",
+                        "Choisir une saison ou rechercher un spectacle, un lieu ou une troupe.",
+                        "Cliquer sur « Revoir la soirée » pour consulter les informations et la composition conservées."
+                    ],
+                    "notes": [
+                        "La date rejoint les archives dès le lendemain. Les disponibilités et la composition y sont consultables sans modification.",
+                        "Les personnes de l’organisation peuvent aussi consulter les anciennes réponses ; les membres voient les informations qui les concernent et l’équipe retenue."
+                    ]
+                },
+                {
+                    "id": "liste-de-relance-vide",
+                    "title": "La liste des personnes à relancer est vide",
+                    "access": "organizer",
+                    "summary": "Vérifier les critères avant de conclure qu’un compte ou une adresse a disparu.",
+                    "steps": [
+                        "Vérifier que la date est à venir et que les réponses sont ouvertes.",
+                        "Dans « Composer l’équipe », définir les besoins puis les enregistrer.",
+                        "Vérifier que des places restent réellement libres pour les rôles visés.",
+                        "Demander au membre de vérifier ses rôles, son choix « OK pour la scène » et son adresse personnelle.",
+                        "Vérifier s’il a déjà répondu : « Si besoin » et « Pas dispo » le retirent aussi des non-inscrits."
+                    ],
+                    "notes": [
+                        "Les comptes de démonstration et les adresses de remplacement ne sont pas proposés. Une candidature ne devient pas automatiquement une sélection."
+                    ]
+                },
+                {
+                    "id": "erreur-ou-enregistrement-bloque",
+                    "title": "Une action échoue ou ne semble pas enregistrée",
+                    "access": "all",
+                    "summary": "Lire le message affiché avant de recommencer l’action.",
+                    "steps": [
+                        "Pour un formulaire, vérifier les champs obligatoires, les horaires et les adresses web complètes.",
+                        "Pour une équipe, vérifier les places disponibles et les rôles proposés par les personnes.",
+                        "Si la fiche a changé dans un autre onglet, la rouvrir et vérifier les données avant de recommencer.",
+                        "Si la connexion a expiré, se reconnecter puis rouvrir les Coulisses.",
+                        "Si le problème persiste, transmettre à l’administration l’action effectuée, le spectacle concerné, l’heure et le message exact."
+                    ],
+                    "notes": [
+                        "Après un email, consulter d’abord le bilan. Zéro en attente et « Envoi terminé » signifient que le traitement est fini ; cliquer sur « Terminer ».",
+                        "Éviter de multiplier les clics sur un envoi ou une sauvegarde pendant qu’un traitement est annoncé en cours."
+                    ]
+                }
+            ]
+        }
+    ]
+}

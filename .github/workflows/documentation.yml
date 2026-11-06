@@ -1,0 +1,13 @@
+name: Documentation des Coulisses
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  documentation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Installer PHP
+        run: sudo apt-get update && sudo apt-get install -y php-cli
+      - name: Vérifier les guides et leur relecture
+        run: php tools/check-documentation.php --check
