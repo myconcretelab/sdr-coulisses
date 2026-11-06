@@ -11,9 +11,19 @@ import zipfile
 root = Path(__file__).resolve().parent.parent
 parser = argparse.ArgumentParser()
 parser.add_argument('--output', type=Path, required=True)
+parser.add_argument('--tag', help='Require the release tag to match the plugin version.')
 args = parser.parse_args()
 subprocess.run(['php', str(root / 'tools/check-documentation.php'), '--check'], check=True)
 version = re.search(r'^ \* Version: ([0-9.]+)$', (root / 'sdr-coulisses.php').read_text(), re.M).group(1)
+header = (root / 'sdr-coulisses.php').read_text()
+readme = (root / 'readme.txt').read_text()
+if args.tag and args.tag != f'v{version}':
+    parser.error('The tag must match the plugin version: v' + version)
+if not re.search(r'^Stable tag: ' + re.escape(version) + r'$', readme, re.M):
+    parser.error('Stable tag in readme.txt must match the plugin version.')
+notes = re.search(r'^= ' + re.escape(version) + r' =\n(.*?)(?=^= |\Z)', readme, re.M | re.S)
+if not notes:
+    parser.error('The changelog must describe the current version.')
 output = args.output.expanduser().resolve()
 output.mkdir(parents=True, exist_ok=True)
 archive = output / f'coulisse-{version}.zip'
@@ -27,5 +37,8 @@ with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as bun
         bundle.write(path, 'sdr-coulisses/' + path.relative_to(root).as_posix())
 digest = hashlib.sha256(archive.read_bytes()).hexdigest()
 (output / (archive.name + '.sha256')).write_text(digest + '  ' + archive.name + '\n')
-(output / 'release.json').write_text(json.dumps({'name': 'Coulisse', 'version': version, 'filename': archive.name, 'sha256': digest}, indent=2) + '\n')
+(output / 'release.json').write_text(json.dumps({'name': 'Coulisse', 'version': version, 'filename': archive.name, 'sha256': digest,
+    'requires_wordpress': re.search(r'^ \* Requires at least: ([0-9.]+)$', header, re.M).group(1),
+    'requires_php': re.search(r'^ \* Requires PHP: ([0-9.]+)$', header, re.M).group(1)}, indent=2) + '\n')
+(output / 'notes.md').write_text(notes.group(1).strip() + '\n')
 print(archive)

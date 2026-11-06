@@ -1,7 +1,7 @@
 {
     "schema": 1,
     "reviewed": "2026-11-06",
-    "guides": "10e8ced1471873eb9e0ec5d077c43bff4f03db61edc6f8b2b3f277c61523c575",
+    "guides": "ba7784a314cc1333f58f5cc3da1e92f33485be22b8a421a9ae5ee2cd7a59cd4f",
     "sources": {
         "assets/app.css": "82081912458807b5df4bb1c6195f2d752d2fc8d8bd9edcd4d5cf2e9884f08093",
         "assets/app.js": "30773ba88535dea18cb7e67e7ad0008602d48e4188343a957d79df64cda4d78d",
@@ -32,8 +32,9 @@
         "emails/editor.js": "4e5c509fed12aaf8c61c7594a827406bdd78c8c31017d73d4c7d7fa9080fe7cc",
         "emails/renderer.php": "69416e7830b5972a249e4b6649bfdb693d730fb33c312f8364ea8fefad44ac14",
         "includes/class-sdr-public-blocks.php": "cf0df7c0403966a2fe12248e6dfbd3ba7bc9da9fa82f61d84834cd0226658c6c",
-        "includes/class-sdr-settings.php": "2c023414253d5b03121f70f98fa7ce34fb4534068eee098fce964b846f31f9e5",
+        "includes/class-sdr-settings.php": "4eefb1e13915abca60a3bcf9f046795d954c8d414df34e66d022cfb59b832286",
         "includes/class-sdr-setup.php": "3a68ae57379bbacffb60923b6cc6a3eb336b17384db8da73faf29bf9d5ee9210",
+        "includes/class-sdr-updates.php": "0446a339e3ae8991deed645eee46d28f2011bb0a4450d547e9a4b3b1726fabd6",
         "relances/admin.css": "a204697414588b7b9afbc87f819db5ed536922dbd2ee59b2b0ef392783594255",
         "relances/admin.js": "e3234ea5f32c1a0a8f37dbb1fc13fcfe9fcc3b845402c41283dab5aad12b0aef",
         "relances/class-sdr-relances.php": "2bfd35723d76a7711d4697fb41339c1c18c02c9c12c6b763010097736b3adde1",
@@ -43,7 +44,7 @@
         "reminders/class-sdr-event-reminders.php": "b2f7c3bd593a9445e89bcce70b2188d444d1bc163fa3aef73d469f6f4319a8f2",
         "reminders/response.css": "01f81fdcdfed4a60822c723506a603c638a82bcc5d3f0688c86d0892a2e7e533",
         "reminders/response.php": "387f8db54403e957f9ad1a883322f833f0c8431608956d0245f88740b189ebde",
-        "sdr-coulisses.php": "f5a0c6b428bd6b5960b01d9a77e249436ed643bc5992368307038dd268fbf1ae",
+        "sdr-coulisses.php": "e83487547e69ef4ad6493b18212a61d2bc41af59ed487b42151f78dea702b729",
         "sdr-relances.php": "fc0fd4b1b4665f5fa268c60ebe684f681396da9b01fc5721f27c3ea8154d6cb9",
         "templates/workspace.php": "f0107b896f3a65bc9aa4c06dd2bea2fa4c4627061522c30823ae2acfcf791db9",
         "tools/check-documentation.php": "ecdeb7259a63542000fb59ef6ec3c040de6b79b5145f5e3c139418a1e77a7cb1"

@@ -22,7 +22,7 @@
                     ],
                     "notes": [
                         "Un seul plugin est nécessaire : les relances utilisateurs sont intégrées. Les anciennes installations peuvent conserver leur extension de relances déjà activée.",
-                        "La version pilote se met à jour manuellement avec un nouveau ZIP. Les données sont conservées lors de la désactivation."
+                        "Les données sont conservées lors de la désactivation. La recherche des versions stables sur GitHub peut être activée séparément dans « Mises à jour de Coulisse » ; elle est désactivée au départ."
                     ]
                 },
                 {
@@ -101,21 +101,25 @@
                 },
                 {
                     "id": "mettre-a-jour-pilote",
-                    "title": "Mettre à jour la version pilote et revenir à une sauvegarde",
+                    "title": "Mettre à jour Coulisse et revenir à une sauvegarde",
                     "access": "administrator",
-                    "summary": "Installer un nouveau ZIP en conservant les données de la troupe.",
+                    "summary": "Choisir la recherche de versions dans WordPress ou installer un ZIP, en conservant les données.",
                     "steps": [
-                        "Télécharger le nouveau ZIP de Coulisse et lire ses changements. La version installée apparaît dans Réglages → Coulisse → Bien démarrer.",
-                        "Sauvegarder les fichiers WordPress et la base de données. Conserver aussi le ZIP de la version précédente.",
-                        "Essayer d’abord la mise à jour sur une copie du site. Dans Extensions → Ajouter une extension → Téléverser une extension, choisir le nouveau ZIP.",
-                        "Lorsque WordPress détecte le plugin existant, vérifier les versions affichées puis confirmer le remplacement par l’archive téléversée. Le dossier reste sdr-coulisses.",
-                        "Ouvrir Réglages → Coulisse, vérifier Bien démarrer et refaire le parcours du premier essai : connexion membre, disponibilité, composition, aperçu d’email et pages publiques.",
-                        "En cas de problème, arrêter l’essai et restaurer la sauvegarde correspondante. Après validation, appliquer la même procédure au site de la troupe."
+                        "Lire les changements de la nouvelle version, puis sauvegarder les fichiers WordPress et la base de données. Conserver aussi le ZIP de la version précédente.",
+                        "Pour recevoir les propositions dans WordPress, ouvrir Réglages → Coulisse → Mises à jour de Coulisse, cocher « Vérifier les nouvelles versions sur GitHub », puis cliquer sur « Enregistrer le choix des mises à jour ». La recherche est désactivée au départ.",
+                        "Cliquer sur « Vérifier maintenant ». Si une version est disponible, ouvrir Extensions et utiliser « Mettre à jour maintenant ». Lire les prérequis WordPress et PHP affichés par WordPress avant de lancer l’installation.",
+                        "Pour utiliser un ZIP, le télécharger puis ouvrir Extensions → Ajouter une extension → Téléverser une extension. Vérifier les versions affichées puis confirmer le remplacement de l’extension existante. Le dossier reste sdr-coulisses.",
+                        "Essayer d’abord sur une copie du site. Après installation, vérifier Bien démarrer puis refaire les essais : connexion membre, disponibilité, composition, aperçu d’email et pages publiques.",
+                        "Après validation, appliquer la même procédure au site de la troupe. En cas de problème, arrêter l’essai et restaurer la sauvegarde correspondante."
                     ],
                     "notes": [
-                        "Les mises à jour de la version pilote sont manuelles. Le téléchargement de l’archive ne modifie pas le site.",
-                        "La désactivation conserve les données. Ne pas utiliser une suppression de comptes, de spectacles ou de tables comme méthode de mise à jour.",
-                        "Réinstaller un ancien ZIP ne rétablit pas les données modifiées entre-temps. Une restauration complète utilise la sauvegarde des fichiers et de la base."
+                        "La recherche consulte uniquement les versions stables publiées sur GitHub, avec un cache de six heures. « Vérifier maintenant » relance le contrôle sans attendre. Les versions de développement et les préversions ne sont pas proposées.",
+                        "Activer la recherche ne lance aucune installation et ne change pas le choix des mises à jour automatiques de WordPress. Décocher puis enregistrer arrête les contrôles GitHub et retire les propositions en cache.",
+                        "Les contrôles demandent la version et son manifeste ; ils n’envoient ni nom de membre, email, contenu de spectacle, ni adresse du site. GitHub reçoit l’adresse IP du serveur. Aucun compte GitHub n’est nécessaire sur le WordPress de la troupe.",
+                        "Si GitHub est inaccessible, aucune mise à jour n’est proposée et le plugin installé reste utilisable. Réessayer avec « Vérifier maintenant » ou installer le ZIP. Une erreur est mise en cache quinze minutes pour éviter les appels répétés.",
+                        "Un manifeste absent ou invalide bloque la proposition. Une archive dont l’empreinte ne correspond pas est supprimée et l’installation est annulée : relancer le téléchargement sans désactiver la vérification.",
+                        "Une installation gérée avec Git conserve son déploiement habituel. Sur un réseau WordPress, utiliser le ZIP avec l’administration du réseau. Les membres et l’organisation ne peuvent pas modifier ce réglage ; l’administration doit aussi disposer du droit WordPress de mettre à jour les extensions.",
+                        "La désactivation conserve les données. Ne pas supprimer les comptes, spectacles ou tables pour faire une mise à jour. Réinstaller un ancien ZIP ne rétablit pas les données modifiées : une restauration complète utilise les fichiers et la base sauvegardés."
                     ]
                 },
                 {

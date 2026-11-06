@@ -2,16 +2,18 @@
 /**
  * Plugin Name: Coulisse — Gestion de troupe
  * Description: Spectacles, disponibilités, équipes, invitations et documentation pour les troupes.
- * Version: 1.14.0
+ * Version: 1.15.0
  * Requires at least: 6.5
  * Requires PHP: 8.1
  * License: GPL-2.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: sdr
+ * Update URI: https://github.com/myconcretelab/sdr-coulisses
  */
 defined('ABSPATH') || exit;
 require_once __DIR__.'/includes/class-sdr-settings.php';
 require_once __DIR__.'/includes/class-sdr-setup.php';
+require_once __DIR__.'/includes/class-sdr-updates.php';
 require_once __DIR__.'/includes/class-sdr-public-blocks.php';
 
 final class SDR_Coulisses {

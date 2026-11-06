@@ -3,7 +3,7 @@ Contributors: myconcretelab
 Tags: theatre, events, members, availability
 Requires at least: 6.5
 Requires PHP: 8.1
-Stable tag: 1.14.0
+Stable tag: 1.15.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,13 +41,22 @@ Il utilise le service d’envoi de WordPress, éventuellement configuré par une
 SMTP. Aucune donnée n’est transmise à un service central de Coulisse.
 
 = Les mises à jour sont-elles automatiques ? =
-Cette version pilote se met à jour manuellement depuis un ZIP. Aucun fournisseur
-externe de mises à jour n’est encore raccordé.
+La recherche des versions stables sur GitHub peut être activée dans Réglages →
+Coulisse. WordPress propose ensuite « Mettre à jour maintenant ». Ce choix ne
+déclenche aucune installation et n’active pas les mises à jour automatiques.
+L’installation par ZIP reste disponible. Les installations gérées avec Git
+conservent leur déploiement habituel.
 
 = Que deviennent les données à la désactivation ? =
 Elles sont conservées. Aucun effacement automatique n’est exécuté.
 
 == Changelog ==
+
+= 1.15.0 =
+* Recherche facultative des versions stables sur GitHub depuis les réglages.
+* Mises à jour proposées dans WordPress, avec vérification de l’empreinte du ZIP.
+* Publication du ZIP, de son empreinte et de son manifeste pour chaque version balisée.
+* Procédures de mise à jour et de dépannage dans la documentation intégrée.
 
 = 1.14.0 =
 * Champ neutre « Troupes participantes » pour les rencontres et spectacles partagés.

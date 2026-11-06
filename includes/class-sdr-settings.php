@@ -126,6 +126,7 @@ final class SDR_Settings {
         echo '<div class="wrap"><h1>Coulisse · Gestion de troupe</h1><p>Configure l’identité de la troupe et son espace membres. Le thème du site public conserve sa présentation.</p>';
         settings_errors();
         SDR_Setup::render();
+        SDR_Updates::render();
         if (isset($_GET['workspace']) && $_GET['workspace'] === 'created') echo '<div class="notice notice-success"><p>La page des Coulisses est prête. Aucun contenu existant n’a été remplacé.</p></div>';
         echo '<form action="options.php" method="post">';settings_fields('sdr_coulisse');
         echo '<table class="form-table"><tbody>';

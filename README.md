@@ -32,8 +32,11 @@ s’insèrent dans les pages publiques avec les blocs Gutenberg du plugin.
 ## Version de lancement
 
 Cette version prépare la diffusion auprès de troupes pilotes. Installation via ZIP
-et mises à jour manuelles : aucune connexion à un service de mise à jour externe
-n’est encore configurée. Le code source est sur
+puis mises à jour par ZIP ou par le mécanisme natif de WordPress. Dans Réglages →
+Coulisse → Mises à jour de Coulisse, la recherche des versions stables sur GitHub
+est facultative et désactivée au départ. Elle ne déclenche aucune installation
+et ne change pas la préférence des mises à jour automatiques de WordPress.
+Les installations gérées avec Git conservent leur déploiement habituel. Le code source est sur
 https://github.com/myconcretelab/sdr-coulisses.
 
 La désactivation conserve les spectacles, profils et réponses. Il n’y a pas de
@@ -49,6 +52,17 @@ python3 tools/build-release.py --output /chemin/vers/les-versions
 ```
 
 Chaque push vérifié sur GitHub construit aussi le ZIP et son empreinte dans l’artefact « coulisse-plugin ».
+Un tag `vX.Y.Z` correspondant à la version du plugin et du readme publie une
+GitHub Release stable avec le ZIP installable, son SHA-256 et `release.json`.
+Le manifeste reprend les prérequis WordPress et PHP du plugin. Les contrôles
+refusent les préversions, les URL d’un autre dépôt et les manifestes incohérents ;
+l’empreinte du ZIP est vérifiée avant son installation.
+
+La recherche consulte GitHub au plus toutes les six heures, sauf contrôle manuel.
+Les échecs sont conservés quinze minutes. Les requêtes de contrôle n’incluent pas
+l’adresse du WordPress ni de données de membres ; GitHub reçoit l’IP du serveur.
+Aucun jeton GitHub n’est nécessaire chez les troupes. Le ZIP reste utilisable si
+la recherche est désactivée ou indisponible.
 
 L’archive possède une seule entrée de plugin. Le point d’entrée historique
 `sdr-relances.php` est exclu du ZIP ; les relances sont intégrées dans Coulisse.

@@ -1,0 +1,24 @@
+name: Publier une version stable
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: read
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Installer PHP
+        run: sudo apt-get update && sudo apt-get install -y php-cli
+      - name: Construire et vérifier la version
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: python3 tools/build-release.py --output release --tag "$RELEASE_TAG"
+      - name: Publier le ZIP, son empreinte et le manifeste
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: gh release create "$RELEASE_TAG" release/*.zip release/*.sha256 release/release.json --verify-tag --title "Coulisse ${RELEASE_TAG#v}" --notes-file release/notes.md --latest
