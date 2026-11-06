@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Coulisse — Gestion de troupe
  * Description: Spectacles, disponibilités, équipes, invitations et documentation pour les troupes.
- * Version: 1.13.1
+ * Version: 1.13.2
  * Requires at least: 6.5
  * Requires PHP: 8.1
  * License: GPL-2.0-or-later
@@ -53,7 +53,7 @@ final class SDR_Coulisses {
             wp_safe_redirect(SDR_Settings::workspace_url()); exit;
         });
         add_action('wp_enqueue_scripts', function(){
-            wp_register_style('sdr-ui',plugins_url('assets/app.css',__FILE__),[], '1.13.1');
+            wp_register_style('sdr-ui',plugins_url('assets/app.css',__FILE__),[], '1.13.2');
             wp_enqueue_style('sdr-public');
             if(SDR_Settings::is_workspace()){
                 wp_enqueue_style('sdr-ui');wp_enqueue_style('sdr-documentation',plugins_url('assets/documentation.css',__FILE__),['sdr-ui'], '1.11.0');

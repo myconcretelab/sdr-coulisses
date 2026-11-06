@@ -46,7 +46,7 @@ body.sdr-workspace{--ink:#292823;--cream:#faf9f4;--paper:#fffefa;--muted:#74756f
 :where(body.sdr-workspace) .role-need{display:flex;flex-direction:column;gap:4px;margin:0 0 12px;color:var(--need-ink)}
 :where(body.sdr-workspace) .role-need>strong{font-family:var(--heading);font-size:38px;line-height:1;font-weight:600;letter-spacing:-.04em}
 :where(body.sdr-workspace) .role-need>span{font-size:10px;line-height:1.35;min-height:2.7em;max-width:85px}
-:where(body.sdr-workspace) .role-candidatures{font-size:10px;line-height:1.4;color:#65645d;margin:0}
+:where(body.sdr-workspace) .role-candidatures{font-size:10px;font-weight:600;line-height:1.4;color:#65645d;margin:0}
 :where(body.sdr-workspace) .role-maybe{font-size:9px;color:#80531d;line-height:1.4;margin:3px 0 0}
 :where(body.sdr-workspace) .role-selected{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:3px;margin-top:auto;padding-top:9px;margin-bottom:7px;font-size:9px;color:#655779}
 :where(body.sdr-workspace) .role-selected b{font-size:11px;font-weight:600}
