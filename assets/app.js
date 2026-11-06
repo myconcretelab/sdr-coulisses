@@ -116,6 +116,13 @@
       <label class="new-event-field">Nom du lieu *<input name="name" required maxlength="200" autocomplete="off" autofocus></label>
       <label class="new-event-field">Commune <span class="optional">(facultatif)</span><input name="city" maxlength="120" autocomplete="address-level2"></label>
       <label class="new-event-field">Adresse <span class="optional">(facultatif)</span><input name="address" maxlength="300" autocomplete="street-address"></label>
+      <label class="new-event-field">Site web <span class="optional">(facultatif)</span><input name="website" type="url" maxlength="2048" placeholder="https://…" autocomplete="url"></label>
+      <fieldset class="new-event-section"><legend>Contacts du lieu</legend><p class="field-help">Ces coordonnées restent privées et ne sont pas affichées sur le site public. Tous ces champs sont facultatifs.</p>
+        <label class="new-event-field">Personne à contacter<input name="contact" maxlength="200" autocomplete="off" placeholder="Nom, fonction…"></label>
+        <label class="new-event-field">Téléphone<input name="phone" type="tel" maxlength="50" autocomplete="off" placeholder="06 12 34 56 78"></label>
+        <label class="new-event-field">E-mail<input name="email" type="email" maxlength="254" autocomplete="off" placeholder="contact@exemple.fr"></label>
+        <label class="new-event-field">Autres informations de contact<textarea name="contact_notes" maxlength="2000" rows="3" placeholder="Autres contacts, horaires pour appeler, précisions…"></textarea></label>
+      </fieldset>
       <p class="form-message" role="status" aria-live="polite"></p><div class="new-event-actions"><button type="submit" class="button primary">Enregistrer le lieu <span aria-hidden="true">✓</span></button></div><button type="button" class="new-event-cancel">Annuler et revenir au spectacle</button>
     </form></div>`;
     const form=dialog.querySelector('form'),message=form.querySelector('.form-message');
@@ -128,12 +135,12 @@
     dialog.addEventListener('close',()=>dialog.remove(),{once:true});
     form.onsubmit=async event=>{
       event.preventDefault();if(saving)return;
-      const fields=new FormData(form),body=Object.fromEntries(['name','city','address'].map(key=>[key,fields.get(key)]));
+      const fields=new FormData(form),body=Object.fromEntries(['name','city','address','website','contact','phone','email','contact_notes'].map(key=>[key,fields.get(key)]));
       saving=true;message.textContent='Enregistrement du lieu…';
-      dialog.querySelectorAll('button,input').forEach(control=>control.disabled=true);
+      dialog.querySelectorAll('button,input,textarea').forEach(control=>control.disabled=true);
       let result;
       try{result=await api('venues',body);}
-      catch(error){saving=false;message.textContent=error.message;dialog.querySelectorAll('button,input').forEach(control=>control.disabled=false);return;}
+      catch(error){saving=false;message.textContent=error.message;dialog.querySelectorAll('button,input,textarea').forEach(control=>control.disabled=false);return;}
       onSaved(result.venue);
       dialog.close();
       toast(result.created?'Le lieu a été ajouté et sélectionné.':'Ce lieu existe déjà : il a été sélectionné.');

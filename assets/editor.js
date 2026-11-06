@@ -91,7 +91,8 @@
             ]));
             panels.push(group('Contact privé',[
                 el(Notice,{key:'private',status:'info',isDismissible:false},'Visible uniquement par les personnes autorisées à administrer cette fiche. Jamais affiché sur le site public.'),
-                text('contact','Contact interne')
+                text('contact','Personne à contacter'),text('phone','Téléphone','tel'),text('email','E-mail','email'),
+                el(TextareaControl,{...common,key:'contact_notes',label:'Autres informations de contact',value:get('contact_notes'),onChange:value=>set('contact_notes',value)})
             ]));
         }
         if(type==='sdr_team'){
