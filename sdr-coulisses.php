@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Coulisse — Gestion de troupe
  * Description: Spectacles, disponibilités, équipes, invitations et documentation pour les troupes.
- * Version: 1.12.0
+ * Version: 1.12.1
  * Requires at least: 6.5
  * Requires PHP: 8.1
  * License: GPL-2.0-or-later
@@ -51,7 +51,7 @@ final class SDR_Coulisses {
             wp_safe_redirect(SDR_Settings::workspace_url()); exit;
         });
         add_action('wp_enqueue_scripts', function(){
-            wp_register_style('sdr-ui',plugins_url('assets/app.css',__FILE__),[], '1.11.0');
+            wp_register_style('sdr-ui',plugins_url('assets/app.css',__FILE__),[], '1.12.1');
             wp_enqueue_style('sdr-public');
             if(SDR_Settings::is_workspace()){
                 wp_enqueue_style('sdr-ui');wp_enqueue_style('sdr-documentation',plugins_url('assets/documentation.css',__FILE__),['sdr-ui'], '1.11.0');
@@ -480,7 +480,9 @@ final class SDR_Coulisses {
     static function dashboard(){
         global $wpdb; $uid=get_current_user_id(); $events=[];
         foreach(self::events() as $p){ $e=self::event_data($p); $rows=$wpdb->get_results($wpdb->prepare("SELECT * FROM {$wpdb->prefix}sdr_responses WHERE event_id=%d",$p->ID),ARRAY_A); $e['responses']=[]; $e['mine']=null;
-            foreach($rows as $r){ $u=get_userdata($r['user_id']); if(!$u) continue; $item=['userId'=>(int)$r['user_id'],'name'=>$u->display_name,'availability'=>$r['availability'],'roles'=>json_decode($r['roles'],true)?:[],'selectedRole'=>$r['selected_role']]; if((int)$r['user_id']===$uid) $e['mine']=$item; if(self::organizer()) $item['diet']=get_user_meta($r['user_id'],'sdr_diet',true)?:'unspecified'; $e['responses'][]=$item; } $events[]=$e;
+            foreach($rows as $r){ $u=get_userdata($r['user_id']); if(!$u) continue; $item=['userId'=>(int)$r['user_id'],'name'=>$u->display_name,'availability'=>$r['availability'],'roles'=>json_decode($r['roles'],true)?:[],'selectedRole'=>$r['selected_role']]; if((int)$r['user_id']===$uid) $e['mine']=$item; if(self::organizer()) $item['diet']=get_user_meta($r['user_id'],'sdr_diet',true)?:'unspecified'; $e['responses'][]=$item; }
+            if(self::organizer()) $e['teamNotified']=self::team_notified($p->ID,$rows);
+            $events[]=$e;
         }
         $result=['user'=>array_merge(['id'=>$uid],self::profile($uid)),'organizer'=>self::organizer(),'administrator'=>current_user_can('manage_options'),'events'=>$events,'facebookReady'=>class_exists('NextendSocialLogin') && isset(NextendSocialLogin::$enabledProviders['facebook'])];
         if(self::organizer()) $result['members']=array_values(array_map(fn($u)=>['id'=>$u->ID,'name'=>$u->display_name],array_filter(get_users(['role__in'=>['sdr_member','sdr_organizer'],'orderby'=>'display_name']),fn($u)=>!get_user_meta($u->ID,'sdr_demo',true))));
@@ -559,6 +561,22 @@ final class SDR_Coulisses {
             return ['saved'=>true];
         });
     }
+    static function team_signature($id,$rows){
+        $selected=[];
+        foreach($rows as $row) if($row['selected_role']!=='') $selected[]=['user_id'=>$row['user_id'],'selected_role'=>$row['selected_role']];
+        if(!$selected) return '';
+        usort($selected,static fn($a,$b)=>(int)$a['user_id']<=>(int)$b['user_id']);
+        $details=self::event_email_details(get_post($id));
+        return hash('sha256',wp_json_encode(['date'=>$details['date'],'venue'=>$details['venue'],'time'=>$details['time'],'call'=>$details['callTime'],'team'=>$details['team'],'selected'=>$selected]));
+    }
+    static function team_notified($id,$rows){
+        $signature=self::team_signature($id,$rows);
+        if(!$signature || !hash_equals((string)get_post_meta($id,'_sdr_team_notified_hash',true),$signature)) return false;
+        $state=(array)get_post_meta($id,'_sdr_team_notification_state',true);
+        if(($state['hash']??'')!==$signature) return false;
+        $selected=array_column(array_filter($rows,static fn($row)=>$row['selected_role']!==''),'user_id');
+        return !array_diff($selected,(array)($state['sent']??[])) && !array_intersect($selected,(array)($state['processing']??[]));
+    }
     static function finalize_team($req){
         $id=(int)$req['id']; if(!self::editable_event($id)) return self::error('Spectacle introuvable.',404);
         return self::locked($id,function()use($req,$id){
@@ -566,12 +584,11 @@ final class SDR_Coulisses {
             if(!array_key_exists('notify',$data) || !is_bool($data['notify'])) return self::error('Choisis si les joueurs doivent être informés.');
             $rows=$wpdb->get_results($wpdb->prepare("SELECT user_id,selected_role FROM {$wpdb->prefix}sdr_responses WHERE event_id=%d AND selected_role<>'' ORDER BY user_id ASC",$id),ARRAY_A);
             if(!$rows) return self::error('Sélectionne au moins une personne avant de finaliser l’équipe.');
-            $event=get_post($id); $details=self::event_email_details($event);
-            $signature=hash('sha256',wp_json_encode(['date'=>$details['date'],'venue'=>$details['venue'],'time'=>$details['time'],'call'=>$details['callTime'],'team'=>$details['team'],'selected'=>$rows]));
+            $signature=self::team_signature($id,$rows);
             update_post_meta($id,'_sdr_team_finalized_hash',$signature);
             update_post_meta($id,'_sdr_team_finalized_at',current_time('mysql'));
             update_post_meta($id,'_sdr_team_finalized_by',get_current_user_id());
-            if(!$data['notify']) return ['saved'=>true,'notified'=>0,'failed'=>0,'skipped'=>0,'silent'=>true];
+            if(!$data['notify']) return ['saved'=>true,'notified'=>0,'failed'=>0,'skipped'=>0,'silent'=>true,'teamNotified'=>self::team_notified($id,$rows)];
             $wasNotified=hash_equals((string)get_post_meta($id,'_sdr_team_notified_hash',true),$signature);
             $state=(array)get_post_meta($id,'_sdr_team_notification_state',true);
             if(($state['hash']??'')!==$signature) $state=['hash'=>$signature,'sent'=>[],'processing'=>[],'template'=>SDR_Email_Templates::snapshot('team')];
@@ -598,8 +615,9 @@ final class SDR_Coulisses {
             }
             if($failed===0 && $uncertain===0) update_post_meta($id,'_sdr_team_notified_hash',$signature);
             update_post_meta($id,'_sdr_team_notified_at',current_time('mysql'));
-            if($wasNotified && $notified===0 && $failed===0 && $uncertain===0) return ['saved'=>true,'notified'=>0,'failed'=>0,'uncertain'=>0,'skipped'=>count($skipped),'skippedNames'=>$skipped,'alreadyNotified'=>true];
-            return ['saved'=>true,'notified'=>$notified,'failed'=>$failed,'uncertain'=>$uncertain,'skipped'=>count($skipped),'skippedNames'=>$skipped];
+            $complete=self::team_notified($id,$rows);
+            if($wasNotified && $notified===0 && $failed===0 && $uncertain===0) return ['saved'=>true,'notified'=>0,'failed'=>0,'uncertain'=>0,'skipped'=>count($skipped),'skippedNames'=>$skipped,'alreadyNotified'=>true,'teamNotified'=>$complete];
+            return ['saved'=>true,'notified'=>$notified,'failed'=>$failed,'uncertain'=>$uncertain,'skipped'=>count($skipped),'skippedNames'=>$skipped,'teamNotified'=>$complete];
         });
     }
     static function event_settings($req){
@@ -658,7 +676,7 @@ final class SDR_Coulisses {
         if(!self::member()) return '<div class="login-callout"><h2>Bienvenue dans les coulisses.</h2><p>Cet espace est réservé aux membres de la troupe.</p><a class="button primary" href="'.esc_url(wp_login_url(SDR_Settings::workspace_url())).'">Se connecter →</a></div>';
         wp_enqueue_script('sdr-event-reminders',plugins_url('assets/event-reminders.js',__FILE__),[], '1.9.4',true);
         wp_enqueue_script('sdr-documentation',plugins_url('assets/documentation.js',__FILE__),[], '1.10.0',true);
-        wp_enqueue_script('sdr-app',plugins_url('assets/app.js',__FILE__),['sdr-event-reminders','sdr-documentation'], '1.11.0',true);
+        wp_enqueue_script('sdr-app',plugins_url('assets/app.js',__FILE__),['sdr-event-reminders','sdr-documentation'], '1.12.1',true);
         $facebook = get_page_by_path('connexion-facebook');
         $facebook_url = $facebook && $facebook->post_status === 'publish' && has_shortcode($facebook->post_content, 'sdr_facebook') ? get_permalink($facebook) : '';
         wp_add_inline_script('sdr-app','window.SDR='.wp_json_encode(['api'=>rest_url('sdr/v1/'),'nonce'=>wp_create_nonce('wp_rest'),'home'=>home_url('/'),'facebookUrl'=>$facebook_url,'logo'=>SDR_Settings::identity()['logo'],'identity'=>SDR_Settings::identity(),'admin'=>admin_url(),'relances'=>class_exists('SDR_Relances') && SDR_Relances::allowed()?SDR_Relances::workspace_url():'','adminLogin'=>add_query_arg('sdr_admin','1',wp_login_url(admin_url(),true)),'logout'=>html_entity_decode(wp_logout_url(home_url('/')),ENT_QUOTES,'UTF-8')]).';','before');

@@ -342,14 +342,61 @@
     dialog.innerHTML=eventDialog(e,organize);dialog.showModal();wireDialog(e,organize);
   }
   function eventDialog(e,organize){const mine=e.mine, selected=e.responses.filter(r=>r.selectedRole),roles=mine?.roles?.length?mine.roles:data.user.roles.slice(0,1);return `${dialogBanner(e.format)}<div class="dialog-inner">${eventSummary(e)}${organize?organizationDialog(e):`<form id="response-form"><fieldset ${e.closed?'disabled':''}><legend>Tu es de la partie ?</legend><div class="availability-options">${[['yes','☀','Partant·e !'],['maybe','〰','Si besoin'],['no','☾','Pas dispo']].map(([k,icon,name])=>`<label class="availability-option ${k}"><input type="radio" name="availability" value="${k}" ${mine?.availability===k?'checked':''} required><span><b>${icon}</b>${name}</span></label>`).join('')}</div><div class="choose-roles"><h3>Dans quel rôle ?</h3><div class="role-options">${Object.entries(roleNames).filter(([k])=>data.user.roles.includes(k)).map(([k,name])=>`<label class="role-option"><input type="checkbox" name="roles" value="${k}" ${roles.includes(k)?'checked':''}><span>${name}</span></label>`).join('')}</div>${!data.user.roles.length?'<p>Ajoute tes rôles dans « Mon profil » avant de te proposer.</p>':''}<p class="field-help">Tu peux proposer plusieurs rôles. Un seul sera retenu par soirée.</p></div><button type="submit" class="button primary wide">${mine?'Enregistrer ma réponse':'C’est parti, j’envoie ma réponse'} <span>↗</span></button>${mine?'<button type="button" class="clear-response">Retirer ma réponse</button>':''}</fieldset>${e.closed?'<p class="closed-note">Les réponses sont fermées. Contacte l’organisation pour un changement.</p>':''}<p class="form-message" role="status"></p></form><div class="selection-note">${mine?.selectedRole?`★ Tu es sélectionné·e en tant que ${h(roleNames[mine.selectedRole])}.`:'♡ Tu donnes ta disponibilité ; l’organisation confirme ensuite l’équipe.'}</div>`}${organize?'':`<section class="team-preview"><h3>L’équipe se dessine <span>${selected.length} sélectionné·es</span></h3>${selected.length?`<div class="selected-people">${selected.map(r=>`<div><span class="avatar">${h(r.name[0])}</span><span><b>${h(r.name)}</b><small>${roleNames[r.selectedRole]}</small></span></div>`).join('')}</div>`:'<p>Les rôles attendent encore leurs interprètes.</p>'}</section>`}</div>`;}
-  function organizationDialog(e){const candidates=e.responses.filter(r=>r.availability!=='no'),responded=new Set(e.responses.map(r=>r.userId)),missing=data.members.filter(m=>!responded.has(m.id));return `<section class="organizer-panel"><div class="team-dialog-heading"><div><div class="eyebrow">LE COLLECTIF ENTRE EN SCÈNE</div><h3>Composer l’équipe</h3></div><button type="button" class="button secondary stage-reminder-button" data-remind-event="${e.id}" ${e.closed?'disabled':''} title="${e.closed?'Les réponses sont fermées':'Choisir les personnes à relancer'}" aria-haspopup="dialog">Relancer les non-inscrits <span aria-hidden="true">✉</span></button></div>${compositionBoard(e)}${needsEditor(e)}<h3 class="candidates-heading">À toi de distribuer les rôles</h3><p class="field-help candidate-help">Un rôle par personne. Coche pour retenir, décoche pour retirer ; les choix sont enregistrés au fur et à mesure.</p><p class="candidate-legend"><span><span aria-hidden="true">☀</span> Partant·e</span><span><span aria-hidden="true">〰</span> Si besoin</span><span><span aria-hidden="true">✓</span> Rôle retenu</span></p><div class="candidate-grid">${candidates.length?candidates.map(r=>`<article class="candidate ${r.availability}"><div class="candidate-info"><b>${h(r.name)}</b><small>${h({vegetarian:'Repas végétarien',vegan:'Repas végétalien',standard:'Sans préférence',unspecified:'Repas à préciser'}[r.diet])}</small></div><div class="team-role-options" role="group" aria-label="Rôle de ${h(r.name)} — ${h(statusNames[r.availability])}">${r.roles.map(k=>`<label class="team-role-option" title="${h(statusNames[r.availability])}"><input type="checkbox" data-select-user="${r.userId}" value="${k}" ${r.selectedRole===k?'checked':''} aria-label="Sélectionner ${h(r.name)} comme ${roleNames[k]} — ${h(statusNames[r.availability])}"><span><span class="role-check" aria-hidden="true">✓</span><span class="role-availability" aria-hidden="true">${r.availability==='yes'?'☀':'〰'}</span>${roleNames[k]}</span></label>`).join('')}</div></article>`).join(''):'<p class="empty-inline">Aucune candidature pour le moment.</p>'}</div><p class="selection-message" role="status" aria-live="polite"></p>${finalizeActions(e)}<details><summary>Sans réponse (${missing.length})</summary><p>${missing.map(m=>h(m.name)).join(' · ')||'Tout le monde a répondu.'}</p></details><details><summary>Indisponibles (${e.responses.filter(r=>r.availability==='no').length})</summary><p>${e.responses.filter(r=>r.availability==='no').map(r=>h(r.name)).join(' · ')||'Aucune indisponibilité déclarée.'}</p></details></section>`;}
+  function compositionRoles(e){return Object.entries(roleNames).filter(([key])=>e.capacity[key]>0);}
+  function candidateColumns(e){
+    const roles=compositionRoles(e);
+    if(!roles.length)return '<p class="empty-inline">Aucune place prévue. Ouvre « Ajuster les besoins » pour définir les rôles recherchés.</p>';
+    const shared=e.responses.filter(person=>['yes','maybe'].includes(person.availability)&&roles.filter(([key])=>person.roles.includes(key)).length>1).map(person=>person.userId);
+    const linkColors=['#6b5695','#267a80','#98632b','#8d526a'];
+    return `<div class="candidate-board"><svg class="candidate-links" aria-hidden="true" focusable="false"></svg><div class="candidate-columns" style="--role-columns:${roles.length}">${roles.map(([key,name])=>{
+      const people=e.responses.filter(person=>['yes','maybe'].includes(person.availability)&&person.roles.includes(key));
+      return `<section class="candidate-role" aria-labelledby="candidates-${key}"><div class="candidate-role-heading"><h4 id="candidates-${key}">${key==='joueur'?'Joueur·ses':name}</h4><span>${roleCounts(e,key).selected}/${e.capacity[key]} retenu·es</span></div><div class="candidate-list">${people.length?people.map(person=>{
+        const checked=person.selectedRole===key,elsewhere=person.selectedRole&&!checked,sharedIndex=shared.indexOf(person.userId);
+        const otherRoles=roles.filter(([other])=>other!==key&&person.roles.includes(other)).map(([,label])=>label);
+        const diet={vegetarian:'Repas végétarien',vegan:'Repas végétalien',standard:'Sans préférence',unspecified:'Repas à préciser'}[person.diet]||'Repas à préciser';
+        return `<label class="team-candidate ${person.availability}" ${sharedIndex>=0?`data-candidate-link="${person.userId}" style="--candidate-link-color:${linkColors[sharedIndex%linkColors.length]}"`: ''}><input type="checkbox" data-select-user="${person.userId}" value="${key}" ${checked?'checked':''} aria-label="Sélectionner ${h(person.name)} comme ${h(name)} — ${h(statusNames[person.availability])}"><span class="candidate-pad"><span class="candidate-pad-heading"><b>${h(person.name)}</b>${sharedIndex>=0?`<span class="candidate-link-marker" title="Également proposé·e : ${h(otherRoles.join(', '))}" aria-hidden="true">↔</span>`:''}<span class="role-check" aria-hidden="true">✓</span></span><span class="candidate-availability"><span aria-hidden="true">${person.availability==='yes'?'☀':'〰'}</span> ${h(statusNames[person.availability])}</span><small>${h(diet)}</small>${elsewhere?`<small class="candidate-assignment">Retenu·e : ${h(roleNames[person.selectedRole])}</small>`:''}</span></label>`;
+      }).join(''):'<p class="candidate-empty">Aucune candidature pour ce rôle.</p>'}</div></section>`;
+    }).join('')}</div></div>${shared.length?'<p class="candidate-link-help">↔ Les cartes reliées représentent la même personne, proposée dans plusieurs rôles.</p>':''}`;
+  }
+  function wireCandidateLinks(dialog){
+    const board=dialog.querySelector('.candidate-board');if(!board)return;
+    const svg=board.querySelector('.candidate-links'),cards=[...board.querySelectorAll('[data-candidate-link]')];
+    if(!cards.length)return;
+    const groups=new Map();
+    cards.forEach(card=>{const id=card.dataset.candidateLink;if(!groups.has(id))groups.set(id,[]);groups.get(id).push(card);});
+    const draw=()=>{
+      if(!board.isConnected){observer.disconnect();return;}
+      const rect=board.getBoundingClientRect();svg.setAttribute('viewBox',`0 0 ${rect.width} ${rect.height}`);svg.replaceChildren();
+      groups.forEach((people,id)=>people.slice(1).forEach((card,index)=>{
+        const a=people[index].getBoundingClientRect(),b=card.getBoundingClientRect();
+        if(b.left<=a.right)return; // Columns stack on narrow screens; shared markers stay visible.
+        const x1=a.right-rect.left-2,x2=b.left-rect.left+2,y1=a.top-rect.top+25,y2=b.top-rect.top+25,bend=(x2-x1)/2;
+        const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+        path.setAttribute('d',`M ${x1} ${y1} C ${x1+bend} ${y1}, ${x2-bend} ${y2}, ${x2} ${y2}`);
+        path.setAttribute('stroke',getComputedStyle(card).getPropertyValue('--candidate-link-color').trim());path.dataset.linkUser=id;svg.append(path);
+      }));
+    };
+    const highlight=id=>{
+      svg.classList.toggle('has-highlight',!!id);
+      svg.querySelectorAll('path').forEach(path=>path.classList.toggle('is-highlighted',path.dataset.linkUser===id));
+      cards.forEach(card=>card.classList.toggle('is-linked',card.dataset.candidateLink===id));
+    };
+    board.addEventListener('pointerover',event=>highlight(event.target.closest('[data-candidate-link]')?.dataset.candidateLink));
+    board.addEventListener('pointerleave',()=>highlight(board.contains(document.activeElement)?document.activeElement.closest('[data-candidate-link]')?.dataset.candidateLink:null));
+    board.addEventListener('focusin',event=>highlight(event.target.closest('[data-candidate-link]')?.dataset.candidateLink));
+    board.addEventListener('focusout',event=>highlight(event.relatedTarget?.closest('[data-candidate-link]')?.dataset.candidateLink));
+    const observer=new ResizeObserver(draw);observer.observe(board);draw();
+    dialog.addEventListener('close',()=>observer.disconnect(),{once:true});
+  }
+  function organizationDialog(e){const responded=new Set(e.responses.map(r=>r.userId)),missing=data.members.filter(m=>!responded.has(m.id));return `<section class="organizer-panel"><div class="team-dialog-heading"><div><div class="eyebrow">LE COLLECTIF ENTRE EN SCÈNE</div><h3>Composer l’équipe</h3></div><button type="button" class="button secondary stage-reminder-button" data-remind-event="${e.id}" ${e.closed?'disabled':''} title="${e.closed?'Les réponses sont fermées':'Choisir les personnes à relancer'}" aria-haspopup="dialog">Relancer les non-inscrits <span aria-hidden="true">✉</span></button></div>${compositionBoard(e)}${needsEditor(e)}<h3 class="candidates-heading">À toi de distribuer les rôles</h3><p class="field-help candidate-help">Clique sur une carte pour retenir la personne dans ce rôle, puis reclique pour la retirer. Un seul rôle par personne ; les choix sont enregistrés au fur et à mesure.</p><p class="candidate-legend"><span><span aria-hidden="true">☀</span> Partant·e</span><span><span aria-hidden="true">〰</span> Si besoin</span><span><span aria-hidden="true">✓</span> Rôle retenu</span></p>${candidateColumns(e)}<p class="selection-message" role="status" aria-live="polite"></p>${finalizeActions(e)}<details><summary>Sans réponse (${missing.length})</summary><p>${missing.map(m=>h(m.name)).join(' · ')||'Tout le monde a répondu.'}</p></details><details><summary>Indisponibles (${e.responses.filter(r=>r.availability==='no').length})</summary><p>${e.responses.filter(r=>r.availability==='no').map(r=>h(r.name)).join(' · ')||'Aucune indisponibilité déclarée.'}</p></details></section>`;}
+  function notifyButtonLabel(e){return e.teamNotified?'Joueurs informés <span aria-hidden="true">✓</span>':'Sauvegarder et informer les joueurs <span aria-hidden="true">✉</span>';}
   function finalizeActions(e){
-    const selected=e.responses.filter(r=>r.selectedRole).length,disabled=selected?'':'disabled';
-    return `<section class="finalize-panel"><div><h3>Finaliser cette équipe</h3><p>${selected?`${selected} personne${selected>1?'s':''} retenue${selected>1?'s':''}. L’email est envoyé individuellement aux membres sélectionnés.`:'Sélectionne au moins une personne avant de finaliser.'}</p></div><div class="finalize-buttons"><button type="button" class="button primary" data-finalize="notify" ${disabled}>Sauvegarder et informer les joueurs <span>✉</span></button><button type="button" class="button secondary" data-finalize="silent" ${disabled}>Sauvegarder sans informer</button></div><p class="finalize-message" role="status" aria-live="polite"></p></section>`;
+    const selected=e.responses.filter(r=>r.selectedRole).length;
+    return `<section class="finalize-panel"><div><h3>Finaliser cette équipe</h3><p>${selected?`${selected} personne${selected>1?'s':''} retenue${selected>1?'s':''}. L’email est envoyé individuellement aux membres sélectionnés.`:'Sélectionne au moins une personne avant de finaliser.'}</p></div><div class="finalize-buttons"><button type="button" class="button primary${e.teamNotified?' is-notified':''}" data-finalize="notify" ${!selected||e.teamNotified?'disabled':''}>${notifyButtonLabel(e)}</button><button type="button" class="button secondary" data-finalize="silent" ${selected?'':'disabled'}>Sauvegarder sans informer</button></div><p class="finalize-message" role="status" aria-live="polite">${e.teamNotified?'✓ Cette composition a été transmise aux membres sélectionnés.':''}</p></section>`;
   }
   function compositionBoard(e){
-    const total=Object.values(e.capacity).reduce((sum,n)=>sum+n,0),selected=e.responses.filter(r=>r.selectedRole).length,remaining=Math.max(0,total-selected);
-    return `<div class="composition-progress" aria-label="Composition actuelle">${Object.entries(roleNames).map(([key,name])=>{const n=roleCounts(e,key).selected;return `<span class="${n===e.capacity[key]?'complete':''}"><span aria-hidden="true">${key==='joueur'?'✳':key==='mc'?'♧':'♫'}</span> ${name} <b>${n}/${e.capacity[key]}</b></span>`;}).join('')}</div><section class="composition-board"><div class="composition-heading"><div><span class="eyebrow">LE CASTING DE LA SOIRÉE</span><h3>L’équipe prend forme<span aria-hidden="true">✳</span></h3></div><span class="composition-total">${selected}<small>/${total}</small></span></div><p class="composition-caption">${!total?'Aucune place prévue : ajuste les besoins ci-dessous.':remaining?`Encore ${remaining} place${remaining>1?'s':''} à distribuer.`:'Tout le monde est en place !'}</p><div class="casting-grid">${Object.entries(roleNames).map(([key,name])=>{
+    const roles=compositionRoles(e),total=Object.values(e.capacity).reduce((sum,n)=>sum+n,0),selected=e.responses.filter(r=>r.selectedRole).length,remaining=Math.max(0,total-selected);
+    return `<div class="composition-progress" aria-label="Composition actuelle">${roles.map(([key,name])=>{const n=roleCounts(e,key).selected;return `<span class="${n===e.capacity[key]?'complete':''}"><span aria-hidden="true">${key==='joueur'?'✳':key==='mc'?'♧':'♫'}</span> ${name} <b>${n}/${e.capacity[key]}</b></span>`;}).join('')}</div><section class="composition-board"><div class="composition-heading"><div><span class="eyebrow">LE CASTING DE LA SOIRÉE</span><h3>L’équipe prend forme<span aria-hidden="true">✳</span></h3></div><span class="composition-total">${selected}<small>/${total}</small></span></div><p class="composition-caption">${!total?'Aucune place prévue : ajuste les besoins ci-dessous.':remaining?`Encore ${remaining} place${remaining>1?'s':''} à distribuer.`:'Tout le monde est en place !'}</p><div class="casting-grid" style="--role-columns:${Math.max(1,roles.length)}">${roles.map(([key,name])=>{
       const count=roleCounts(e,key),people=e.responses.filter(r=>r.selectedRole===key),free=Math.max(0,e.capacity[key]-count.selected);
       return `<section class="casting-role ${free?'':'complete'}"><div class="casting-role-title"><span aria-hidden="true">${key==='joueur'?'✳':key==='mc'?'♧':'♫'}</span><h4>${name}</h4><b>${count.selected}/${e.capacity[key]}</b></div><p class="casting-proposals">${count.proposed} proposé${count.proposed>1?'·es':'·e'}${count.maybe?` <span>· ${count.maybe} si besoin</span>`:''}</p><div class="casting-seats">${people.map(p=>`<span class="casting-person"><span aria-hidden="true">✓</span>${h(p.name)}</span>`).join('')}${Array.from({length:Math.min(free,6)},()=>'<span class="casting-empty"><span aria-hidden="true">＋</span>Place libre</span>').join('')}${free>6?`<span class="casting-more">+ ${free-6} autres places libres</span>`:''}${!e.capacity[key]?'<span class="casting-unused">Pas de besoin</span>':''}</div><p class="casting-state">${!e.capacity[key]?'Rôle non prévu':free?`${free} à trouver`:'✓ Au complet !'}</p></section>`;
     }).join('')}</div></section>`;
@@ -357,12 +404,13 @@
   function needsEditor(e){
     return `<details class="needs-editor"><summary>Ajuster les besoins <span>＋ / −</span></summary><form id="settings-form"><p class="field-help">Combien de places pour chaque rôle ? Les personnes déjà retenues restent en place.</p><div class="needs-steppers">${Object.entries(roleNames).map(([key,name])=>`<div class="needs-role"><label for="capacity-${key}">${name}</label><div class="capacity-stepper"><button type="button" data-step="-1" data-role="${key}" aria-label="Retirer une place ${name}">−</button><input id="capacity-${key}" type="number" min="${roleCounts(e,key).selected}" max="30" name="${key}" value="${e.capacity[key]}" required><button type="button" data-step="1" data-role="${key}" aria-label="Ajouter une place ${name}">+</button></div><small data-capacity-hint="${key}"></small></div>`).join('')}</div><label class="close-switch"><input type="checkbox" name="closed" ${e.closed?'checked':''}><span class="switch-track" aria-hidden="true"></span><span>Fermer les réponses<small>Les membres ne pourront plus changer leur disponibilité.</small></span></label><div class="needs-actions"><button class="button primary" type="submit">Enregistrer les besoins <span>✓</span></button><button class="button secondary" type="reset">Annuler</button></div><p class="form-message" aria-live="polite"></p></form></details>`;
   }
-  function wireDialog(e,organize){const dialog=root.querySelector('dialog');dialog.querySelector('.dialog-close').onclick=()=>dialog.close();const form=dialog.querySelector('#response-form');if(form){form.onsubmit=async event=>{event.preventDefault();const fd=new FormData(form);await saveResponse(e,{availability:fd.get('availability'),roles:fd.getAll('roles')},form);};const clear=form.querySelector('.clear-response');if(clear)clear.onclick=()=>saveResponse(e,{availability:'clear',roles:[]},form);const updateRoles=()=>{form.querySelector('.choose-roles').hidden=form.querySelector('[name=availability]:checked')?.value==='no';};form.querySelectorAll('[name=availability]').forEach(i=>i.onchange=updateRoles);updateRoles();}
+  function wireDialog(e,organize){const dialog=root.querySelector('dialog');wireCandidateLinks(dialog);dialog.querySelector('.dialog-close').onclick=()=>dialog.close();const form=dialog.querySelector('#response-form');if(form){form.onsubmit=async event=>{event.preventDefault();const fd=new FormData(form);await saveResponse(e,{availability:fd.get('availability'),roles:fd.getAll('roles')},form);};const clear=form.querySelector('.clear-response');if(clear)clear.onclick=()=>saveResponse(e,{availability:'clear',roles:[]},form);const updateRoles=()=>{form.querySelector('.choose-roles').hidden=form.querySelector('[name=availability]:checked')?.value==='no';};form.querySelectorAll('[name=availability]').forEach(i=>i.onchange=updateRoles);updateRoles();}
     dialog.querySelectorAll('[data-select-user]').forEach(input=>input.onchange=async()=>{
       const userId=Number(input.dataset.selectUser), role=input.checked?input.value:'', scroll=dialog.scrollTop;
       const controls=[...dialog.querySelectorAll('[data-select-user]')], message=dialog.querySelector('.selection-message');
       const needsFields=[...dialog.querySelectorAll('#settings-form input,#settings-form button')], disabledStates=needsFields.map(field=>field.disabled);
       needsFields.forEach(field=>field.disabled=true);
+      dialog.querySelectorAll('[data-finalize]').forEach(button=>button.disabled=true);
       dialog.querySelector('[data-remind-event]').disabled=true;
       controls.forEach(control=>{control.disabled=true;if(Number(control.dataset.selectUser)===userId)control.checked=control.value===role;});
       message.classList.remove('error');message.textContent='Enregistrement…';
@@ -371,7 +419,7 @@
         await api(`events/${e.id}/selection`,{userId,role});saved=true;
         e.responses.find(r=>r.userId===userId).selectedRole=role;
         data=await api('dashboard');
-        if(!dialog.isConnected)return;
+        if(!dialog.isConnected||!message.isConnected)return;
         const wasOpen=dialog.open;
         dialog.close();render();
         if(wasOpen){
@@ -381,22 +429,29 @@
           refreshed.querySelector('.selection-message').textContent='✓ Équipe mise à jour.';
         }
       }catch(err){
+        if(!message.isConnected)return;
         needsFields.forEach((field,i)=>field.disabled=disabledStates[i]);
         dialog.querySelector('[data-remind-event]').disabled=e.closed;
         controls.forEach(control=>{control.checked=e.responses.find(r=>r.userId===Number(control.dataset.selectUser)).selectedRole===control.value;control.disabled=false;});
         message.classList.add('error');
         message.textContent=saved?'Le choix est enregistré, mais l’affichage n’a pas pu être actualisé. Recharge la page.':err.message;
+        refreshNeeds();
       }
     });
     dialog.querySelectorAll('[data-finalize]').forEach(button=>button.onclick=async()=>{
       const notify=button.dataset.finalize==='notify',buttons=[...dialog.querySelectorAll('[data-finalize]')],message=dialog.querySelector('.finalize-message');
+      const needsFields=[...dialog.querySelectorAll('#settings-form input,#settings-form button')],disabledStates=needsFields.map(field=>field.disabled);
+      needsFields.forEach(field=>field.disabled=true);
+      if(notify)button.textContent='Envoi en cours…';
       buttons.forEach(item=>item.disabled=true);dialog.querySelectorAll('[data-select-user]').forEach(input=>input.disabled=true);
       dialog.querySelector('[data-remind-event]').disabled=true;
       message.classList.remove('error');message.textContent=notify?'Préparation des emails…':'Sauvegarde de l’équipe…';
       try{
         const result=await api(`events/${e.id}/finalize`,{notify});
+        e.teamNotified=result.teamNotified;
+        if(!message.isConnected)return;
         if(!notify) message.textContent='✓ Équipe sauvegardée sans envoyer d’email.';
-        else if(result.alreadyNotified) message.textContent='✓ Cette composition avait déjà été envoyée aux joueurs.';
+        else if(result.alreadyNotified&&result.teamNotified) message.textContent='✓ Cette composition avait déjà été envoyée aux joueurs.';
         else{
           const parts=[`${result.notified} joueur${result.notified>1?'s':''} informé${result.notified>1?'s':''}`];
           if(result.skipped)parts.push(`${result.skipped} sans adresse email`);
@@ -406,8 +461,15 @@
           if(result.failed||result.uncertain)message.classList.add('error');
         }
         toast(notify?'Équipe finalisée.':'Équipe sauvegardée sans notification.',!!(result.failed||result.uncertain));
-      }catch(err){message.classList.add('error');message.textContent=err.message;toast(err.message,true);}
-      finally{buttons.forEach(item=>item.disabled=false);dialog.querySelectorAll('[data-select-user]').forEach(input=>input.disabled=false);refreshNeeds();}
+      }catch(err){if(message.isConnected){message.classList.add('error');message.textContent=err.message;toast(err.message,true);}}
+      finally{
+        if(message.isConnected){
+          const notifyButton=dialog.querySelector('[data-finalize=notify]');
+          notifyButton.innerHTML=notifyButtonLabel(e);notifyButton.classList.toggle('is-notified',!!e.teamNotified);
+          needsFields.forEach((field,i)=>field.disabled=disabledStates[i]);
+          refreshNeeds();
+        }
+      }
     });
     const settings=dialog.querySelector('#settings-form');
     const refreshNeeds=()=>{
@@ -420,7 +482,7 @@
           settings.querySelector(`[data-role="${key}"][data-step="-1"]`).disabled=!valid||n<=min;
           settings.querySelector(`[data-role="${key}"][data-step="1"]`).disabled=!valid||n>=30;
         });
-        dialog.querySelectorAll('[data-select-user],[data-finalize]').forEach(input=>input.disabled=dirty||(!dirty&&input.dataset.finalize&&e.responses.every(r=>!r.selectedRole)));
+        dialog.querySelectorAll('[data-select-user],[data-finalize]').forEach(input=>input.disabled=dirty||!!(input.dataset.finalize&&(e.responses.every(r=>!r.selectedRole)||(input.dataset.finalize==='notify'&&e.teamNotified))));
         const reminder=dialog.querySelector('[data-remind-event]');
         reminder.disabled=dirty||e.closed;
         reminder.title=dirty?'Enregistre les besoins avant de relancer':e.closed?'Les réponses sont fermées':'Choisir les personnes à relancer';

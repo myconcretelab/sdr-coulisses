@@ -3,7 +3,7 @@ Contributors: myconcretelab
 Tags: theatre, events, members, availability
 Requires at least: 6.5
 Requires PHP: 8.1
-Stable tag: 1.12.0
+Stable tag: 1.12.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -48,6 +48,12 @@ externe de mises à jour n’est encore raccordé.
 Elles sont conservées. Aucun effacement automatique n’est exécuté.
 
 == Changelog ==
+
+= 1.12.1 =
+* Candidatures regroupées par rôle, avec des cartes compactes entièrement cliquables.
+* Seuls les rôles prévus apparaissent dans les colonnes de composition.
+* Repères et liens graphiques entre les candidatures d’une même personne dans plusieurs rôles.
+* Confirmation « Joueurs informés » conservée tant que la composition et les informations pratiques correspondent aux emails transmis.
 
 = 1.12.0 =
 * Parcours Bien démarrer et contrôles de configuration dans Réglages → Coulisse.

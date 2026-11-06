@@ -285,13 +285,14 @@
                     "steps": [
                         "Dans la carte du spectacle, cliquer sur « Composer l’équipe ».",
                         "Consulter le tableau : chaque rôle indique les places prévues, les personnes retenues et les places encore libres.",
-                        "Dans les candidatures, cocher le rôle à attribuer à chaque personne « Partant·e » ou « Si besoin ». Les choix sont enregistrés au fur et à mesure.",
-                        "Une personne ne peut occuper qu’un rôle par spectacle. Pour changer son rôle, sélectionner un autre rôle qu’elle a proposé.",
-                        "Pour retirer une personne de la composition, décocher son rôle retenu. Sa disponibilité reste enregistrée."
+                        "Dans les candidatures, consulter les colonnes « Joueur·ses », « MC » et « DJ ». Seuls les rôles avec des places prévues sont affichés. Cliquer sur la carte d’une personne « Partant·e » ou « Si besoin » pour la retenir dans cette colonne ; le choix est enregistré immédiatement.",
+                        "Une personne qui propose plusieurs rôles apparaît dans chaque colonne concernée. Ses cartes portent le même repère ↔ et sont reliées par un trait sur grand écran. Les survoler ou les atteindre au clavier met en évidence ses autres candidatures.",
+                        "Une personne ne peut occuper qu’un rôle par spectacle. Cliquer sur sa carte dans une autre colonne change son attribution ; recliquer sur sa carte retenue la retire de l’équipe sans effacer sa disponibilité."
                     ],
                     "notes": [
                         "Les personnes indisponibles et celles sans réponse ne sont pas sélectionnables. Les listes correspondantes se trouvent en bas de la fenêtre.",
-                        "« Équipe complète » signifie que les places prévues sont attribuées. Un spectacle sans besoins définis n’est pas considéré comme complet."
+                        "« Équipe complète » signifie que les places prévues sont attribuées. Un spectacle sans besoins définis n’est pas considéré comme complet.",
+                        "Les cartes contiennent le nom, la disponibilité et le repas. Sur téléphone, les colonnes s’empilent et les repères ↔ restent visibles."
                     ]
                 },
                 {
@@ -307,7 +308,8 @@
                     ],
                     "notes": [
                         "Les places déjà attribuées constituent le minimum autorisé pour chaque rôle.",
-                        "Une modification des besoins ne sélectionne personne et ne déclenche pas d’email."
+                        "Une modification des besoins ne sélectionne personne et ne déclenche pas d’email.",
+                        "Après enregistrement, les colonnes de candidatures et le tableau de composition affichent uniquement les rôles ayant au moins une place prévue."
                     ]
                 },
                 {
@@ -319,12 +321,13 @@
                         "Vérifier les sélections, le rendez-vous, l’horaire et le lieu.",
                         "Dans « Finaliser cette équipe », choisir « Sauvegarder et informer les joueurs » pour envoyer les confirmations individuelles.",
                         "Choisir « Sauvegarder sans informer » pour enregistrer la finalisation sans email.",
-                        "Lire le bilan : il peut indiquer des transmissions acceptées, des échecs ou des adresses inutilisables."
+                        "Lire le bilan : il peut indiquer des transmissions acceptées, des échecs ou des adresses inutilisables. Lorsque toutes les confirmations sont transmises, le bouton devient « Joueurs informés » et n’est plus cliquable."
                     ],
                     "notes": [
                         "Il faut au moins une personne retenue. Le libellé « joueurs » couvre ici les membres sélectionnés, y compris le MC et le DJ.",
-                        "Relancer la confirmation d’une composition inchangée ne renvoie pas les messages déjà confirmés comme transmis. Si la composition ou les informations pratiques changent, vérifier avant de confirmer de nouveau.",
-                        "Une transmission incertaine doit être vérifiée avant toute nouvelle tentative."
+                        "La confirmation « Joueurs informés » reste visible après fermeture ou rechargement. Si la composition ou les informations pratiques du message changent, le bouton « Sauvegarder et informer les joueurs » redevient disponible. Une composition inchangée ne renvoie pas les messages déjà transmis.",
+                        "Une transmission incertaine doit être vérifiée avant toute nouvelle tentative.",
+                        "« Sauvegarder sans informer » ne déclenche pas de confirmation d’envoi. En cas d’échec, de transmission incertaine ou d’adresse inutilisable, le bouton ne confirme pas que toute l’équipe a été informée. Corriger le problème puis vérifier le bilan avant de réessayer ; seuls les envois encore nécessaires sont repris."
                     ]
                 }
             ]
