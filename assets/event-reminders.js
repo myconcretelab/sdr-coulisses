@@ -38,12 +38,13 @@
         ${data.excluded?`<p class="field-help">${data.excluded} profil(s) sans adresse personnelle utilisable ne figurent pas dans cette liste.</p>`:''}
         <div class="reminder-mail-note"><strong>Deux boutons dans leur email</strong><p>« OK, je me lance ! » pour ${targeted?'proposer les rôles recherchés':'choisir leurs rôles'} ; « Je ne suis pas dispo » pour confirmer leur absence. Le tout sans connexion.</p></div>
         <div class="reminder-report" role="status" aria-live="polite"></div><div class="reminder-issues"></div>
-        <div class="reminder-actions"><button type="button" class="button secondary" data-reminder-refresh>Actualiser la liste</button><button type="button" class="button primary" data-reminder-send></button><button type="button" class="button secondary" data-reminder-cancel hidden>Annuler les envois restants</button></div><p class="field-help reminder-send-help">Un email personnel par personne cochée. Garde cette page ouverte pendant l’envoi.</p>`;
+        <div class="reminder-actions"><button type="button" class="button secondary" data-reminder-refresh>Actualiser la liste</button><button type="button" class="button primary" data-reminder-send></button><button type="button" class="button primary" data-reminder-done hidden>Terminer</button><button type="button" class="button secondary" data-reminder-cancel hidden>Annuler les envois restants</button></div><p class="field-help reminder-send-help">Un email personnel par personne cochée. Garde cette page ouverte pendant l’envoi.</p>`;
       notice.textContent=state.campaign?.pending?'Un envoi est en attente. Tu peux le reprendre ou annuler les envois restants.':state.kind==='announcement'?'Le spectacle est enregistré. Choisis qui prévenir : aucun email ne part avant ta confirmation.':!data.users.length?emptyMessage:'Choisis les personnes à contacter, puis confirme l’envoi.';
       content.querySelectorAll('[data-reminder-user]').forEach(input=>input.onchange=()=>{const uid=Number(input.dataset.reminderUser);input.checked?state.selected.add(uid):state.selected.delete(uid);buttons(state);});
       content.querySelector('[data-reminder-all]').onchange=event=>{state.selected=new Set(event.target.checked?state.users.map(user=>user.id):[]);content.querySelectorAll('[data-reminder-user]').forEach(input=>input.checked=event.target.checked);buttons(state);};
       content.querySelector('[data-reminder-refresh]').onclick=()=>{state.requestId='relance-'+Date.now()+'-'+Math.random().toString(36).slice(2);load(state);};
       content.querySelector('[data-reminder-send]').onclick=()=>send(state);
+      content.querySelector('[data-reminder-done]').onclick=()=>dialog.close();
       content.querySelector('[data-reminder-cancel]').onclick=async()=>{try{state.campaign=await api(`events/${id}/reminders/${state.campaign.id}/cancel`,{});await load(state);}catch(error){notice.textContent=error.message;}};
       report(state);buttons(state);
     }catch(error){notice.textContent=error.message;content.innerHTML='<button type="button" class="button secondary">Réessayer</button>';content.querySelector('button').onclick=()=>load(state);}
@@ -52,28 +53,31 @@
     const content=state.dialog.querySelector('.reminder-content'),pending=state.campaign?.pending>0;
     const send=content.querySelector('[data-reminder-send]');if(!send)return;
     send.disabled=state.running||state.sent||(!pending&&!state.selected.size);
+    send.hidden=state.sent;
+    content.querySelector('[data-reminder-done]').hidden=!state.sent;
     send.textContent=state.running?'Envoi en cours…':pending?`Reprendre ${state.campaign.pending} relance(s)`:`Envoyer à ${state.selected.size} personne${state.selected.size>1?'s':''} ✉`;
     content.querySelector('[data-reminder-refresh]').disabled=state.running||pending;
     content.querySelector('[data-reminder-cancel]').hidden=!pending||state.running;
     content.querySelector('.reminder-users').inert=state.running||pending||state.sent;
     const all=content.querySelector('[data-reminder-all]');all.disabled=state.running||pending||state.sent||!state.users.length;all.checked=!!state.users.length&&state.selected.size===state.users.length;all.indeterminate=state.selected.size>0&&state.selected.size<state.users.length;
     content.querySelector('.reminder-count').textContent=`${state.selected.size} sélectionné${state.selected.size>1?'s':''} sur ${state.users.length}`;
+    content.querySelector('.reminder-send-help').textContent=state.sent?'Tu peux fermer cette fenêtre et continuer à composer l’équipe.':'Un email personnel par personne cochée. Garde cette page ouverte pendant l’envoi.';
   }
   function report(state) {
     const c=state.campaign;if(!c)return;
-    state.dialog.querySelector('.reminder-report').textContent=`${c.accepted} email(s) transmis à WordPress · ${c.pending} en attente${c.skipped?` · ${c.skipped} ignoré(s) après vérification`:''}${c.failed?` · ${c.failed} en échec`:''}${c.uncertain?` · ${c.uncertain} transmission(s) à vérifier`:''}${c.cancelled?` · ${c.cancelled} annulé(s)`:''}.`;
+    state.dialog.querySelector('.reminder-report').textContent=`${state.sent?'Envoi terminé. ':''}${c.accepted} email(s) transmis à WordPress · ${c.pending} en attente${c.skipped?` · ${c.skipped} ignoré(s) après vérification`:''}${c.failed?` · ${c.failed} en échec`:''}${c.uncertain?` · ${c.uncertain} transmission(s) à vérifier`:''}${c.cancelled?` · ${c.cancelled} annulé(s)`:''}.`;
     state.dialog.querySelector('.reminder-issues').innerHTML=c.issues.map(issue=>`<p>${escape(issue.name)} : ${escape(issue.message)}</p>`).join('');
   }
   async function send(state) {
-    if(state.running)return;state.running=true;buttons(state);
+    if(state.running||state.sent)return;state.running=true;buttons(state);
     const notice=state.dialog.querySelector('[role=status]');notice.textContent='Préparation des emails personnels…';
     try{
       if(!state.campaign?.pending)state.campaign=await api(`events/${state.id}/reminders`,{recipients:[...state.selected],requestId:state.requestId,kind:state.kind});
       report(state);
       while(state.campaign.pending){state.campaign=await api(`events/${state.id}/reminders/${state.campaign.id}/send`,{});report(state);}
-      state.sent=true;notice.textContent='Traitement terminé. Le bilan indique les transmissions acceptées par WordPress, sans garantir leur réception.';
+      state.sent=true;report(state);notice.textContent='Traitement terminé. Le bilan indique les transmissions acceptées par WordPress, sans garantir leur réception.';
     }catch(error){notice.textContent=error.message+' Tu peux réessayer ou reprendre les envois restants.';}
-    finally{state.running=false;buttons(state);}
+    finally{state.running=false;buttons(state);if(state.sent&&state.dialog.open)state.dialog.querySelector('[data-reminder-done]').focus();}
   }
   window.SDREventReminders={open,isSending:()=>Boolean(current?.running)};
   document.addEventListener('click',event=>{const button=event.target.closest('[data-remind-event]');if(button&&!button.disabled&&button.dataset.remindEvent){event.preventDefault();open(Number(button.dataset.remindEvent),button);}});

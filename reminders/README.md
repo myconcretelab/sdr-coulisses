@@ -132,6 +132,10 @@ permet de reprendre les destinataires encore en attente, avec le même auteur.
 Une transmission interrompue à l’intérieur d’un email est signalée comme incertaine
 et n’est pas renvoyée automatiquement. Le bilan distingue acceptés par WordPress,
 échecs, ignorés, incertains et annulés. L’acceptation ne garantit pas la réception.
+À la fin du traitement, le bilan affiche **Envoi terminé** et le bouton d’envoi
+laisse place à **Terminer**. Ce bouton ferme la fenêtre et rend le focus au spectacle,
+sans renvoyer les emails. Les éventuels échecs et transmissions à vérifier restent
+visibles dans le bilan avant de fermer.
 Les dix dernières campagnes par spectacle et auteur sont conservées. Les envois
 confirmés dans la fenêtre ne sont pas planifiés en arrière-plan. La publication
 WordPress garde son déclenchement automatique distinct ; un état sauvegardé avant
