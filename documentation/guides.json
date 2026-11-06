@@ -61,6 +61,79 @@
                         "Le gabarit privé fourni par le plugin fonctionne sans le thème SDR. Les anciens contenus et noms de blocs restent reconnus.",
                         "Les fiches publiques ajoutent les informations pratiques et les spectacles liés lorsque leurs blocs sont absents du contenu. Insérer ces blocs dans Gutenberg permet de choisir leur emplacement. Le texte enregistré n’est pas modifié."
                     ]
+                },
+                {
+                    "id": "verifier-installation",
+                    "title": "Vérifier l’installation avant d’inviter la troupe",
+                    "access": "administrator",
+                    "summary": "L’écran Bien démarrer distingue les contrôles automatiques des essais à effectuer.",
+                    "steps": [
+                        "Dans WordPress, ouvrir Réglages → Coulisse et lire « Bien démarrer ».",
+                        "Corriger les points « À corriger » : version de WordPress ou PHP, stockage des réponses, droits ou page des Coulisses.",
+                        "Dans Comptes / Utilisateurs, créer un premier compte Membre de la troupe. Configurer ses rôles artistiques dans son profil. Un compte Organisation permet de déléguer la préparation des spectacles.",
+                        "Ouvrir « Modèles d’emails », choisir un modèle et utiliser « M’envoyer cet aperçu ». Vérifier sa réception et les indésirables.",
+                        "Ouvrir les Coulisses dans une autre session avec le compte membre pour vérifier l’accès et l’enregistrement d’une disponibilité."
+                    ],
+                    "notes": [
+                        "Les états « À préparer » et « À tester » correspondent à des actions manuelles. La présence d’un administrateur suffit pour organiser les spectacles, mais ne remplace pas un essai avec un compte membre.",
+                        "Cette page ne contacte aucun membre et n’envoie aucun email. Le contrôle des emails reste « À tester » : un envoi accepté par WordPress ne prouve pas la réception."
+                    ]
+                },
+                {
+                    "id": "premier-essai-pilote",
+                    "title": "Faire un premier essai avec une troupe pilote",
+                    "access": "administrator",
+                    "summary": "Valider le parcours complet sur une copie du site avant d’inviter les membres.",
+                    "steps": [
+                        "Préparer une copie du WordPress de la troupe et une sauvegarde. Ne pas importer les vrais membres pour le premier essai.",
+                        "Installer Coulisse, enregistrer l’identité de la troupe et créer la page des Coulisses. Vérifier que l’accueil et le thème public sont conservés.",
+                        "Créer un compte d’organisation et un compte membre réservés à l’essai, avec des adresses email que les testeurs peuvent consulter. Dans le profil du membre, choisir ses rôles et « OK pour la scène ».",
+                        "Avec le compte d’organisation, créer un spectacle fictif dans les Coulisses. Vérifier sa présence dans l’agenda public de la copie du site.",
+                        "Dans une autre session, se connecter avec le compte membre, ouvrir « Je me lance » et enregistrer une disponibilité.",
+                        "Revenir à l’organisation, ouvrir « Composer l’équipe », attribuer une place puis utiliser « Sauvegarder et informer les joueurs ». Vérifier la réception sur le seul compte d’essai sélectionné.",
+                        "Essayer aussi une invitation ou une relance ciblée. Lire la liste des destinataires avant de confirmer, vérifier la réponse depuis l’email, puis terminer l’envoi avec « Terminer ».",
+                        "Vérifier sur téléphone, noter les éventuels problèmes puis supprimer les données d’essai avant de préparer les vraies dates."
+                    ],
+                    "notes": [
+                        "Un spectacle enregistré est publié sur le site où l’essai est effectué : utiliser une copie du site pour les contenus fictifs.",
+                        "Les emails sont de vrais envois. Limiter les destinataires aux comptes d’essai et vérifier l’adresse de chaque personne sélectionnée."
+                    ]
+                },
+                {
+                    "id": "mettre-a-jour-pilote",
+                    "title": "Mettre à jour la version pilote et revenir à une sauvegarde",
+                    "access": "administrator",
+                    "summary": "Installer un nouveau ZIP en conservant les données de la troupe.",
+                    "steps": [
+                        "Télécharger le nouveau ZIP de Coulisse et lire ses changements. La version installée apparaît dans Réglages → Coulisse → Bien démarrer.",
+                        "Sauvegarder les fichiers WordPress et la base de données. Conserver aussi le ZIP de la version précédente.",
+                        "Essayer d’abord la mise à jour sur une copie du site. Dans Extensions → Ajouter une extension → Téléverser une extension, choisir le nouveau ZIP.",
+                        "Lorsque WordPress détecte le plugin existant, vérifier les versions affichées puis confirmer le remplacement par l’archive téléversée. Le dossier reste sdr-coulisses.",
+                        "Ouvrir Réglages → Coulisse, vérifier Bien démarrer et refaire le parcours du premier essai : connexion membre, disponibilité, composition, aperçu d’email et pages publiques.",
+                        "En cas de problème, arrêter l’essai et restaurer la sauvegarde correspondante. Après validation, appliquer la même procédure au site de la troupe."
+                    ],
+                    "notes": [
+                        "Les mises à jour de la version pilote sont manuelles. Le téléchargement de l’archive ne modifie pas le site.",
+                        "La désactivation conserve les données. Ne pas utiliser une suppression de comptes, de spectacles ou de tables comme méthode de mise à jour.",
+                        "Réinstaller un ancien ZIP ne rétablit pas les données modifiées entre-temps. Une restauration complète utilise la sauvegarde des fichiers et de la base."
+                    ]
+                },
+                {
+                    "id": "signaler-probleme",
+                    "title": "Préparer un retour et signaler un problème",
+                    "access": "administrator",
+                    "summary": "Fournir les étapes de reproduction et les versions utilisées sans transmettre les données des membres.",
+                    "steps": [
+                        "Dans Réglages → Coulisse, ouvrir « Préparer un retour ou signaler un problème » dans Bien démarrer.",
+                        "Cliquer sur « Copier le rapport technique ». Si la copie automatique est indisponible, le texte est sélectionné : utiliser Copier sur son appareil.",
+                        "Noter l’écran, le rôle du compte, les boutons utilisés, le résultat attendu et le résultat obtenu. Recopier le message d’erreur exact.",
+                        "Cliquer sur « Signaler sur GitHub », puis choisir « Signaler un problème ». Un compte GitHub est nécessaire pour publier le signalement.",
+                        "Coller le rapport dans « Rapport technique », ajouter le navigateur et l’appareil, puis relire avant de publier."
+                    ],
+                    "notes": [
+                        "Le rapport contient les versions de Coulisse, WordPress, PHP et du thème, ainsi que les états de configuration. Il ne contient ni nom de membre, email, adresse du site, chemin serveur, réponse ou contenu de spectacle.",
+                        "Le rapport n’est pas envoyé automatiquement. Les signalements du dépôt public sont visibles publiquement ; retirer des textes et captures les données de membres, mots de passe et liens personnels de réponse."
+                    ]
                 }
             ]
         },

@@ -3,7 +3,7 @@ Contributors: myconcretelab
 Tags: theatre, events, members, availability
 Requires at least: 6.5
 Requires PHP: 8.1
-Stable tag: 1.11.0
+Stable tag: 1.12.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -48,6 +48,11 @@ externe de mises à jour n’est encore raccordé.
 Elles sont conservées. Aucun effacement automatique n’est exécuté.
 
 == Changelog ==
+
+= 1.12.0 =
+* Parcours Bien démarrer et contrôles de configuration dans Réglages → Coulisse.
+* Rapport technique sans données de membres, à copier pour un signalement.
+* Guides de premier essai, de mise à jour et de retour des troupes pilotes.
 
 = 1.11.0 =
 * Identité de troupe et page des Coulisses configurables.

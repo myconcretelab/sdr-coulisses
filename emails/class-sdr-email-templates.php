@@ -48,7 +48,7 @@ final class SDR_Email_Templates {
                 if($existing)$id=$existing[0]->ID;
                 else{
                     $s=SDR_Email_Defaults::snapshot($kind);
-                    $id=wp_insert_post(wp_slash(['post_type'=>self::TYPE,'post_status'=>'publish','post_title'=>$label.' — SDR','post_content'=>$s['content'],'meta_input'=>['_sdr_email_seed'=>$kind,'_sdr_email_kind'=>$kind,'_sdr_email_subject'=>$s['subject'],'_sdr_email_preheader'=>$s['preheader'],'_sdr_email_style'=>$s['style']]]),true);
+                    $id=wp_insert_post(wp_slash(['post_type'=>self::TYPE,'post_status'=>'publish','post_title'=>$label.' — Coulisse','post_content'=>$s['content'],'meta_input'=>['_sdr_email_seed'=>$kind,'_sdr_email_kind'=>$kind,'_sdr_email_subject'=>$s['subject'],'_sdr_email_preheader'=>$s['preheader'],'_sdr_email_style'=>$s['style']]]),true);
                     if(is_wp_error($id)||!$id)return;
                 }
                 if(empty($active[$kind]))$active[$kind]=(int)$id;

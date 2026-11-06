@@ -9,7 +9,7 @@
             <div class="sr-card-heading"><span class="sr-step">1</span><div><h2 id="sr-audience-title">Choisir les destinataires</h2><p>Filtre les profils, puis sélectionne les personnes à contacter.</p></div></div>
             <div class="sr-filter-top">
                 <label>Rechercher<input type="search" id="sr-search" placeholder="Nom, prénom ou email…" autocomplete="off"></label>
-                <label>Rôle WordPress<select id="sr-role"><option value="members">Membres et organisation SDR</option><option value="all">Tous les utilisateurs</option></select></label>
+                <label>Rôle WordPress<select id="sr-role"><option value="members">Membres et organisation</option><option value="all">Tous les utilisateurs</option></select></label>
             </div>
             <div class="sr-event"><label for="sr-event">Spectacle de référence <span class="sr-optional">facultatif</span></label><select id="sr-event"><option value="0">Aucun spectacle sélectionné</option></select><p class="description">Utilisé par les filtres de spectacle et les variables de date, de lieu et de compte à rebours.</p></div>
             <fieldset class="sr-filters"><legend>Profils à relancer</legend><div id="sr-filters"><p class="description">Chargement des filtres…</p></div></fieldset>

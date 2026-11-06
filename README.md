@@ -19,6 +19,12 @@ le WordPress de chaque troupe. Aucun service central ni compte externe n’est r
 6. Dans **Modèles d’emails**, tester l’envoi vers son propre compte avant de contacter
    les membres. La réception dépend du service d’email configuré sur le WordPress.
 
+L’écran **Bien démarrer**, dans Réglages → Coulisse, contrôle les prérequis,
+le stockage, les rôles et la page privée. Il distingue les essais manuels des points
+à corriger et propose un rapport technique sans données de membres. Aucun email
+n’est envoyé par ces contrôles. Les guides expliquent le premier essai, la mise à jour
+par ZIP et les signalements GitHub.
+
 La documentation détaillée se trouve en haut de la navigation des Coulisses.
 L’agenda, le trombinoscope, les informations pratiques et les spectacles liés
 s’insèrent dans les pages publiques avec les blocs Gutenberg du plugin.

@@ -20,7 +20,7 @@ final class SDR_Settings {
         add_action('admin_enqueue_scripts', static function ($hook) {
             if ($hook !== 'settings_page_sdr-coulisse') return;
             wp_enqueue_media();
-            wp_enqueue_script('sdr-settings', plugins_url('../assets/settings.js', __FILE__), ['jquery'], '1.11.0', true);
+            wp_enqueue_script('sdr-settings', plugins_url('../assets/settings.js', __FILE__), ['jquery'], '1.12.0', true);
         });
         add_filter('body_class', static function ($classes) { if (self::is_workspace()) $classes[] = 'sdr-workspace'; return $classes; });
         add_filter('template_include', static function ($template) {
@@ -125,6 +125,7 @@ final class SDR_Settings {
         $s = self::all(); $identity = self::identity();
         echo '<div class="wrap"><h1>Coulisse · Gestion de troupe</h1><p>Configure l’identité de la troupe et son espace membres. Le thème du site public conserve sa présentation.</p>';
         settings_errors();
+        SDR_Setup::render();
         if (isset($_GET['workspace']) && $_GET['workspace'] === 'created') echo '<div class="notice notice-success"><p>La page des Coulisses est prête. Aucun contenu existant n’a été remplacé.</p></div>';
         echo '<form action="options.php" method="post">';settings_fields('sdr_coulisse');
         echo '<table class="form-table"><tbody>';

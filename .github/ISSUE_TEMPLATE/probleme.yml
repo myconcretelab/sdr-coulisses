@@ -1,0 +1,38 @@
+name: Signaler un problème
+description: Erreur, action bloquée ou résultat inattendu dans Coulisse.
+title: "[Problème] "
+body:
+ - type: markdown
+   attributes:
+     value: "Indique les étapes permettant de reproduire le problème. Ne joins aucun mot de passe, lien de réponse personnel ou information sur les membres."
+ - type: textarea
+   id: steps
+   attributes:
+     label: Étapes pour reproduire
+     description: Depuis quel écran, avec quel rôle et quels boutons ?
+     placeholder: "1. Se connecter avec un compte Organisation\n2. Ouvrir…\n3. Cliquer sur…"
+   validations:
+     required: true
+ - type: textarea
+   id: expected
+   attributes:
+     label: Résultat attendu
+   validations:
+     required: true
+ - type: textarea
+   id: actual
+   attributes:
+     label: Résultat obtenu et message affiché
+   validations:
+     required: true
+ - type: textarea
+   id: environment
+   attributes:
+     label: Rapport technique
+     description: Dans WordPress, ouvrir Réglages → Coulisse → Préparer un retour ou signaler un problème, puis Copier le rapport technique.
+     render: json
+ - type: input
+   id: browser
+   attributes:
+     label: Navigateur et appareil
+     placeholder: Par exemple Firefox sur ordinateur, Safari sur iPhone…
