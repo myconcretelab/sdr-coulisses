@@ -131,7 +131,6 @@
     dialog.querySelector('.dialog-close').onclick=close;
     dialog.querySelector('.new-event-cancel').onclick=close;
     dialog.oncancel=event=>{if(saving)event.preventDefault();};
-    dialog.onclick=event=>{if(event.target===dialog){const rect=dialog.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)close();}};
     dialog.addEventListener('close',()=>dialog.remove(),{once:true});
     form.onsubmit=async event=>{
       event.preventDefault();if(saving)return;
@@ -180,7 +179,6 @@
       dialog.querySelector('.dialog-close').onclick=close;
       dialog.querySelector('.new-event-cancel').onclick=close;
       dialog.oncancel=event=>{if(saving) event.preventDefault();};
-      dialog.onclick=event=>{if(event.target===dialog){const rect=dialog.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)close();}};
       let selectedVenue=form.elements.venue.value;
       const refreshVenueAddress=()=>{
         const venue=options.venues.find(item=>item.id===Number(form.elements.venue.value));
