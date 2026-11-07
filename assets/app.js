@@ -173,6 +173,72 @@
     };
     root.append(dialog);dialog.showModal();
   }
+  function createTeamPicker(container,teams,initial,onChange){
+    let selected=[...new Set(initial)],visible=[],active=-1;
+    const normalize=value=>String(value).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('fr');
+    const choices=()=>teams.concat(selected.filter(id=>!teams.some(team=>team.id===id)).map(id=>({id,name:'Troupe n°'+id+' — indisponible',unavailable:true})));
+    container.innerHTML=`<div class="team-picker-control"><div class="team-picker-selection"></div><input id="new-team-search" type="text" role="combobox" aria-label="Rechercher une troupe" aria-controls="new-team-options" aria-expanded="false" aria-autocomplete="list" aria-describedby="new-team-help" autocomplete="off" placeholder="Rechercher une troupe…"><button type="button" class="team-picker-toggle" aria-label="Afficher les troupes" aria-controls="new-team-options" aria-expanded="false"><span aria-hidden="true">⌄</span></button></div><div class="team-picker-dropdown" hidden><ul id="new-team-options" role="listbox" aria-label="Troupes participantes" aria-multiselectable="true"></ul><p class="team-picker-empty" role="status" hidden></p></div><span class="team-picker-status screen-reader-text" role="status" aria-live="polite"></span>`;
+    const input=container.querySelector('input'),toggle=container.querySelector('.team-picker-toggle'),panel=container.querySelector('.team-picker-dropdown'),list=container.querySelector('ul'),chips=container.querySelector('.team-picker-selection'),empty=container.querySelector('.team-picker-empty'),status=container.querySelector('.team-picker-status');
+    const setActive=index=>{
+      active=index;
+      [...list.children].forEach((option,i)=>option.classList.toggle('is-active',i===active));
+      if(active<0)input.removeAttribute('aria-activedescendant');
+      else{input.setAttribute('aria-activedescendant',list.children[active].id);list.children[active].scrollIntoView({block:'nearest'});}
+    };
+    const renderOptions=()=>{
+      const term=normalize(input.value.trim());
+      visible=choices().filter(team=>normalize(team.name+' '+(team.city||'')).includes(term));
+      list.innerHTML=visible.map(team=>`<li id="new-team-option-${team.id}" role="option" aria-selected="${selected.includes(team.id)}" data-team="${team.id}"><span class="team-picker-check" aria-hidden="true">${selected.includes(team.id)?'✓':''}</span><span>${h(team.name)}${team.city?`<small>${h(team.city)}</small>`:''}${team.unavailable?'<small>Retire cette troupe ou remplace-la avant d’enregistrer.</small>':''}</span></li>`).join('');
+      empty.hidden=visible.length>0;
+      empty.textContent=teams.length||selected.length?'Aucune troupe trouvée. Essaie un autre nom ou utilise « Ajouter une troupe ».':'Aucune troupe enregistrée. Utilise « Ajouter une troupe ».';
+      setActive(-1);
+    };
+    const setOpen=open=>{
+      panel.hidden=!open;input.setAttribute('aria-expanded',String(open));toggle.setAttribute('aria-expanded',String(open));toggle.setAttribute('aria-label',open?'Masquer les troupes':'Afficher les troupes');
+      if(open)renderOptions();else setActive(-1);
+    };
+    const renderSelection=()=>{
+      chips.innerHTML=selected.map(id=>{const team=choices().find(item=>item.id===id);return `<span class="team-picker-chip${team.unavailable?' is-unavailable':''}"><input type="hidden" name="teams" value="${id}"><span>${h(team.name)}</span><button type="button" data-remove-team="${id}" aria-label="Retirer ${h(team.name)}"${team.unavailable?' title="Retire cette troupe ou remplace-la avant d’enregistrer."':''}><span aria-hidden="true">×</span></button></span>`;}).join('');
+      chips.hidden=!selected.length;
+    };
+    const changeSelection=id=>{
+      const team=choices().find(item=>item.id===id),removing=selected.includes(id);
+      selected=removing?selected.filter(item=>item!==id):selected.concat(id);
+      renderSelection();renderOptions();onChange();
+      status.textContent=`Troupe ${removing?'retirée':'sélectionnée'} : ${team.name}. ${selected.length} troupe${selected.length>1?'s':''} sélectionnée${selected.length>1?'s':''}.`;
+    };
+    input.addEventListener('input',()=>setOpen(true));
+    input.addEventListener('click',()=>{if(panel.hidden)setOpen(true);});
+    input.addEventListener('keydown',event=>{
+      if(event.key==='ArrowDown'||event.key==='ArrowUp'){
+        event.preventDefault();if(panel.hidden)setOpen(true);
+        if(visible.length)setActive(active<0?(event.key==='ArrowDown'?0:visible.length-1):(active+(event.key==='ArrowDown'?1:-1)+visible.length)%visible.length);
+      }else if(event.key==='Enter'){
+        event.preventDefault();
+        if(panel.hidden)setOpen(true);
+        else if(active>=0){const id=visible[active].id;changeSelection(id);setActive(visible.findIndex(team=>team.id===id));}
+      }else if(event.key==='Escape'&&!panel.hidden){event.preventDefault();event.stopPropagation();setOpen(false);}
+    });
+    toggle.onclick=()=>{const open=panel.hidden;input.focus();setOpen(open);};
+    list.addEventListener('pointerdown',event=>event.preventDefault());
+    list.addEventListener('click',event=>{
+      const option=event.target.closest('[data-team]');if(!option)return;
+      changeSelection(Number(option.dataset.team));input.focus();
+    });
+    chips.addEventListener('click',event=>{
+      const button=event.target.closest('[data-remove-team]');if(!button)return;
+      changeSelection(Number(button.dataset.removeTeam));input.focus();
+    });
+    container.addEventListener('focusout',event=>{if(!container.contains(event.relatedTarget))setOpen(false);});
+    container.closest('form').addEventListener('pointerdown',event=>{if(!container.contains(event.target))setOpen(false);});
+    renderSelection();
+    return {values:()=>[...selected],add:team=>{
+      const index=teams.findIndex(item=>item.id===team.id);if(index>=0)teams[index]=team;else teams.push(team);
+      teams.sort((a,b)=>a.name.localeCompare(b.name,'fr')||(a.city||'').localeCompare(b.city||'','fr'));
+      if(!selected.includes(team.id))selected.push(team.id);
+      input.value='';renderSelection();setOpen(false);onChange();
+    }};
+  }
   async function openCreateEvent(id=null){
     if(!data.organizer) return;
     const editing=Number.isInteger(id);
@@ -193,7 +259,7 @@
         <fieldset class="new-event-section"><legend>Le lieu & les horaires <span aria-hidden="true">↗</span></legend>
           <label class="new-event-field">Lieu<select name="venue" aria-describedby="new-venue-address">${venueChoices(existing?.venue)}</select><small id="new-venue-address">Choisis parmi les lieux enregistrés.</small></label>
           <div class="new-event-grid"><label class="new-event-field">Rendez-vous de la troupe<input name="callTime" type="time" value="${h(existing?.callTime||'')}"></label><label class="new-event-field">Début du spectacle<input name="time" type="time" value="${h(existing?.time||'')}"></label></div>
-          <fieldset class="new-event-team-field"><legend>Troupes participantes <span class="optional">(facultatif)</span></legend><p class="field-help">Sélectionne les autres troupes qui participent au spectacle.</p><div id="new-team-options" class="event-team-options"></div><button type="button" class="button secondary" data-add-team>＋ Ajouter une troupe</button><label class="new-event-field">Titre automatique<select name="teamTitleStyle"><option value="with" ${existing?.teamTitleStyle!=='versus'?'selected':''}>Avec — spectacle partagé</option><option value="versus" ${existing?.teamTitleStyle==='versus'?'selected':''}>VS — match</option></select><small>Utilisé si le titre est vide et si des troupes sont sélectionnées.</small></label></fieldset><label class="close-switch"><input type="checkbox" name="intermission" ${existing?.intermission?'checked':''}><span class="switch-track" aria-hidden="true"></span><span>Avec entracte<small>À cocher si une pause est prévue pendant le spectacle.</small></span></label>
+          <fieldset class="new-event-team-field"><legend>Troupes participantes <span class="optional">(facultatif)</span></legend><p id="new-team-help" class="field-help">Recherche et sélectionne une ou plusieurs autres troupes.</p><div class="team-picker"></div><button type="button" class="button secondary" data-add-team>＋ Ajouter une troupe</button><label class="new-event-field">Titre automatique<select name="teamTitleStyle"><option value="with" ${existing?.teamTitleStyle!=='versus'?'selected':''}>Avec — spectacle partagé</option><option value="versus" ${existing?.teamTitleStyle==='versus'?'selected':''}>VS — match</option></select><small>Utilisé si le titre est vide et si des troupes sont sélectionnées.</small></label></fieldset><label class="close-switch"><input type="checkbox" name="intermission" ${existing?.intermission?'checked':''}><span class="switch-track" aria-hidden="true"></span><span>Avec entracte<small>À cocher si une pause est prévue pendant le spectacle.</small></span></label>
         </fieldset>
         <fieldset class="new-event-section"><legend>Combien de places sur scène ? <span aria-hidden="true">♧</span></legend><p class="field-help">Places pour les membres de la troupe, hors autres troupes participantes. ${editing?'Les places déjà attribuées ne peuvent pas être retirées.':'Ajustables ensuite dans la composition de l’équipe.'}</p><div class="new-event-capacities">${Object.entries(roleNames).map(([key,label])=>`<div class="new-event-field"><label for="new-capacity-${key}">${label}</label><div class="capacity-stepper new-event-stepper"><button type="button" data-event-step="-1" data-role="${key}" aria-label="Retirer une place ${label}">−</button><input id="new-capacity-${key}" name="capacity_${key}" type="number" min="${assigned[key]}" max="30" step="1" required value="${existing?.capacity?.[key]??0}"><button type="button" data-event-step="1" data-role="${key}" aria-label="Ajouter une place ${label}">+</button></div></div>`).join('')}</div><label class="close-switch"><input type="checkbox" name="closed" ${existing?.closed?'checked':''}><span class="switch-track" aria-hidden="true"></span><span>Fermer les réponses<small>Les membres ne pourront plus changer leur disponibilité.</small></span></label></fieldset>
         <div class="new-event-section"><label class="new-event-field">Lien de billetterie <span class="optional">(facultatif)</span><input name="bookingUrl" type="url" placeholder="https://…" value="${h(existing?.bookingUrl||'')}"></label>${existing?.hasBlocks?`<p class="new-event-block-note">La présentation de ce spectacle est composée de blocs Gutenberg. Elle reste intacte ici ; <a href="${h(existing.editUrl)}">ouvre l’éditeur</a> pour la modifier.</p>`:`<label class="new-event-field">Présentation <span class="optional">(facultatif)</span><textarea name="description" rows="3" placeholder="Quelques mots sur la soirée…">${h(existing?.description||'')}</textarea></label>`}</div>
@@ -224,24 +290,15 @@
         selectedVenue=form.elements.venue.value;refreshVenueAddress();
       };
       refreshVenueAddress();
-      const selectedTeams=()=>[...form.querySelectorAll('[name=teams]:checked')].map(input=>Number(input.value));
       const refreshTitlePreview=()=>{
-        const names=selectedTeams().map(id=>options.teams.find(team=>team.id===id)?.name).filter(Boolean);
+        const names=teamPicker.values().map(id=>options.teams.find(team=>team.id===id)?.name).filter(Boolean);
         const partners=names.length>1?names.slice(0,-1).join(', ')+' et '+names[names.length-1]:names[0];
         let automatic=names.length?(form.elements.teamTitleStyle.value==='versus'?[identity.matchName,...names].join(' VS '):identity.matchName+' avec '+partners):(options.formats.find(format=>format.id===Number(form.elements.format.value))?.name||'Spectacle');
         if(!names.length&&form.elements.date.value){const date=new Date(form.elements.date.value+'T12:00:00');if(!Number.isNaN(date.getTime()))automatic+=' du '+new Intl.DateTimeFormat('fr-FR',{day:'numeric',month:'long',year:'numeric'}).format(date);}
         form.querySelector('#new-event-title-preview').textContent='Titre affiché : '+(form.elements.title.value.trim()||automatic);
       };
-      const renderTeamOptions=selected=>{
-        const choices=options.teams.concat(selected.filter(id=>!options.teams.some(team=>team.id===id)).map(id=>({id,name:'Troupe n°'+id+' — indisponible',city:'Décoche cette troupe ou remplace-la avant d’enregistrer.'})));
-        form.querySelector('#new-team-options').innerHTML=choices.length?choices.map(team=>`<label class="event-team-choice"><input type="checkbox" name="teams" value="${team.id}" ${selected.includes(team.id)?'checked':''}><span>${h(team.name)}${team.city?`<small>${h(team.city)}</small>`:''}</span></label>`).join(''):'<p class="field-help">Aucune troupe enregistrée. Utilise « Ajouter une troupe ».</p>';
-      };
-      renderTeamOptions(existing?.teams||(existing?.team?[existing.team]:[]));
-      form.querySelector('[data-add-team]').onclick=()=>openCreateTeam(team=>{
-        const selected=selectedTeams();if(!selected.includes(team.id))selected.push(team.id);
-        options.teams=options.teams.filter(item=>item.id!==team.id).concat(team).sort((a,b)=>a.name.localeCompare(b.name,'fr')||a.city.localeCompare(b.city,'fr'));
-        renderTeamOptions(selected);refreshTitlePreview();
-      });
+      const teamPicker=createTeamPicker(form.querySelector('.team-picker'),options.teams,existing?.teams||(existing?.team?[existing.team]:[]),refreshTitlePreview);
+      form.querySelector('[data-add-team]').onclick=()=>openCreateTeam(team=>teamPicker.add(team));
       form.addEventListener('input',refreshTitlePreview);refreshTitlePreview();
       const refreshCapacities=()=>{
         form.querySelectorAll('[data-event-step]').forEach(button=>{

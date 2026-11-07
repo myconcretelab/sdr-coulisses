@@ -1,6 +1,6 @@
 {
     "schema": 1,
-    "updated": "2026-11-06",
+    "updated": "2026-11-07",
     "domains": [
         {
             "id": "installation",
@@ -167,7 +167,7 @@
                     "access": "organizer",
                     "summary": "Le parcours complet, avec le bon type de message à chaque étape.",
                     "steps": [
-                        "Créer le spectacle : date, lieu, horaires et effectifs recherchés. Le titre est facultatif et plusieurs troupes participantes peuvent être cochées.",
+                        "Créer le spectacle : date, lieu, horaires et effectifs recherchés. Le titre est facultatif et plusieurs troupes participantes peuvent être sélectionnées dans le même champ.",
                         "Si nécessaire, annoncer la nouvelle date aux membres volontaires avec « Enregistrer et prévenir les joueurs ».",
                         "Consulter les réponses puis ouvrir « Composer l’équipe » depuis la carte du spectacle.",
                         "Retenir une personne pour chaque place. Relancer les non-inscrits si des rôles manquent encore.",
@@ -191,7 +191,7 @@
                     "summary": "La date est obligatoire. Le titre est facultatif et plusieurs troupes peuvent participer.",
                     "steps": [
                         "Dans la navigation, cliquer sur « Nouveau spectacle ».",
-                        "Renseigner la date. Saisir un titre si tu souhaites imposer un nom ; sinon, le laisser vide et vérifier « Titre affiché ». Choisir le format et le lieu, puis cocher toutes les « Troupes participantes » concernées.",
+                        "Renseigner la date. Saisir un titre si tu souhaites imposer un nom ; sinon, le laisser vide et vérifier « Titre affiché ». Choisir le format et le lieu. Dans « Troupes participantes », ouvrir la liste ou rechercher une troupe par son nom ou sa ville, puis sélectionner chaque troupe concernée.",
                         "Dans « Titre automatique », choisir « Avec — spectacle partagé » ou « VS — match ». « Avec » est proposé pour les nouveaux spectacles ; ce choix agit seulement si le champ du titre reste vide et si des troupes sont sélectionnées.",
                         "Distinguer « Rendez-vous de la troupe » et « Début du spectacle ». Cocher « Avec entracte » uniquement si une pause est prévue.",
                         "Dans « Combien de places sur scène ? », définir les places pour les membres de la troupe : joueurs, MC et DJ. Utiliser les boutons + et − ou saisir une valeur.",
@@ -211,7 +211,7 @@
                     "summary": "Les corrections sont visibles dans le planning et dans l’agenda public après enregistrement.",
                     "steps": [
                         "Dans « Le planning », trouver la date puis cliquer sur « Modifier » dans sa carte.",
-                        "Corriger les informations pratiques, les effectifs, l’entracte ou l’ouverture des réponses. Cocher ou décocher les troupes participantes. Saisir un titre pour le rendre prioritaire, ou effacer le champ pour revenir au titre automatique.",
+                        "Corriger les informations pratiques, les effectifs, l’entracte ou l’ouverture des réponses. Rechercher et sélectionner les troupes participantes ; retirer une troupe avec la croix de son étiquette. Saisir un titre pour le rendre prioritaire, ou effacer le champ pour revenir au titre automatique.",
                         "Cliquer sur « Enregistrer les modifications ». Attendre la confirmation avant de fermer.",
                         "Pour modifier une présentation composée de blocs, utiliser « Ouvrir dans Gutenberg ». Le formulaire des Coulisses préserve ce contenu."
                     ],
@@ -229,7 +229,7 @@
                     "access": "organizer",
                     "summary": "Cette liste reprend les champs définis par la version installée du site.",
                     "steps": [
-                        "Le lieu et le format sont choisis dans les fiches enregistrées. Les troupes participantes acceptent plusieurs choix ; ne rien cocher signifie qu’aucune autre troupe n’est associée au spectacle.",
+                        "Le lieu et le format sont choisis dans les fiches enregistrées. Les troupes participantes acceptent plusieurs choix ; ne sélectionner aucune troupe signifie qu’aucune autre troupe n’est associée au spectacle.",
                         "Le lien de billetterie est facultatif et doit être une adresse complète commençant par http:// ou https://.",
                         "« Fermer les réponses » empêche les membres de changer leur disponibilité ; cela ne retire pas leurs réponses existantes."
                     ],
@@ -286,16 +286,19 @@
                     "access": "organizer",
                     "summary": "Créer une troupe dans le formulaire du spectacle et en sélectionner plusieurs sans perdre sa saisie.",
                     "steps": [
-                        "Dans le formulaire de création ou de modification du spectacle, aller à « Troupes participantes » et cocher les troupes participantes.",
-                        "Si une troupe manque, cliquer sur « Ajouter une troupe ». Renseigner son nom et, si possible, sa ville et son site web.",
-                        "Cliquer sur « Enregistrer la troupe ». La nouvelle fiche est sélectionnée, en conservant les autres troupes déjà cochées.",
-                        "Enregistrer ensuite le spectacle pour conserver ces associations. Pour retirer une troupe, décocher sa case avant d’enregistrer."
+                        "Dans le formulaire de création ou de modification du spectacle, aller à « Troupes participantes ». Cliquer dans « Rechercher une troupe » ou sur « Afficher les troupes » pour ouvrir la liste. Saisir un nom ou une ville pour filtrer les choix, puis cliquer sur chaque troupe à sélectionner.",
+                        "Les troupes choisies apparaissent sous forme d’étiquettes dans le champ. La liste reste ouverte pour permettre plusieurs choix. Cliquer ailleurs ou appuyer sur Échap pour la refermer.",
+                        "Si une troupe manque, refermer la liste puis cliquer sur « Ajouter une troupe ». Renseigner son nom et, si possible, sa ville et son site web.",
+                        "Cliquer sur « Enregistrer la troupe ». La nouvelle fiche est sélectionnée, en conservant les autres troupes déjà choisies.",
+                        "Enregistrer ensuite le spectacle pour conserver ces associations. Pour retirer une troupe, cliquer sur la croix de son étiquette (« Retirer… ») ou cliquer à nouveau sur son nom dans la liste."
                     ],
                     "notes": [
                         "Le nom est obligatoire. Le site web doit commencer par http:// ou https://. Un nom et une ville déjà enregistrés sont réutilisés sans modifier la fiche existante.",
                         "La croix, Échap et « Annuler et revenir au spectacle » ferment seulement la fenêtre de la troupe. Créer une troupe ne sauvegarde pas encore le spectacle.",
                         "La création est réservée à l’organisation et à l’administration ; elle ne donne pas de droits généraux sur les fiches WordPress.",
-                        "Jusqu’à 20 troupes peuvent être associées à un spectacle. Une troupe supprimée ou dépubliée doit être retirée ou remplacée avant d’enregistrer à nouveau le spectacle.",
+                        "Au clavier, utiliser les flèches haut et bas pour parcourir les résultats et Entrée pour sélectionner ou retirer la troupe indiquée. Échap referme d’abord la liste ; une nouvelle pression ferme le formulaire du spectacle.",
+                        "Si aucune troupe n’est trouvée, essayer un autre nom ou utiliser « Ajouter une troupe ». La recherche ignore les accents et les majuscules.",
+                        "Jusqu’à 20 troupes peuvent être associées à un spectacle. Une troupe supprimée ou dépubliée apparaît comme « indisponible » et doit être retirée avec la croix de son étiquette ou remplacée avant d’enregistrer à nouveau le spectacle.",
                         "« Troupes participantes » désigne les autres troupes présentes, qu’elles soient invitées, partenaires ou coorganisatrices. Le champ ne définit pas un statut d’invitation."
                     ]
                 }

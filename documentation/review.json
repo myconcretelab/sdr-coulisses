@@ -1,10 +1,10 @@
 {
     "schema": 1,
-    "reviewed": "2026-11-06",
-    "guides": "ba7784a314cc1333f58f5cc3da1e92f33485be22b8a421a9ae5ee2cd7a59cd4f",
+    "reviewed": "2026-11-07",
+    "guides": "8d18fe671626e8c535f46da73ed3c7c87e83171fb5cd063bc6eb0f8a6d593a73",
     "sources": {
-        "assets/app.css": "82081912458807b5df4bb1c6195f2d752d2fc8d8bd9edcd4d5cf2e9884f08093",
-        "assets/app.js": "30773ba88535dea18cb7e67e7ad0008602d48e4188343a957d79df64cda4d78d",
+        "assets/app.css": "348ecf38018b9980a7a0ac5e4009c94f0ac80d78ebe79cd6caa31469f0eb2f2e",
+        "assets/app.js": "d8050ebd1dd955e32e9e9d502d185e4c17f8ef8f2be0c19de7b9b638a1ce37d7",
         "assets/blocks.js": "9b509f6dd69a9a912bab7c7f360521c4d49f0c45bc157639281b4c5a00f241ef",
         "assets/documentation.css": "210783cff6ba54f89f8f0c9fc3f3ab94620fe2350ee80bad3d04d4eb78465231",
         "assets/documentation.js": "93067befd231c1bd2b050b3be667b07c1c347e85d1de5b0eb35e254b6f71c3b1",
@@ -44,7 +44,7 @@
         "reminders/class-sdr-event-reminders.php": "b2f7c3bd593a9445e89bcce70b2188d444d1bc163fa3aef73d469f6f4319a8f2",
         "reminders/response.css": "01f81fdcdfed4a60822c723506a603c638a82bcc5d3f0688c86d0892a2e7e533",
         "reminders/response.php": "387f8db54403e957f9ad1a883322f833f0c8431608956d0245f88740b189ebde",
-        "sdr-coulisses.php": "e83487547e69ef4ad6493b18212a61d2bc41af59ed487b42151f78dea702b729",
+        "sdr-coulisses.php": "164da2f1ac03ffa70f004ef9901b23f5512cb76af2c7edeeecab8080e4d37a22",
         "sdr-relances.php": "fc0fd4b1b4665f5fa268c60ebe684f681396da9b01fc5721f27c3ea8154d6cb9",
         "templates/workspace.php": "f0107b896f3a65bc9aa4c06dd2bea2fa4c4627061522c30823ae2acfcf791db9",
         "tools/check-documentation.php": "ecdeb7259a63542000fb59ef6ec3c040de6b79b5145f5e3c139418a1e77a7cb1"

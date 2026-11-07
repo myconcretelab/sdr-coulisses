@@ -156,17 +156,38 @@ body.sdr-workspace.sdr-relances-open{overflow:hidden}
 :where(body.sdr-workspace) .brand-name{font-family:var(--heading);font-size:30px;font-weight:700;line-height:1.15;letter-spacing:-.04em;max-width:190px;overflow-wrap:anywhere}
 :where(body.sdr-workspace) .nav-item.active{color:var(--sdr-accent,#4d3b89);box-shadow:inset 3px 0 var(--sdr-accent,#6551b5)}
 
-/* One column per required role; the whole colored card selects the person. */
+/* Compact, searchable selection of participating troupes. */
 :where(body.sdr-workspace) .new-event-team-field{min-width:0;border:0;padding:0;margin:20px 0}
 :where(body.sdr-workspace) .new-event-team-field>legend{font-family:var(--font);font-size:13px;font-weight:600;letter-spacing:0}
-:where(body.sdr-workspace) .event-team-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-height:240px;overflow:auto;margin:12px 0;padding:3px}
-:where(body.sdr-workspace) .event-team-choice{display:flex;align-items:center;gap:9px;min-width:0;min-height:44px;padding:10px 12px;border:1px solid #d8cfe4;border-radius:7px;background:#fffefa;font-size:12px;cursor:pointer}
-:where(body.sdr-workspace) .event-team-choice:has(input:checked){background:#e8dff6;border-color:#8061b2;color:#4b3378}
-:where(body.sdr-workspace) .event-team-choice input{flex-shrink:0;accent-color:#7653ac;width:17px;height:17px}
-:where(body.sdr-workspace) .event-team-choice>span{min-width:0;overflow-wrap:anywhere}
-:where(body.sdr-workspace) .event-team-choice small{display:block;font-size:10px;margin-top:3px;color:var(--muted)}
+:where(body.sdr-workspace) .team-picker{position:relative;margin:0 0 10px}
+:where(body.sdr-workspace) .team-picker-control{display:flex;align-items:center;flex-wrap:wrap;gap:6px;min-height:46px;padding:6px 42px 6px 8px;border:1px solid #d8cfe4;border-radius:9px;background:#fffefa;position:relative}
+:where(body.sdr-workspace) .team-picker-control:focus-within{outline:3px solid #7556bd;outline-offset:2px}
+:where(body.sdr-workspace) .team-picker-selection{display:contents}
+:where(body.sdr-workspace) .team-picker-chip{display:inline-flex;align-items:center;gap:5px;max-width:100%;padding:2px 3px 2px 10px;border:1px solid #d3c2e8;border-radius:6px;background:#e8dff6;color:#4b3378;font-size:12px}
+:where(body.sdr-workspace) .team-picker-chip>span{min-width:0;overflow-wrap:anywhere}
+:where(body.sdr-workspace) .team-picker-chip button{display:grid;place-items:center;flex-shrink:0;width:30px;height:30px;border-radius:4px;padding:0;background:transparent;color:inherit;font-size:20px}
+:where(body.sdr-workspace) .team-picker-chip button:hover{background:#d8c9ed}
+:where(body.sdr-workspace) .team-picker-chip.is-unavailable{background:#fff0df;border-color:#caa67e;color:#784b24}
+:where(body.sdr-workspace) .team-picker-control>input{flex:1 1 180px;width:100%;min-width:0;min-height:32px;padding:6px 4px;border:0;border-radius:0;background:transparent;font-size:13px}
+:where(body.sdr-workspace) .team-picker-control>input:focus-visible{outline:0}
+:where(body.sdr-workspace) .team-picker-toggle{position:absolute;right:3px;top:3px;width:36px;min-height:38px;padding:0;border-radius:6px;background:transparent;color:#70548e;font-size:23px}
+:where(body.sdr-workspace) .team-picker-toggle:hover{background:#f0eaf7}
+:where(body.sdr-workspace) .team-picker-dropdown{position:absolute;top:calc(100% + 5px);left:0;right:0;z-index:3;max-height:230px;overflow:auto;overscroll-behavior:contain;padding:5px;border:1px solid #d8cfe4;border-radius:9px;background:#fffefa;box-shadow:0 8px 24px #35274420}
+:where(body.sdr-workspace) .team-picker-dropdown ul{list-style:none;padding:0;margin:0}
+:where(body.sdr-workspace) .team-picker-dropdown [role=option]{display:flex;align-items:center;gap:10px;min-height:44px;padding:9px;border-radius:5px;font-size:13px;cursor:pointer}
+:where(body.sdr-workspace) .team-picker-dropdown [role=option]:hover,:where(body.sdr-workspace) .team-picker-dropdown .is-active{background:#f0eaf7;outline:2px solid #8061b2;outline-offset:-2px}
+:where(body.sdr-workspace) .team-picker-dropdown [aria-selected=true]{background:#e8dff6;color:#4b3378}
+:where(body.sdr-workspace) .team-picker-check{flex-shrink:0;width:19px;height:19px;border:1px solid #b5a4c9;border-radius:4px;text-align:center;line-height:17px}
+:where(body.sdr-workspace) [aria-selected=true]>.team-picker-check{background:#7653ac;border-color:#7653ac;color:#fff}
+:where(body.sdr-workspace) .team-picker-dropdown [role=option]>span:last-child{min-width:0;overflow-wrap:anywhere}
+:where(body.sdr-workspace) .team-picker-dropdown small{display:block;margin-top:3px;color:var(--muted);font-size:11px}
+:where(body.sdr-workspace) .team-picker-empty{padding:12px;margin:0;font-size:12px;line-height:1.6;color:var(--muted)}
+:where(body.sdr-workspace) .team-picker [hidden]{display:none}
+:where(body.sdr-workspace) .team-picker-status{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+:where(body.sdr-workspace) .new-event-team-field>[data-add-team]{margin-bottom:15px}
 :where(body.sdr-workspace) #new-event-title-preview{display:block;line-height:1.5;overflow-wrap:anywhere}
-@media(max-width:560px){:where(body.sdr-workspace) .event-team-options{grid-template-columns:1fr}}
+@media(max-width:560px){:where(body.sdr-workspace) .team-picker-control>input{font-size:16px;flex-basis:145px}:where(body.sdr-workspace) .team-picker-chip button{width:34px;height:34px}}
+/* One column per required role; the whole colored card selects the person. */
 :where(body.sdr-workspace) .candidate-board{position:relative;isolation:isolate}
 :where(body.sdr-workspace) .candidate-links{position:absolute;inset:0;width:100%;height:100%;z-index:1;overflow:visible;pointer-events:none}
 :where(body.sdr-workspace) .candidate-links path{fill:none;stroke-width:2;opacity:.55}

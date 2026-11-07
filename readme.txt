@@ -3,7 +3,7 @@ Contributors: myconcretelab
 Tags: theatre, events, members, availability
 Requires at least: 6.5
 Requires PHP: 8.1
-Stable tag: 1.15.0
+Stable tag: 1.15.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -51,6 +51,10 @@ conservent leur déploiement habituel.
 Elles sont conservées. Aucun effacement automatique n’est exécuté.
 
 == Changelog ==
+
+= 1.15.1 =
+* Sélection compacte de plusieurs troupes avec recherche par nom ou ville.
+* Étiquettes retirables, navigation au clavier et conservation des sélections lors de l’ajout d’une troupe.
 
 = 1.15.0 =
 * Recherche facultative des versions stables sur GitHub depuis les réglages.
