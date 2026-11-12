@@ -37,6 +37,12 @@ restent visibles pendant le défilement ; les compteurs de composition se fixent
 juste en dessous. Cette bande persistante est aussi présente dans les fenêtres de
 création, de modification, d’archives et de relance.
 
+Les compteurs de rôle du planning affichent les candidatures sur les places prévues
+(par exemple **1/3**), puis les places encore à pourvoir et les personnes retenues.
+Les réponses **Partant·e** et **Si besoin** sont des candidatures pour chaque rôle
+proposé. Le bilan des réponses compte aussi les **Pas dispo**, une seule fois par
+personne même si elle propose plusieurs rôles, et détaille les trois disponibilités.
+
 Chaque carte affiche **Équipe à composer**, **Équipe incomplète** ou **Équipe complète**,
 selon les personnes réellement retenues dans chaque rôle. Aucun besoin défini ne
 signifie pas une équipe complète : la carte indique alors **Besoins à préciser**.

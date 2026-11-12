@@ -3,7 +3,7 @@ Contributors: myconcretelab
 Tags: theatre, events, members, availability
 Requires at least: 6.5
 Requires PHP: 8.1
-Stable tag: 1.15.1
+Stable tag: 1.15.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -51,6 +51,10 @@ conservent leur déploiement habituel.
 Elles sont conservées. Aucun effacement automatique n’est exécuté.
 
 == Changelog ==
+
+= 1.15.2 =
+* Candidatures affichées en fraction sur les places prévues dans le planning.
+* Total des personnes ayant répondu, avec le détail Partant·e, Si besoin et Pas dispo.
 
 = 1.15.1 =
 * Sélection compacte de plusieurs troupes avec recherche par nom ou ville.
