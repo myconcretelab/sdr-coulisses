@@ -15,6 +15,7 @@
   function toast(message, error=false) { let el=document.getElementById('sdr-toast'); if(!el){el=document.createElement('div'); el.id='sdr-toast';el.setAttribute('role','status');el.setAttribute('aria-live','polite');document.body.append(el);} el.className='toast '+(error?'error':'');el.textContent=(error?'!  ':'✓  ')+message;clearTimeout(el._timeout);el._timeout=setTimeout(()=>el.remove(),4500); }
   const logo = `<a class="brand" href="${h(SDR.home)}" aria-label="${h(identity.name)}, accueil">${identity.logo?`<img class="backstage-logo" src="${h(identity.logo)}" alt="${h(identity.name)}" width="448" height="446">`:`<span class="brand-name">${h(identity.name)}</span><span class="brand-caption">COULISSE · GESTION DE TROUPE</span>`}</a>`;
   function render() {
+    closeResponsePopover();
     const replied=data.events.filter(e=>e.mine).length, selected=data.events.filter(e=>e.mine?.selectedRole).length;
     root.innerHTML=`<div class="app-shell"><aside class="app-sidebar">${logo}<button type="button" data-view="documentation" class="documentation-entry" ${view==='documentation'?'aria-current="page"':''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 5v15M3 4.5c4-1.4 6-.5 9 1.5 3-2 5-2.9 9-1.5V18c-4-1-6-.2-9 2-3-2.2-5-3-9-2Z"/></svg><span><strong>Documentation</strong><small>Guides et procédures</small></span></button><div class="sidebar-label">DANS LES COULISSES</div><nav aria-label="Espace membres"><button data-view="planning" class="nav-item ${view==='planning'?'active':''}"><span>▦</span> Le planning <b>${data.events.length}</b></button><button data-view="answers" class="nav-item ${view==='answers'?'active':''}"><span>☑</span> Mes réponses</button><button data-view="archives" class="nav-item ${view==='archives'?'active':''}" aria-label="Spectacles passés" title="Spectacles passés"><span aria-hidden="true">↶</span> Spectacles passés</button><button data-view="profile" class="nav-item ${view==='profile'?'active':''}"><span>◉</span> Mon profil</button>${data.organizer?`<div class="sidebar-label org-label">CÔTÉ ORGANISATION</div><button data-new-event class="nav-item" title="Nouveau spectacle" aria-label="Nouveau spectacle"><span aria-hidden="true">＋</span> Nouveau spectacle</button>${SDR.relances?`<button data-relances class="nav-item" aria-haspopup="dialog"><span aria-hidden="true">✉</span> Relances utilisateurs</button>`:''}${data.administrator?`<a class="nav-item nav-item-secondary" href="${h(SDR.admin)}edit.php?post_type=sdr_event"><span aria-hidden="true">⚙</span> Gérer les spectacles</a>`:''}`:''}</nav>${identity.tagline?`<div class="sidebar-poster"><span class="poster-star">✳</span><strong>${h(identity.tagline).replace(/\n/g,'<br>')}</strong><span>${h(identity.taglineNote)}</span></div>`:''}<a href="${h(SDR.home)}" class="back-site">↗ Le site de la troupe</a><div class="sidebar-user"><span class="avatar">${h(data.user.name[0])}</span><div><strong>${h(data.user.name)}</strong><small>${data.administrator?'Administrateur':data.organizer?'Organisation':'Membre de la troupe'}</small></div><a href="${h(SDR.logout)}" aria-label="Se déconnecter" title="Se déconnecter">↪</a></div></aside><main class="app-main"><header class="app-topbar"><span><span class="green-dot"></span> L’ESPACE DE LA TROUPE</span><div class="topbar-actions"><a class="admin-access" href="${h(data.administrator?SDR.admin:SDR.adminLogin)}">${data.administrator?'Administration ↗':'Connexion administrateur ↗'}</a><span class="season-pill">SAISON ${h(data.season.label)}</span></div><span class="mobile-brand">${h(identity.name)} ✳</span></header><div class="app-content">${view==='documentation'?'<div id="sdr-documentation"></div>':view==='profile'?profileView():view==='archives'?archiveView():planningView(replied,selected)}</div><footer class="app-footer"><span>${h(identity.footer)}</span><span>${h(identity.name)} <b>✳</b></span></footer></main></div><dialog id="event-dialog" class="event-dialog" aria-labelledby="dialog-title"></dialog><dialog id="new-event-dialog" class="event-dialog new-event-dialog" aria-labelledby="new-event-title"></dialog>`;
     root.querySelector('[data-new-event]')?.addEventListener('click',()=>openCreateEvent());
@@ -379,7 +380,7 @@
   }
   function filtered(){return data.events.filter(e=>(view!=='answers'||e.mine)&&(filter!=='pending'||!e.mine)&&(filter!=='yes'||['yes','maybe'].includes(e.mine?.availability))&&(`${e.title} ${e.venue} ${e.city} ${e.format} ${e.team} ${dateParts(e.date).full}`.toLowerCase().includes(query.toLowerCase())));}
   function cardsHTML(){const events=filtered();return events.length?events.map(card).join(''):`<div class="empty-state"><span>✳</span><h3>${view==='answers'?'Tout commence par une première date.':'Rien par ici pour le moment.'}</h3><p>${view==='answers'?'Retrouve le planning pour donner tes disponibilités.':'Essaie un autre filtre ou un autre mot.'}</p></div>`;}
-  function renderCards(){const cards=root.querySelector('#event-cards');cards.innerHTML=cardsHTML();root.querySelector('#result-count').textContent=filtered().length+' date(s)';cards.querySelectorAll('[data-event]').forEach(b=>b.onclick=()=>openEvent(Number(b.dataset.event)));wireEditActions(cards);wireComposeActions(cards);}
+  function renderCards(){closeResponsePopover();const cards=root.querySelector('#event-cards');cards.innerHTML=cardsHTML();root.querySelector('#result-count').textContent=filtered().length+' date(s)';cards.querySelectorAll('[data-event]').forEach(b=>b.onclick=()=>openEvent(Number(b.dataset.event)));wireEditActions(cards);wireComposeActions(cards);}
   function wireEditActions(container){container.querySelectorAll('[data-edit-event]').forEach(button=>button.onclick=()=>openCreateEvent(Number(button.dataset.editEvent)));}
   function wireComposeActions(container){container.querySelectorAll('[data-organize]').forEach(button=>button.onclick=()=>openEvent(Number(button.dataset.organize),true));}
   function teamStatus(e){
@@ -397,13 +398,75 @@
     const proposed=e.responses.filter(r=>['yes','maybe'].includes(r.availability)&&r.roles.includes(key));
     return {proposed:proposed.length,maybe:proposed.filter(r=>r.availability==='maybe').length,selected:e.responses.filter(r=>r.selectedRole===key).length};
   }
+  function responseGroups(e){
+    const responded=new Set(e.responses.map(r=>r.userId));
+    return [['yes','partant·e','partant·es'],['maybe','si besoin','si besoin'],['no','pas dispo','pas dispo'],['pending','sans réponse','sans réponse']].map(([key,singular,plural])=>{
+      const people=key==='pending'?(data.members||[]).filter(member=>!responded.has(member.id)):e.responses.filter(r=>r.availability===key);
+      return {key,singular,plural,people,count:key==='pending'?(e.responseProgress?.pending??people.length):people.length};
+    });
+  }
+  let responsePopover=null,responsePopoverTimer;
+  function closeResponsePopover(){
+    clearTimeout(responsePopoverTimer);
+    if(!responsePopover)return;
+    responsePopover.trigger.removeAttribute('aria-describedby');
+    responsePopover.element.remove();responsePopover=null;
+  }
+  function positionResponsePopover(){
+    if(!responsePopover)return;
+    const {trigger,element}=responsePopover;
+    if(!trigger.isConnected){closeResponsePopover();return;}
+    const anchor=trigger.getBoundingClientRect(),box=element.getBoundingClientRect();
+    element.style.left=Math.max(12,Math.min(window.innerWidth-box.width-12,anchor.left+(anchor.width-box.width)/2))+'px';
+    element.style.top=(anchor.bottom+box.height+8<=window.innerHeight-12?anchor.bottom+8:Math.max(12,anchor.top-box.height-8))+'px';
+  }
+  function showResponsePopover(trigger,pinned=false){
+    clearTimeout(responsePopoverTimer);
+    const frame=trigger.closest('.card-responses'),event=data.events.find(e=>e.id===Number(frame.dataset.responseEvent));
+    if(!data.organizer||!event)return;
+    const group=responseGroups(event).find(group=>group.key===trigger.dataset.responseGroup);
+    if(!group)return;
+    closeResponsePopover();
+    const element=document.createElement('div');element.className='response-popover';element.id='response-popover-'+event.id;element.setAttribute('role','tooltip');
+    element.innerHTML=`<strong>${group.count} ${group.count>1?group.plural:group.singular}</strong>${group.people.length?`<ul>${group.people.map(person=>`<li>${h(person.name)}</li>`).join('')}</ul>`:`<p>${group.count?'Aucun nom disponible.':'Aucune personne dans cette catégorie.'}</p>`}`;
+    document.body.append(element);element.style.left='0px';element.style.top='0px';
+    trigger.setAttribute('aria-describedby',element.id);
+    responsePopover={trigger,element,pinned};
+    positionResponsePopover();
+  }
+  const responseTrigger=target=>target.closest?.('.card-responses [data-response-group]');
+  const responsePopoverContains=target=>responsePopover&&(responsePopover.trigger.contains(target)||responsePopover.element.contains(target));
+  document.addEventListener('pointerover',event=>{
+    if(event.pointerType==='touch')return;
+    if(responsePopoverContains(event.target))clearTimeout(responsePopoverTimer);
+    const trigger=responseTrigger(event.target);
+    if(trigger&&trigger!==responsePopover?.trigger&&!trigger.contains(event.relatedTarget))showResponsePopover(trigger);
+  });
+  document.addEventListener('pointerout',event=>{
+    if(!responsePopover||responsePopover.pinned||document.activeElement===responsePopover.trigger||responsePopoverContains(event.relatedTarget))return;
+    if(responsePopoverContains(event.target)){
+      clearTimeout(responsePopoverTimer);const current=responsePopover;
+      responsePopoverTimer=setTimeout(()=>{if(responsePopover===current)closeResponsePopover();},160);
+    }
+  });
+  root.addEventListener('focusin',event=>{const trigger=responseTrigger(event.target);if(trigger)showResponsePopover(trigger);});
+  root.addEventListener('focusout',event=>{if(responsePopover&&!responsePopoverContains(event.relatedTarget))closeResponsePopover();});
+  root.addEventListener('click',event=>{
+    const trigger=responseTrigger(event.target);if(!trigger)return;
+    event.preventDefault();
+    if(responsePopover?.trigger===trigger&&responsePopover.pinned)closeResponsePopover();else showResponsePopover(trigger,true);
+  });
+  document.addEventListener('pointerdown',event=>{if(responsePopover&&!responsePopoverContains(event.target))closeResponsePopover();});
+  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&responsePopover){closeResponsePopover();event.preventDefault();}});
+  window.addEventListener('resize',positionResponsePopover);
+  window.addEventListener('scroll',event=>{if(responsePopover&&!responsePopover.element.contains(event.target))positionResponsePopover();},true);
   function responseSummary(e){
     if(!data.organizer)return '';
     // The dashboard contains one response per person, even when several roles are proposed.
     const replied=e.responses.length,pending=e.responseProgress?.pending??0,total=replied+pending,percent=total?Math.round(replied/total*100):0;
-    const statuses=[['yes','partant·e','partant·es'],['maybe','si besoin','si besoin'],['no','pas dispo','pas dispo'],['pending','sans réponse','sans réponse']].map(([key,singular,plural])=>({key,count:key==='pending'?pending:e.responses.filter(r=>r.availability===key).length,singular,plural}));
+    const statuses=responseGroups(e);
     const description=`${replied} réponse${replied>1?'s':''} sur ${total} personne${total>1?'s':''}, dont ${pending} sans réponse`;
-    return `<section class="card-responses${replied?' has-responses':''}" aria-label="Participation au sondage"><div class="response-total"><strong>${replied}<small>/${total}</small></strong><span>réponse${replied>1?'s':''}<small>au sondage</small></span></div><span class="response-pending"><b>${pending}</b> sans réponse</span><div class="response-breakdown">${statuses.map(({key,count,singular,plural})=>`<span class="response-chip response-${key}${count?'':' is-empty'}"><i aria-hidden="true"></i><b>${count}</b> ${count>1?plural:singular}</span>`).join('')}</div><div class="response-progress"><p><span>${total?'Participation au sondage':'Aucun membre à compter'}</span><b>${percent} %</b></p><div class="response-meter" role="img" aria-label="${description}">${statuses.filter(({count})=>count>0).map(({key,count,singular,plural})=>`<span class="response-${key}" style="flex:${count} 1 0" title="${count} ${count>1?plural:singular}"></span>`).join('')}</div></div>${data.organizer?`<div class="response-actions"><button type="button" class="response-reminder" data-remind-event="${e.id}" ${e.closed?'disabled':''} title="${e.closed?'Les réponses sont fermées':'Choisir les personnes à relancer'}" aria-label="Relancer les non-inscrits pour ${h(e.title)} du ${h(dateParts(e.date).full)}" aria-haspopup="dialog"><span aria-hidden="true">✉</span> Relancer les non-inscrits</button></div>`:''}</section>`;
+    return `<section class="card-responses${replied?' has-responses':''}" data-response-event="${e.id}" aria-label="Participation au sondage"><div class="response-total"><strong>${replied}<small>/${total}</small></strong><span>réponse${replied>1?'s':''}<small>au sondage</small></span></div><button type="button" class="response-reminder" data-remind-event="${e.id}" ${e.closed||!pending?'disabled':''} title="${e.closed?'Les réponses sont fermées':pending?'Choisir les personnes à relancer':'Tout le monde a répondu'}" aria-label="Relancer les sans réponse : ${pending} personne${pending>1?'s':''} pour ${h(e.title)} du ${h(dateParts(e.date).full)}" aria-haspopup="dialog"><span class="response-reminder-count"><b>${pending}</b> sans réponse</span><span class="response-reminder-action" aria-hidden="true">Relancer <span>↗</span></span></button><div class="response-breakdown">${statuses.map(({key,count,singular,plural})=>`<button type="button" class="response-chip response-${key}${count?'':' is-empty'}" data-response-group="${key}" aria-label="${count} ${count>1?plural:singular} : afficher les noms"><i aria-hidden="true"></i><b>${count}</b> ${count>1?plural:singular}</button>`).join('')}</div><div class="response-progress"><p><span>${total?'Participation au sondage':'Aucun membre à compter'}</span><b>${percent} %</b></p><div class="response-meter" role="group" aria-label="${description}">${statuses.filter(({count})=>count>0).map(({key,count,singular,plural})=>`<button type="button" class="response-segment response-${key}" data-response-group="${key}" style="flex:${count} 1 0" aria-label="${count} ${count>1?plural:singular} : afficher les noms"></button>`).join('')}</div></div></section>`;
   }
   function roleSummary(e){
     const roles=Object.entries(roleNames).filter(([key])=>e.capacity[key]>0);
@@ -492,7 +555,7 @@
     const observer=new ResizeObserver(draw);observer.observe(board);draw();
     dialog.addEventListener('close',()=>observer.disconnect(),{once:true});
   }
-  function organizationDialog(e){const responded=new Set(e.responses.map(r=>r.userId)),missing=data.members.filter(m=>!responded.has(m.id));return `<section class="organizer-panel"><div class="team-dialog-heading"><div><div class="eyebrow">LE COLLECTIF ENTRE EN SCÈNE</div><h3>Composer l’équipe</h3></div><button type="button" class="button secondary stage-reminder-button" data-remind-event="${e.id}" ${e.closed?'disabled':''} title="${e.closed?'Les réponses sont fermées':'Choisir les personnes à relancer'}" aria-haspopup="dialog">Relancer les non-inscrits <span aria-hidden="true">✉</span></button></div>${compositionBoard(e)}${needsEditor(e)}<h3 class="candidates-heading">À toi de distribuer les rôles</h3><p class="field-help candidate-help">Clique sur une carte pour retenir la personne dans ce rôle, puis reclique pour la retirer. Un seul rôle par personne ; les choix sont enregistrés au fur et à mesure.</p><p class="candidate-legend"><span><span aria-hidden="true">☀</span> Partant·e</span><span><span aria-hidden="true">〰</span> Si besoin</span><span><span aria-hidden="true">✓</span> Rôle retenu</span></p>${candidateColumns(e)}<p class="selection-message" role="status" aria-live="polite"></p>${finalizeActions(e)}<details><summary>Sans réponse (${missing.length})</summary><p>${missing.map(m=>h(m.name)).join(' · ')||'Tout le monde a répondu.'}</p></details><details><summary>Indisponibles (${e.responses.filter(r=>r.availability==='no').length})</summary><p>${e.responses.filter(r=>r.availability==='no').map(r=>h(r.name)).join(' · ')||'Aucune indisponibilité déclarée.'}</p></details></section>`;}
+  function organizationDialog(e){const responded=new Set(e.responses.map(r=>r.userId)),missing=data.members.filter(m=>!responded.has(m.id));return `<section class="organizer-panel"><div class="team-dialog-heading"><div><div class="eyebrow">LE COLLECTIF ENTRE EN SCÈNE</div><h3>Composer l’équipe</h3></div><button type="button" class="button secondary stage-reminder-button" data-remind-event="${e.id}" ${e.closed?'disabled':''} title="${e.closed?'Les réponses sont fermées':'Choisir les personnes à relancer'}" aria-haspopup="dialog">Relancer les sans réponse <span aria-hidden="true">✉</span></button></div>${compositionBoard(e)}${needsEditor(e)}<h3 class="candidates-heading">À toi de distribuer les rôles</h3><p class="field-help candidate-help">Clique sur une carte pour retenir la personne dans ce rôle, puis reclique pour la retirer. Un seul rôle par personne ; les choix sont enregistrés au fur et à mesure.</p><p class="candidate-legend"><span><span aria-hidden="true">☀</span> Partant·e</span><span><span aria-hidden="true">〰</span> Si besoin</span><span><span aria-hidden="true">✓</span> Rôle retenu</span></p>${candidateColumns(e)}<p class="selection-message" role="status" aria-live="polite"></p>${finalizeActions(e)}<details><summary>Sans réponse (${missing.length})</summary><p>${missing.map(m=>h(m.name)).join(' · ')||'Tout le monde a répondu.'}</p></details><details><summary>Indisponibles (${e.responses.filter(r=>r.availability==='no').length})</summary><p>${e.responses.filter(r=>r.availability==='no').map(r=>h(r.name)).join(' · ')||'Aucune indisponibilité déclarée.'}</p></details></section>`;}
   function notifyButtonLabel(e){return e.teamNotified?'Joueurs informés <span aria-hidden="true">✓</span>':'Sauvegarder et informer les joueurs <span aria-hidden="true">✉</span>';}
   function finalizeActions(e){
     const selected=e.responses.filter(r=>r.selectedRole).length;

@@ -13,7 +13,7 @@
     if(current?.running){if(!current.dialog.open)current.dialog.showModal();current.dialog.querySelector('[role=status]').textContent='Une relance est déjà en cours. Tu peux suivre son avancement ici.';return;}
     current?.dialog.remove();
     const dialog=document.createElement('dialog');dialog.className='event-dialog reminder-dialog';dialog.setAttribute('aria-labelledby','reminder-title');
-    dialog.innerHTML=`<div class="dialog-banner"><span class="tag">${announcement?'UNE NOUVELLE DATE À PARTAGER':'UN PETIT SIGNE À LA TROUPE'}</span><span class="dialog-doodle" aria-hidden="true">✉</span><button type="button" class="dialog-close" aria-label="Fermer les relances">×</button></div><div class="dialog-inner"><h2 id="reminder-title">${announcement?'Prévenir les joueurs':'Relancer les non-inscrits'}</h2><p role="status" aria-live="polite">On prépare la liste…</p><div class="reminder-content"></div></div>`;
+    dialog.innerHTML=`<div class="dialog-banner"><span class="tag">${announcement?'UNE NOUVELLE DATE À PARTAGER':'UN PETIT SIGNE À LA TROUPE'}</span><span class="dialog-doodle" aria-hidden="true">✉</span><button type="button" class="dialog-close" aria-label="Fermer les relances">×</button></div><div class="dialog-inner"><h2 id="reminder-title">${announcement?'Prévenir les joueurs':'Relancer les sans réponse'}</h2><p role="status" aria-live="polite">On prépare la liste…</p><div class="reminder-content"></div></div>`;
     document.body.append(dialog);dialog.showModal();
     const state=current={id,kind,dialog,opener,running:false,selected:new Set(),campaign:null,sent:false,requestId:'relance-'+Date.now()+'-'+Math.random().toString(36).slice(2)};
     dialog.querySelector('.dialog-close').onclick=()=>dialog.close();
@@ -26,7 +26,7 @@
     try{
       const data=await api(`events/${id}/reminders?kind=${state.kind}`);if(!dialog.isConnected)return;
       state.kind=data.kind||(data.campaign?.pending?data.campaign.kind||'reminder':state.kind);
-      dialog.querySelector('#reminder-title').textContent=state.kind==='announcement'?'Prévenir les joueurs':'Relancer les non-inscrits';
+      dialog.querySelector('#reminder-title').textContent=state.kind==='announcement'?'Prévenir les joueurs':'Relancer les sans réponse';
       state.requestId='relance-'+Date.now()+'-'+Math.random().toString(36).slice(2);state.campaign=data.campaign;state.users=data.users;state.selected=new Set(data.users.map(user=>user.id));state.sent=false;
       const targeted=state.kind==='reminder',needs=Object.entries(data.needs||{}).filter(([,count])=>count>0);
       const needsText=needs.map(([role,count])=>`${count} ${role==='joueur'?(count>1?'joueur·ses':'joueur·se'):roles[role]}`).join(' · ');

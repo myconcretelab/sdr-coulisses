@@ -26,7 +26,7 @@ elles passent uniquement par les choix décrits ci-dessus.
 Dans le planning des Coulisses, chaque date propose **Composer l’équipe** aux
 organisateurs et administrateurs. La fenêtre conserve le tableau des sélections,
 les candidatures, les besoins et les deux actions de sauvegarde avec ou sans email.
-**Relancer les non-inscrits** se trouve à droite du titre **Composer l’équipe** ;
+**Relancer les sans réponse** se trouve à droite du titre **Composer l’équipe** ;
 il réutilise la sélection des destinataires et le service d’envoi existants.
 
 Les informations du spectacle sont regroupées dans un résumé compact, partagé
@@ -180,8 +180,15 @@ Les annonces, relances et confirmations d’équipe utilisent désormais les mod
 Gutenberg partagés dans **Modèles d’emails**. Voir [le guide des modèles](../emails/README.md)
 pour les blocs, variables, conditions, aperçus et règles de reprise des campagnes.
 
-Dans le planning, le cadre de participation au sondage et son petit bouton
-**Relancer les non-inscrits** sont réservés à l’organisation et à l’administration.
-Les membres ne voient pas ce cadre.
-Il ouvre la même fenêtre de sélection que dans la composition d’équipe, sans
-envoi immédiat. Le bouton est désactivé lorsque les réponses sont fermées.
+Dans le planning, le cadre de participation au sondage est réservé à
+l’organisation et à l’administration. Les membres ne voient pas ce cadre.
+Le compteur **N sans réponse** et l’action **Relancer** forment un seul bouton,
+à droite du total des réponses. Toute sa surface ouvre la même fenêtre de
+sélection que **Relancer les sans réponse** dans la composition d’équipe, sans
+envoi immédiat. Dans le planning, le bouton est désactivé si les réponses sont
+fermées ou si personne n’est sans réponse.
+
+Les catégories de la légende et les segments de la barre de participation
+affichent les noms au survol, à la prise de focus au clavier ou au toucher.
+Échap ou un toucher ailleurs ferme la bulle ; les listes suivent les mêmes
+groupes que les compteurs, y compris les profils OK pour la scène sans réponse.
