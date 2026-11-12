@@ -42,9 +42,10 @@ Les compteurs de rôle du planning affichent les candidatures sur les places pr�
 Les réponses **Partant·e** et **Si besoin** sont des candidatures pour chaque rôle
 proposé. Le bilan des réponses compte aussi les **Pas dispo**, une seule fois par
 personne même si elle propose plusieurs rôles, et détaille les trois disponibilités.
-Le bilan indique aussi les personnes sans réponse sur le total de la troupe
-(membres, organisation, administrateurs avec un rôle artistique, hors comptes de
-démonstration, plus les autres personnes ayant répondu). Ce total ne mesure pas
+Le bilan indique aussi les personnes sans réponse parmi les profils **OK pour la
+scène** (membres, organisation, administrateurs avec un rôle artistique, hors comptes
+de démonstration). Le total y ajoute toutes les personnes ayant déjà répondu,
+même si elles n’ont pas ou plus coché **OK pour la scène**. Ce total ne mesure pas
 les emails envoyés. La barre à quatre segments montre les disponibilités et les
 sans réponse en gris hachuré ; le pourcentage inclut toutes les réponses.
 

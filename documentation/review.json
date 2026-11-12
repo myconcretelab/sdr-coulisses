@@ -1,10 +1,10 @@
 {
     "schema": 1,
     "reviewed": "2026-11-12",
-    "guides": "baf47852de5c37f3d1213c52abba23de356fdeeb6205bc692879f7fcd59d2579",
+    "guides": "4b68a50658e984ddf655ef54e0fde688dc69a06f728079dba151676cc8950af4",
     "sources": {
         "assets/app.css": "0664d08f55b02c51f8adcc935cc58c22c6e787dce795fb47b488e3fcdf01c799",
-        "assets/app.js": "a966cb324533720cebbda39f7d783baab634eff3c6d6153cf7a3547432ccfb71",
+        "assets/app.js": "6a692ec7ea39abb42e22c48692f32240e2b3ec9a4181d4353509fc4595f0fc61",
         "assets/blocks.js": "9b509f6dd69a9a912bab7c7f360521c4d49f0c45bc157639281b4c5a00f241ef",
         "assets/documentation.css": "210783cff6ba54f89f8f0c9fc3f3ab94620fe2350ee80bad3d04d4eb78465231",
         "assets/documentation.js": "93067befd231c1bd2b050b3be667b07c1c347e85d1de5b0eb35e254b6f71c3b1",
@@ -44,7 +44,7 @@
         "reminders/class-sdr-event-reminders.php": "b2f7c3bd593a9445e89bcce70b2188d444d1bc163fa3aef73d469f6f4319a8f2",
         "reminders/response.css": "01f81fdcdfed4a60822c723506a603c638a82bcc5d3f0688c86d0892a2e7e533",
         "reminders/response.php": "387f8db54403e957f9ad1a883322f833f0c8431608956d0245f88740b189ebde",
-        "sdr-coulisses.php": "aefe0488814dfd846200b59ca64d550853725ca99c041bb7f474a1e16ab6d5d0",
+        "sdr-coulisses.php": "d4e4d3d89a1921f0228e6d609a8889f3e5e412ee53ea23edf6b7b51948f0d678",
         "sdr-relances.php": "fc0fd4b1b4665f5fa268c60ebe684f681396da9b01fc5721f27c3ea8154d6cb9",
         "templates/workspace.php": "f0107b896f3a65bc9aa4c06dd2bea2fa4c4627061522c30823ae2acfcf791db9",
         "tools/check-documentation.php": "ecdeb7259a63542000fb59ef6ec3c040de6b79b5145f5e3c139418a1e77a7cb1"
