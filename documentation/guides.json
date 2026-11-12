@@ -377,16 +377,17 @@
                     "access": "organizer",
                     "summary": "Cette relance vise les profils adaptés aux places manquantes, sans réponse au spectacle.",
                     "steps": [
-                        "Ouvrir « Composer l’équipe » puis cliquer sur « Relancer les non-inscrits ».",
+                        "Dans « Le planning », cliquer sur « Relancer les non-inscrits » dans le cadre de participation au sondage du spectacle. Le même bouton reste disponible dans « Composer l’équipe ».",
                         "Vérifier les rôles recherchés et la liste des personnes proposées.",
                         "Décocher les personnes à ne pas contacter, ou utiliser « Tout sélectionner ».",
                         "Cliquer sur « Envoyer à N personnes ». Garder la page ouverte pendant le traitement par lots.",
-                        "À la fin, consulter le bilan puis cliquer sur « Terminer » pour revenir à la composition."
+                        "À la fin, consulter le bilan puis cliquer sur « Terminer » pour revenir au planning ou à la composition, selon le point de départ."
                     ],
                     "notes": [
                         "La liste contient les membres « OK pour la scène », avec une adresse personnelle, au moins un rôle recherché et aucune réponse au spectacle.",
                         "« Pas dispo » et « Si besoin » sont déjà des réponses : ces personnes ne reçoivent pas cette relance.",
-                        "Une équipe complète ou des besoins non définis ne proposent personne à relancer. Les besoins sont revérifiés avant chaque email."
+                        "Une équipe complète ou des besoins non définis ne proposent personne à relancer. Les besoins sont revérifiés avant chaque email.",
+                        "Le cadre de participation au sondage et son bouton sont réservés à l’organisation et à l’administration ; les membres ne les voient pas. Il ouvre la même sélection des destinataires que dans « Composer l’équipe », sans envoyer d’email. Il est désactivé lorsque les réponses du spectacle sont fermées. Le nombre de personnes proposées peut être inférieur au compteur « sans réponse » : les rôles recherchés et l’adresse personnelle sont aussi vérifiés."
                     ]
                 },
                 {
@@ -467,7 +468,7 @@
                         "Les réponses sont bloquées pour une date passée ou fermée. Contacter l’organisation si un changement est nécessaire.",
                         "Si tu es déjà retenu·e, prévenir aussi l’organisation avant de retirer une disponibilité ou un rôle.",
                         "Dans le planning, la fraction de chaque rôle indique les candidatures sur les places prévues : « 1/3 » signifie une candidature pour trois places. « Si besoin » compte comme une candidature. Les places à pourvoir diminuent avec les sélections de l’organisation. « Complet » indique que les places du rôle sont attribuées ; les rôles sans besoin sont masqués. Le total des personnes ayant répondu comprend les « Pas dispo » et compte chaque personne une seule fois, même si elle propose plusieurs rôles.",
-                        "Le bilan affiche les réponses sur le total des personnes concernées et le nombre « sans réponse ». Les personnes attendues sont les comptes Membre de la troupe et Organisation, ainsi que les administrateurs ayant un rôle artistique, qui ont coché « OK pour la scène », hors comptes de démonstration. Toutes les réponses déjà reçues restent comptées, y compris celles des personnes sans cette case cochée. Décocher la case retire la personne des réponses attendues mais ne supprime pas sa réponse. Ce total ne désigne pas les destinataires effectivement contactés par email.",
+                        "Le cadre de participation est réservé à l’organisation et à l’administration. Il affiche les réponses sur le total des personnes concernées et le nombre « sans réponse ». Les personnes attendues sont les comptes Membre de la troupe et Organisation, ainsi que les administrateurs ayant un rôle artistique, qui ont coché « OK pour la scène », hors comptes de démonstration. Toutes les réponses déjà reçues restent comptées, y compris celles des personnes sans cette case cochée. Décocher la case retire la personne des réponses attendues mais ne supprime pas sa réponse. Ce total ne désigne pas les destinataires effectivement contactés par email.",
                         "La barre « Participation au sondage » représente ce même total : vert pour « Partant·e », ocre pour « Si besoin », violet pour « Pas dispo » et gris hachuré pour « Sans réponse ». Le pourcentage indique les personnes ayant donné une disponibilité, indisponibles comprises. Une réponse retirée augmente à nouveau les sans réponse si la personne fait partie des profils « OK pour la scène »."
                     ]
                 },

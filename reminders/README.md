@@ -179,3 +179,9 @@ le maintien des annonces générales de nouvelles dates.
 Les annonces, relances et confirmations d’équipe utilisent désormais les modèles
 Gutenberg partagés dans **Modèles d’emails**. Voir [le guide des modèles](../emails/README.md)
 pour les blocs, variables, conditions, aperçus et règles de reprise des campagnes.
+
+Dans le planning, le cadre de participation au sondage et son petit bouton
+**Relancer les non-inscrits** sont réservés à l’organisation et à l’administration.
+Les membres ne voient pas ce cadre.
+Il ouvre la même fenêtre de sélection que dans la composition d’équipe, sans
+envoi immédiat. Le bouton est désactivé lorsque les réponses sont fermées.

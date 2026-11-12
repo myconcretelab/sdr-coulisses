@@ -82,6 +82,10 @@ body.sdr-workspace{--ink:#292823;--cream:#faf9f4;--paper:#fffefa;--muted:#74756f
 :where(body.sdr-workspace) .response-chip.response-pending{padding:0;border:0;border-radius:0;background:transparent;font-size:10px;color:#4b4d45}
 :where(body.sdr-workspace) .response-chip.response-pending>b{font-size:11px}
 :where(body.sdr-workspace) .response-meter>.response-pending{padding:0;border:0;border-radius:0}
+:where(body.sdr-workspace) .response-actions{display:flex;flex:1 0 100%;justify-content:flex-end}
+:where(body.sdr-workspace) .response-reminder{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:34px;max-width:100%;padding:7px 10px;border:1px solid #c6b8db;border-radius:7px;background:#eee8f7;color:#593e7c;font-size:10px;font-weight:600;line-height:1.4;text-align:left}
+:where(body.sdr-workspace) .response-reminder:hover:not(:disabled){background:#e0d5ee;border-color:#997cb9}
+:where(body.sdr-workspace) .response-reminder:disabled{cursor:not-allowed}
 @media(hover:hover){:where(body.sdr-workspace) .role-summary:hover{transform:translateY(-2px)}}
 @media(max-width:360px){:where(body.sdr-workspace) .role-fraction{font-size:32px}}
 @media(prefers-reduced-motion:reduce){:where(body.sdr-workspace) .role-summary{transition:none}:where(body.sdr-workspace) .role-summary:hover{transform:none}}

@@ -3,7 +3,7 @@ Contributors: myconcretelab
 Tags: theatre, events, members, availability
 Requires at least: 6.5
 Requires PHP: 8.1
-Stable tag: 1.15.4
+Stable tag: 1.15.5
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -51,6 +51,10 @@ conservent leur déploiement habituel.
 Elles sont conservées. Aucun effacement automatique n’est exécuté.
 
 == Changelog ==
+
+= 1.15.5 =
+* Bouton « Relancer les non-inscrits » directement dans le bilan des réponses du planning.
+* Cadre de participation et bouton réservés à l’organisation et à l’administration.
 
 = 1.15.4 =
 * Compteur des sans réponse limité aux profils « OK pour la scène ».
