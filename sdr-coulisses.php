@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Coulisse — Gestion de troupe
  * Description: Spectacles, disponibilités, équipes, invitations et documentation pour les troupes.
- * Version: 1.15.6
+ * Version: 1.15.7
  * Requires at least: 6.5
  * Requires PHP: 8.1
  * License: GPL-2.0-or-later
@@ -58,7 +58,7 @@ final class SDR_Coulisses {
             wp_safe_redirect(SDR_Settings::workspace_url()); exit;
         });
         add_action('wp_enqueue_scripts', function(){
-            wp_register_style('sdr-ui',plugins_url('assets/app.css',__FILE__),[], '1.15.6');
+            wp_register_style('sdr-ui',plugins_url('assets/app.css',__FILE__),[], '1.15.7');
             wp_enqueue_style('sdr-public');
             if(SDR_Settings::is_workspace()){
                 wp_enqueue_style('sdr-ui');wp_enqueue_style('sdr-documentation',plugins_url('assets/documentation.css',__FILE__),['sdr-ui'], '1.11.0');
@@ -768,9 +768,9 @@ final class SDR_Coulisses {
     }
     static function app(){
         if(!self::member()) return '<div class="login-callout"><h2>Bienvenue dans les coulisses.</h2><p>Cet espace est réservé aux membres de la troupe.</p><a class="button primary" href="'.esc_url(wp_login_url(SDR_Settings::workspace_url())).'">Se connecter →</a></div>';
-        wp_enqueue_script('sdr-event-reminders',plugins_url('assets/event-reminders.js',__FILE__),[], '1.15.6',true);
+        wp_enqueue_script('sdr-event-reminders',plugins_url('assets/event-reminders.js',__FILE__),[], '1.15.7',true);
         wp_enqueue_script('sdr-documentation',plugins_url('assets/documentation.js',__FILE__),[], '1.10.0',true);
-        wp_enqueue_script('sdr-app',plugins_url('assets/app.js',__FILE__),['sdr-event-reminders','sdr-documentation'], '1.15.6',true);
+        wp_enqueue_script('sdr-app',plugins_url('assets/app.js',__FILE__),['sdr-event-reminders','sdr-documentation'], '1.15.7',true);
         $facebook = get_page_by_path('connexion-facebook');
         $facebook_url = $facebook && $facebook->post_status === 'publish' && has_shortcode($facebook->post_content, 'sdr_facebook') ? get_permalink($facebook) : '';
         wp_add_inline_script('sdr-app','window.SDR='.wp_json_encode(['api'=>rest_url('sdr/v1/'),'nonce'=>wp_create_nonce('wp_rest'),'home'=>home_url('/'),'facebookUrl'=>$facebook_url,'logo'=>SDR_Settings::identity()['logo'],'identity'=>SDR_Settings::identity(),'admin'=>admin_url(),'relances'=>class_exists('SDR_Relances') && SDR_Relances::allowed()?SDR_Relances::workspace_url():'','adminLogin'=>add_query_arg('sdr_admin','1',wp_login_url(admin_url(),true)),'logout'=>html_entity_decode(wp_logout_url(home_url('/')),ENT_QUOTES,'UTF-8')]).';','before');

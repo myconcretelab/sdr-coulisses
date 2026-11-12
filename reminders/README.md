@@ -192,3 +192,9 @@ Les catégories de la légende et les segments de la barre de participation
 affichent les noms au survol, à la prise de focus au clavier ou au toucher.
 Échap ou un toucher ailleurs ferme la bulle ; les listes suivent les mêmes
 groupes que les compteurs, y compris les profils OK pour la scène sans réponse.
+
+Les réponses et la composition de l’équipe partagent un seul cadre dans le
+planning. En haut : réponses, catégories, barre de participation et relance.
+En bas : état de l’équipe, personnes retenues sur les places prévues et bouton
+**Composer l’équipe**. Répondre au sondage n’attribue pas de place. Le cadre entier
+reste réservé à l’organisation et à l’administration.

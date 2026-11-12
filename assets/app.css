@@ -57,7 +57,8 @@ body.sdr-workspace{--ink:#292823;--cream:#faf9f4;--paper:#fffefa;--muted:#74756f
 :where(body.sdr-workspace) .role-summary.complete .meter>span{background:#7d9850}
 :where(body.sdr-workspace) .role-needs-empty{font-size:12px;color:var(--muted);padding:14px 0;margin:0;border-bottom:1px dashed var(--line)}
 @media(max-width:360px){:where(body.sdr-workspace) .role-meters{gap:6px}:where(body.sdr-workspace) .role-summary{padding:10px 7px}:where(body.sdr-workspace) .role-summary h4{font-size:11px}:where(body.sdr-workspace) .role-candidatures{font-size:9px}}
-:where(body.sdr-workspace) .card-responses{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:14px;margin-top:16px;background:#f2f1e9;border:1px solid #deded1;border-radius:9px}
+:where(body.sdr-workspace) .event-followup{margin-top:16px;border:1px solid #d9d6df;border-radius:10px;background:#f2f1e9}
+:where(body.sdr-workspace) .card-responses{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:14px}
 :where(body.sdr-workspace) .response-total{display:flex;align-items:center;gap:8px;color:#4e5144}
 :where(body.sdr-workspace) .response-total>strong{display:flex;align-items:baseline;justify-content:center;gap:2px;min-width:55px;padding:9px;border-radius:24px;background:#e1e6ce;font-family:var(--heading);font-size:24px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums}
 :where(body.sdr-workspace) .response-total>strong>small{font-size:14px;font-weight:400}
@@ -262,4 +263,7 @@ body.sdr-workspace.sdr-relances-open{overflow:hidden}
 :where(body.sdr-workspace) .team-candidate input:disabled{cursor:wait}
 :where(body.sdr-workspace) .team-candidate input:disabled+.candidate-pad{opacity:.6}
 :where(body.sdr-workspace) .finalize-buttons .button.is-notified:disabled{background:#e5efcf;border:1px solid #a8bb7d;color:#3e561e;opacity:1;cursor:default}
+/* One shared frame: availability above, actual team selections below. */
+:where(body.sdr-workspace) .event-followup>.card-team-panel{margin:0;padding:14px;border:0;border-top:1px solid #dcd4e5;border-radius:0 0 9px 9px;background:#f1edf6;box-shadow:none}
+:where(body.sdr-workspace) .event-followup>.card-team-panel.team-complete{border-top-color:#c6d5aa;background:#edf3df}
 @media(max-width:560px){:where(body.sdr-workspace) .candidate-columns{grid-template-columns:1fr;gap:12px}:where(body.sdr-workspace) .candidate-role{padding:12px}:where(body.sdr-workspace) .candidate-pad{min-height:86px}:where(body.sdr-workspace) .candidate-links{display:none}}
