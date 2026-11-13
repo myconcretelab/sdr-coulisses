@@ -3,7 +3,7 @@ Contributors: myconcretelab
 Tags: theatre, events, members, availability
 Requires at least: 6.5
 Requires PHP: 8.1
-Stable tag: 1.16.0
+Stable tag: 1.17.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -51,6 +51,11 @@ conservent leur déploiement habituel.
 Elles sont conservées. Aucun effacement automatique n’est exécuté.
 
 == Changelog ==
+
+= 1.17.0 =
+* Clic sur une place libre pour choisir une personne « Partant·e » ou « Si besoin » dans ce rôle.
+* Ajout avec accord déplacé dans la seconde colonne du sélecteur, avec le rôle déjà choisi.
+* Sélecteur adapté au téléphone, utilisable au clavier et fermé après enregistrement.
 
 = 1.16.0 =
 * Ajout à une équipe d’un membre sans réponse, avec son accord et mention de l’organisation.
