@@ -3,7 +3,7 @@ Contributors: myconcretelab
 Tags: theatre, events, members, availability
 Requires at least: 6.5
 Requires PHP: 8.1
-Stable tag: 1.17.0
+Stable tag: 1.17.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -51,6 +51,11 @@ conservent leur déploiement habituel.
 Elles sont conservées. Aucun effacement automatique n’est exécuté.
 
 == Changelog ==
+
+= 1.17.1 =
+* Le sélecteur reste ouvert pour remplir plusieurs places du même rôle à la suite.
+* Les personnes proposées et les places restantes sont actualisées après chaque ajout.
+* Fermeture automatique quand toutes les places du rôle sont remplies.
 
 = 1.17.0 =
 * Clic sur une place libre pour choisir une personne « Partant·e » ou « Si besoin » dans ce rôle.

@@ -568,8 +568,8 @@
     };
   }
   function seatPicker(e,role){
-    const {candidates,missing}=seatChoices(e,role),name=roleNames[role];
-    return `<header class="seat-picker-heading"><div><div class="eyebrow">COMPLÉTER L’ÉQUIPE</div><h3 id="seat-picker-title">Choisir pour la place ${h(name)}</h3><p>Le rôle est déjà choisi. Il reste à trouver la personne.</p></div><button type="button" class="seat-picker-close" aria-label="Fermer le sélecteur">×</button></header><div class="seat-picker-columns"><section aria-labelledby="seat-candidates-title"><h4 id="seat-candidates-title">Disponibles pour ce rôle <span>${candidates.length}</span></h4><p class="field-help">Ces personnes se sont proposées pour ce spectacle. Clique sur un nom pour lui attribuer la place.</p><div class="seat-picker-list">${candidates.length?candidates.map(p=>`<button type="button" class="seat-candidate ${p.availability}" data-seat-user="${p.userId}" aria-label="Choisir ${h(p.name)} comme ${h(name)} — ${h(statusNames[p.availability])}"><span class="avatar" aria-hidden="true">${h(p.name[0])}</span><span><strong>${h(p.name)}</strong><small><span aria-hidden="true">${p.availability==='yes'?'☀':'〰'}</span> ${h(statusNames[p.availability])}</small></span><span class="seat-candidate-add" aria-hidden="true">＋</span></button>`).join(''):'<p class="seat-picker-empty">Aucune personne « Partant·e » ou « Si besoin » encore libre pour ce rôle. Tu peux ajouter un membre avec son accord dans l’autre colonne.</p>'}</div></section><section class="seat-picker-manual" aria-labelledby="seat-manual-title"><h4 id="seat-manual-title">Ajouter un membre avec son accord</h4><p class="field-help">Pour une personne sans réponse au sondage, qui t’a donné son accord directement.</p>${missing.length?`<form id="manual-member-form"><fieldset><label for="manual-member-user">Membre sans réponse<select id="manual-member-user" name="userId" required><option value="">Choisir un membre</option>${missing.map(m=>`<option value="${m.id}">${h(m.name)}</option>`).join('')}</select></label><p class="seat-picker-role">Rôle retenu : <strong>${h(name)}</strong></p><label class="check-line"><input type="checkbox" name="consent" required><span>J’ai l’accord de cette personne pour ce rôle.</span></label><button type="submit" class="button primary">Ajouter à l’équipe <span aria-hidden="true">＋</span></button></fieldset></form>`:`<p class="seat-picker-empty">Aucun membre sans réponse ne propose ce rôle dans son profil « OK pour la scène ».</p>`}<p class="field-help">L’ajout est enregistré comme « Partant·e », avec la mention « Ajouté·e par l’organisation ». Aucun email n’est envoyé ; utilise ensuite « Sauvegarder et informer les joueurs ».</p></section></div><p class="seat-picker-message" role="status" aria-live="polite"></p>`;
+    const {candidates,missing}=seatChoices(e,role),name=roleNames[role],remaining=Math.max(0,e.capacity[role]-roleCounts(e,role).selected);
+    return `<header class="seat-picker-heading"><div><div class="eyebrow">COMPLÉTER L’ÉQUIPE</div><h3 id="seat-picker-title">Choisir pour la place ${h(name)}</h3><p>${remaining} place${remaining>1?'s':''} à remplir pour ce rôle. Choisis les membres à la suite.</p></div><button type="button" class="seat-picker-close" aria-label="Fermer le sélecteur">×</button></header><div class="seat-picker-columns"><section aria-labelledby="seat-candidates-title"><h4 id="seat-candidates-title">Disponibles pour ce rôle <span>${candidates.length}</span></h4><p class="field-help">Ces personnes se sont proposées pour ce spectacle. Clique sur un nom pour lui attribuer la place.</p><div class="seat-picker-list">${candidates.length?candidates.map(p=>`<button type="button" class="seat-candidate ${p.availability}" data-seat-user="${p.userId}" aria-label="Choisir ${h(p.name)} comme ${h(name)} — ${h(statusNames[p.availability])}"><span class="avatar" aria-hidden="true">${h(p.name[0])}</span><span><strong>${h(p.name)}</strong><small><span aria-hidden="true">${p.availability==='yes'?'☀':'〰'}</span> ${h(statusNames[p.availability])}</small></span><span class="seat-candidate-add" aria-hidden="true">＋</span></button>`).join(''):'<p class="seat-picker-empty">Aucune personne « Partant·e » ou « Si besoin » encore libre pour ce rôle. Tu peux ajouter un membre avec son accord dans l’autre colonne.</p>'}</div></section><section class="seat-picker-manual" aria-labelledby="seat-manual-title"><h4 id="seat-manual-title">Ajouter un membre avec son accord</h4><p class="field-help">Pour une personne sans réponse au sondage, qui t’a donné son accord directement.</p>${missing.length?`<form id="manual-member-form"><fieldset><label for="manual-member-user">Membre sans réponse<select id="manual-member-user" name="userId" required><option value="">Choisir un membre</option>${missing.map(m=>`<option value="${m.id}">${h(m.name)}</option>`).join('')}</select></label><p class="seat-picker-role">Rôle retenu : <strong>${h(name)}</strong></p><label class="check-line"><input type="checkbox" name="consent" required><span>J’ai l’accord de cette personne pour ce rôle.</span></label><button type="submit" class="button primary">Ajouter à l’équipe <span aria-hidden="true">＋</span></button></fieldset></form>`:`<p class="seat-picker-empty">Aucun membre sans réponse ne propose ce rôle dans son profil « OK pour la scène ».</p>`}<p class="field-help">L’ajout est enregistré comme « Partant·e », avec la mention « Ajouté·e par l’organisation ». Aucun email n’est envoyé ; utilise ensuite « Sauvegarder et informer les joueurs ».</p></section></div><p class="seat-picker-message" role="status" aria-live="polite"></p>`;
   }
   function notifyButtonLabel(e){return e.teamNotified?'Joueurs informés <span aria-hidden="true">✓</span>':'Sauvegarder et informer les joueurs <span aria-hidden="true">✉</span>';}
   function finalizeActions(e){
@@ -601,14 +601,28 @@
         if(!manual)e.responses.find(r=>r.userId===userId).selectedRole=role;
         data=await api('dashboard');
         if(!dialog.isConnected||!message.isConnected)return;
-        const wasOpen=dialog.open;
+        const wasOpen=dialog.open,continuePicker=picker?.matches(':popover-open'),pickerScroll=picker?.scrollTop||0;
         picker?.hidePopover();dialog.close();render();
         if(wasOpen){
           openEvent(e.id,true);
           const refreshed=root.querySelector('#event-dialog');refreshed.scrollTop=scroll;
           const target=input?refreshed.querySelector(`[data-select-user="${userId}"][value="${input.value}"]`):refreshed.querySelector(`[data-team-user="${userId}"]`);
           target?.focus({preventScroll:true});
-          refreshed.querySelector('.selection-message').textContent=manual?'✓ Membre ajouté avec son accord. Aucun email envoyé.':'✓ Équipe mise à jour.';
+          const success=manual?'✓ Membre ajouté avec son accord. Aucun email envoyé.':'✓ Équipe mise à jour.';
+          refreshed.querySelector('.selection-message').textContent=success;
+          if(continuePicker){
+            const nextSeat=refreshed.querySelector(`[data-seat-role="${role}"]`);
+            if(nextSeat){
+              nextSeat.click();
+              const nextPicker=refreshed.querySelector('.seat-picker');
+              nextPicker.scrollTop=pickerScroll;
+              nextPicker.querySelector('.seat-picker-message').textContent=success;
+              if(manual)nextPicker.querySelector('select')?.focus({preventScroll:true});
+            }else{
+              refreshed.querySelector('.selection-message').textContent=success+' Toutes les places de ce rôle sont remplies.';
+              toast('Toutes les places '+roleNames[role]+' sont remplies.');
+            }
+          }
         }
         if(manual)toast('Membre ajouté à l’équipe.');
       }catch(err){
