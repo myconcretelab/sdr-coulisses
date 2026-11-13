@@ -559,13 +559,17 @@
     const observer=new ResizeObserver(draw);observer.observe(board);draw();
     dialog.addEventListener('close',()=>observer.disconnect(),{once:true});
   }
-  function organizationDialog(e){const responded=new Set(e.responses.map(r=>r.userId)),missing=data.members.filter(m=>!responded.has(m.id));return `<section class="organizer-panel"><div class="team-dialog-heading"><div><div class="eyebrow">LE COLLECTIF ENTRE EN SCÈNE</div><h3>Composer l’équipe</h3></div><button type="button" class="button secondary stage-reminder-button" data-remind-event="${e.id}" ${e.closed?'disabled':''} title="${e.closed?'Les réponses sont fermées':'Choisir les personnes à relancer'}" aria-haspopup="dialog">Relancer les sans réponse <span aria-hidden="true">✉</span></button></div>${compositionBoard(e)}${needsEditor(e)}${manualMemberForm(e)}<h3 class="candidates-heading">À toi de distribuer les rôles</h3><p class="field-help candidate-help">Clique sur une carte pour retenir la personne dans ce rôle, puis reclique pour la retirer. Un seul rôle par personne ; les choix sont enregistrés au fur et à mesure.</p><p class="candidate-legend"><span><span aria-hidden="true">☀</span> Partant·e</span><span><span aria-hidden="true">〰</span> Si besoin</span><span><span aria-hidden="true">✓</span> Rôle retenu</span></p>${candidateColumns(e)}<p class="selection-message" role="status" aria-live="polite"></p>${finalizeActions(e)}<details><summary>Sans réponse (${missing.length})</summary><p>${missing.map(m=>h(m.name)).join(' · ')||'Tout le monde a répondu.'}</p></details><details><summary>Indisponibles (${e.responses.filter(r=>r.availability==='no').length})</summary><p>${e.responses.filter(r=>r.availability==='no').map(r=>h(r.name)).join(' · ')||'Aucune indisponibilité déclarée.'}</p></details></section>`;}
-  function manualMemberForm(e){
+  function organizationDialog(e){const responded=new Set(e.responses.map(r=>r.userId)),missing=data.members.filter(m=>!responded.has(m.id));return `<section class="organizer-panel"><div class="team-dialog-heading"><div><div class="eyebrow">LE COLLECTIF ENTRE EN SCÈNE</div><h3>Composer l’équipe</h3></div><button type="button" class="button secondary stage-reminder-button" data-remind-event="${e.id}" ${e.closed?'disabled':''} title="${e.closed?'Les réponses sont fermées':'Choisir les personnes à relancer'}" aria-haspopup="dialog">Relancer les sans réponse <span aria-hidden="true">✉</span></button></div>${compositionBoard(e)}${needsEditor(e)}<h3 class="candidates-heading">À toi de distribuer les rôles</h3><p class="field-help candidate-help">Clique sur une carte pour retenir la personne dans ce rôle, puis reclique pour la retirer. Un seul rôle par personne ; les choix sont enregistrés au fur et à mesure.</p><p class="candidate-legend"><span><span aria-hidden="true">☀</span> Partant·e</span><span><span aria-hidden="true">〰</span> Si besoin</span><span><span aria-hidden="true">✓</span> Rôle retenu</span></p>${candidateColumns(e)}<p class="selection-message" role="status" aria-live="polite"></p>${finalizeActions(e)}<details><summary>Sans réponse (${missing.length})</summary><p>${missing.map(m=>h(m.name)).join(' · ')||'Tout le monde a répondu.'}</p></details><details><summary>Indisponibles (${e.responses.filter(r=>r.availability==='no').length})</summary><p>${e.responses.filter(r=>r.availability==='no').map(r=>h(r.name)).join(' · ')||'Aucune indisponibilité déclarée.'}</p></details></section>`;}
+  function seatChoices(e,role){
     const responded=new Set(e.responses.map(r=>r.userId));
-    const missing=data.members.filter(m=>!responded.has(m.id)&&m.roles.length);
-    const free=compositionRoles(e).filter(([key])=>roleCounts(e,key).selected<e.capacity[key]);
-    const eligible=missing.filter(m=>free.some(([key])=>m.roles.includes(key)));
-    return `<details class="manual-member-editor"><summary>Ajouter un membre avec son accord <span aria-hidden="true">＋</span></summary><p class="field-help">Pour une personne sans réponse au sondage, qui t’a donné son accord directement. Sa disponibilité sera enregistrée comme « Partant·e », avec la mention « Ajouté·e par l’organisation ».</p>${eligible.length?`<form id="manual-member-form"><fieldset><div class="manual-member-fields"><label for="manual-member-user">Membre<select id="manual-member-user" name="userId" required><option value="">Choisir un membre sans réponse</option>${eligible.map(m=>`<option value="${m.id}">${h(m.name)}</option>`).join('')}</select></label><label for="manual-member-role">Rôle<select id="manual-member-role" name="role" required disabled><option value="">Choisir d’abord un membre</option></select></label></div><label class="check-line"><input type="checkbox" name="consent" required><span>J’ai l’accord de cette personne pour ce rôle.</span></label><button type="submit" class="button primary">Ajouter à l’équipe <span aria-hidden="true">＋</span></button></fieldset><p class="form-message" role="status" aria-live="polite"></p></form>`:`<p class="field-help">${!free.length?'Aucune place libre. Ouvre « Ajuster les besoins » pour ajouter une place.':'Aucun membre sans réponse ne propose les rôles encore recherchés dans son profil « OK pour la scène ».'}</p>`}<p class="field-help">Aucun email n’est envoyé lors de l’ajout. Cette personne recevra aussi la confirmation quand tu cliqueras sur « Sauvegarder et informer les joueurs ». Retirer cette personne de l’équipe la remettra « Sans réponse », sauf si elle a depuis enregistré sa propre réponse.</p></details>`;
+    return {
+      candidates:e.responses.filter(r=>['yes','maybe'].includes(r.availability)&&r.roles.includes(role)&&!r.selectedRole).sort((a,b)=>(a.availability==='maybe')-(b.availability==='maybe')||a.name.localeCompare(b.name,'fr')),
+      missing:data.members.filter(m=>!responded.has(m.id)&&m.roles.includes(role)).sort((a,b)=>a.name.localeCompare(b.name,'fr'))
+    };
+  }
+  function seatPicker(e,role){
+    const {candidates,missing}=seatChoices(e,role),name=roleNames[role];
+    return `<header class="seat-picker-heading"><div><div class="eyebrow">COMPLÉTER L’ÉQUIPE</div><h3 id="seat-picker-title">Choisir pour la place ${h(name)}</h3><p>Le rôle est déjà choisi. Il reste à trouver la personne.</p></div><button type="button" class="seat-picker-close" aria-label="Fermer le sélecteur">×</button></header><div class="seat-picker-columns"><section aria-labelledby="seat-candidates-title"><h4 id="seat-candidates-title">Disponibles pour ce rôle <span>${candidates.length}</span></h4><p class="field-help">Ces personnes se sont proposées pour ce spectacle. Clique sur un nom pour lui attribuer la place.</p><div class="seat-picker-list">${candidates.length?candidates.map(p=>`<button type="button" class="seat-candidate ${p.availability}" data-seat-user="${p.userId}" aria-label="Choisir ${h(p.name)} comme ${h(name)} — ${h(statusNames[p.availability])}"><span class="avatar" aria-hidden="true">${h(p.name[0])}</span><span><strong>${h(p.name)}</strong><small><span aria-hidden="true">${p.availability==='yes'?'☀':'〰'}</span> ${h(statusNames[p.availability])}</small></span><span class="seat-candidate-add" aria-hidden="true">＋</span></button>`).join(''):'<p class="seat-picker-empty">Aucune personne « Partant·e » ou « Si besoin » encore libre pour ce rôle. Tu peux ajouter un membre avec son accord dans l’autre colonne.</p>'}</div></section><section class="seat-picker-manual" aria-labelledby="seat-manual-title"><h4 id="seat-manual-title">Ajouter un membre avec son accord</h4><p class="field-help">Pour une personne sans réponse au sondage, qui t’a donné son accord directement.</p>${missing.length?`<form id="manual-member-form"><fieldset><label for="manual-member-user">Membre sans réponse<select id="manual-member-user" name="userId" required><option value="">Choisir un membre</option>${missing.map(m=>`<option value="${m.id}">${h(m.name)}</option>`).join('')}</select></label><p class="seat-picker-role">Rôle retenu : <strong>${h(name)}</strong></p><label class="check-line"><input type="checkbox" name="consent" required><span>J’ai l’accord de cette personne pour ce rôle.</span></label><button type="submit" class="button primary">Ajouter à l’équipe <span aria-hidden="true">＋</span></button></fieldset></form>`:`<p class="seat-picker-empty">Aucun membre sans réponse ne propose ce rôle dans son profil « OK pour la scène ».</p>`}<p class="field-help">L’ajout est enregistré comme « Partant·e », avec la mention « Ajouté·e par l’organisation ». Aucun email n’est envoyé ; utilise ensuite « Sauvegarder et informer les joueurs ».</p></section></div><p class="seat-picker-message" role="status" aria-live="polite"></p>`;
   }
   function notifyButtonLabel(e){return e.teamNotified?'Joueurs informés <span aria-hidden="true">✓</span>':'Sauvegarder et informer les joueurs <span aria-hidden="true">✉</span>';}
   function finalizeActions(e){
@@ -574,87 +578,85 @@
   }
   function compositionBoard(e){
     const roles=compositionRoles(e),total=Object.values(e.capacity).reduce((sum,n)=>sum+n,0),selected=e.responses.filter(r=>r.selectedRole).length,remaining=Math.max(0,total-selected);
-    return `<div class="composition-progress" aria-label="Composition actuelle">${roles.map(([key,name])=>{const n=roleCounts(e,key).selected;return `<span class="${n===e.capacity[key]?'complete':''}"><span aria-hidden="true">${key==='joueur'?'✳':key==='mc'?'♧':'♫'}</span> ${name} <b>${n}/${e.capacity[key]}</b></span>`;}).join('')}</div><section class="composition-board"><div class="composition-heading"><div><span class="eyebrow">LE CASTING DE LA SOIRÉE</span><h3>L’équipe prend forme<span aria-hidden="true">✳</span></h3></div><span class="composition-total">${selected}<small>/${total}</small></span></div><p class="composition-caption">${!total?'Aucune place prévue : ajuste les besoins ci-dessous.':remaining?`Encore ${remaining} place${remaining>1?'s':''} à distribuer.`:'Tout le monde est en place !'}</p><div class="casting-grid" style="--role-columns:${Math.max(1,roles.length)}">${roles.map(([key,name])=>{
+    return `<div class="composition-progress" aria-label="Composition actuelle">${roles.map(([key,name])=>{const n=roleCounts(e,key).selected;return `<span class="${n===e.capacity[key]?'complete':''}"><span aria-hidden="true">${key==='joueur'?'✳':key==='mc'?'♧':'♫'}</span> ${name} <b>${n}/${e.capacity[key]}</b></span>`;}).join('')}</div><section class="composition-board"><div class="composition-heading"><div><span class="eyebrow">LE CASTING DE LA SOIRÉE</span><h3>L’équipe prend forme<span aria-hidden="true">✳</span></h3></div><span class="composition-total">${selected}<small>/${total}</small></span></div><p class="composition-caption">${!total?'Aucune place prévue : ajuste les besoins ci-dessous.':remaining?`Encore ${remaining} place${remaining>1?'s':''} à distribuer. Clique sur une place libre pour choisir un membre.`:'Tout le monde est en place !'}</p><div class="casting-grid" style="--role-columns:${Math.max(1,roles.length)}">${roles.map(([key,name])=>{
       const count=roleCounts(e,key),people=e.responses.filter(r=>r.selectedRole===key),free=Math.max(0,e.capacity[key]-count.selected);
-      return `<section class="casting-role ${free?'':'complete'}"><div class="casting-role-title"><span aria-hidden="true">${key==='joueur'?'✳':key==='mc'?'♧':'♫'}</span><h4>${name}</h4><b>${count.selected}/${e.capacity[key]}</b></div><p class="casting-proposals">${count.proposed} proposé${count.proposed>1?'·es':'·e'}${count.maybe?` <span>· ${count.maybe} si besoin</span>`:''}</p><div class="casting-seats">${people.map(p=>`<span class="casting-person"><span aria-hidden="true">✓</span>${h(p.name)}${p.addedByOrganization?'<small class="manual-member-badge">Ajouté·e par l’organisation</small>':''}</span>`).join('')}${Array.from({length:Math.min(free,6)},()=>'<span class="casting-empty"><span aria-hidden="true">＋</span>Place libre</span>').join('')}${free>6?`<span class="casting-more">+ ${free-6} autres places libres</span>`:''}${!e.capacity[key]?'<span class="casting-unused">Pas de besoin</span>':''}</div><p class="casting-state">${!e.capacity[key]?'Rôle non prévu':free?`${free} à trouver`:'✓ Au complet !'}</p></section>`;
+      return `<section class="casting-role ${free?'':'complete'}"><div class="casting-role-title"><span aria-hidden="true">${key==='joueur'?'✳':key==='mc'?'♧':'♫'}</span><h4>${name}</h4><b>${count.selected}/${e.capacity[key]}</b></div><p class="casting-proposals">${count.proposed} proposé${count.proposed>1?'·es':'·e'}${count.maybe?` <span>· ${count.maybe} si besoin</span>`:''}</p><div class="casting-seats">${people.map(p=>`<span class="casting-person" tabindex="-1" data-team-user="${p.userId}"><span aria-hidden="true">✓</span>${h(p.name)}${p.addedByOrganization?'<small class="manual-member-badge">Ajouté·e par l’organisation</small>':''}</span>`).join('')}${Array.from({length:Math.min(free,6)},(_,i)=>`<button type="button" class="casting-empty" data-seat-role="${key}" aria-haspopup="dialog" aria-expanded="false" aria-label="Choisir un membre pour la place ${i+1} ${h(name)}"><span aria-hidden="true">＋</span>Place libre</button>`).join('')}${free>6?`<span class="casting-more">+ ${free-6} autres places libres</span>`:''}${!e.capacity[key]?'<span class="casting-unused">Pas de besoin</span>':''}</div><p class="casting-state">${!e.capacity[key]?'Rôle non prévu':free?`${free} à trouver`:'✓ Au complet !'}</p></section>`;
     }).join('')}</div></section>`;
   }
   function needsEditor(e){
     return `<details class="needs-editor"><summary>Ajuster les besoins <span>＋ / −</span></summary><form id="settings-form"><p class="field-help">Combien de places pour chaque rôle ? Les personnes déjà retenues restent en place.</p><div class="needs-steppers">${Object.entries(roleNames).map(([key,name])=>`<div class="needs-role"><label for="capacity-${key}">${name}</label><div class="capacity-stepper"><button type="button" data-step="-1" data-role="${key}" aria-label="Retirer une place ${name}">−</button><input id="capacity-${key}" type="number" min="${roleCounts(e,key).selected}" max="30" name="${key}" value="${e.capacity[key]}" required><button type="button" data-step="1" data-role="${key}" aria-label="Ajouter une place ${name}">+</button></div><small data-capacity-hint="${key}"></small></div>`).join('')}</div><label class="close-switch"><input type="checkbox" name="closed" ${e.closed?'checked':''}><span class="switch-track" aria-hidden="true"></span><span>Fermer les réponses<small>Les membres ne pourront plus changer leur disponibilité.</small></span></label><div class="needs-actions"><button class="button primary" type="submit">Enregistrer les besoins <span>✓</span></button><button class="button secondary" type="reset">Annuler</button></div><p class="form-message" aria-live="polite"></p></form></details>`;
   }
   function wireDialog(e,organize){const dialog=root.querySelector('dialog');wireCandidateLinks(dialog);dialog.querySelector('.dialog-close').onclick=()=>dialog.close();const form=dialog.querySelector('#response-form');if(form){form.onsubmit=async event=>{event.preventDefault();const fd=new FormData(form);await saveResponse(e,{availability:fd.get('availability'),roles:fd.getAll('roles')},form);};const clear=form.querySelector('.clear-response');if(clear)clear.onclick=()=>saveResponse(e,{availability:'clear',roles:[]},form);const updateRoles=()=>{form.querySelector('.choose-roles').hidden=form.querySelector('[name=availability]:checked')?.value==='no';};form.querySelectorAll('[name=availability]').forEach(i=>i.onchange=updateRoles);updateRoles();}
-    const manualForm=dialog.querySelector('#manual-member-form');
-    if(manualForm){
-      manualForm.elements.userId.onchange=()=>{
-        const member=data.members.find(m=>m.id===Number(manualForm.elements.userId.value));
-        const roles=compositionRoles(e).filter(([key])=>member?.roles.includes(key)&&roleCounts(e,key).selected<e.capacity[key]);
-        manualForm.elements.role.innerHTML=roles.length?roles.map(([key,name])=>`<option value="${key}">${h(name)}</option>`).join(''):'<option value="">Choisir d’abord un membre</option>';
-        manualForm.elements.role.disabled=!roles.length;
-        manualForm.elements.consent.checked=false;
-      };
-      manualForm.elements.role.onchange=()=>{manualForm.elements.consent.checked=false;};
-      manualForm.onsubmit=async event=>{
-        event.preventDefault();
-        const body={userId:Number(manualForm.elements.userId.value),role:manualForm.elements.role.value,consent:manualForm.elements.consent.checked};
-        const controls=[...dialog.querySelectorAll('input,select,button,fieldset')],states=controls.map(control=>control.disabled),message=manualForm.querySelector('.form-message'),scroll=dialog.scrollTop;
-        controls.forEach(control=>{if(!control.classList.contains('dialog-close'))control.disabled=true;});
-        message.classList.remove('error');message.textContent='Ajout en cours…';
-        let saved=false;
-        try{
-          await api(`events/${e.id}/manual-member`,body);saved=true;
-          data=await api('dashboard');
-          if(!dialog.isConnected)return;
-          const wasOpen=dialog.open;dialog.close();render();
-          if(wasOpen){
-            openEvent(e.id,true);const refreshed=root.querySelector('dialog');refreshed.scrollTop=scroll;
-            refreshed.querySelector(`[data-select-user="${body.userId}"][value="${body.role}"]`)?.focus({preventScroll:true});
-            refreshed.querySelector('.selection-message').textContent='✓ Membre ajouté avec son accord. Aucun email envoyé.';
-          }
-          toast('Membre ajouté à l’équipe.');
-        }catch(err){
-          if(!message.isConnected)return;
-          controls.forEach((control,i)=>control.disabled=states[i]);refreshNeeds();
-          message.classList.add('error');message.textContent=saved?'Le membre a été ajouté, mais l’affichage n’a pas pu être actualisé. Recharge la page.':err.message;
-          if(saved)manualForm.querySelector('fieldset').disabled=true;
-        }
-      };
-    }
-    dialog.querySelectorAll('[data-select-user]').forEach(input=>input.onchange=async()=>{
-      const userId=Number(input.dataset.selectUser), role=input.checked?input.value:'', scroll=dialog.scrollTop;
-      const controls=[...dialog.querySelectorAll('[data-select-user]')], message=dialog.querySelector('.selection-message');
-      const needsFields=[...dialog.querySelectorAll('#settings-form input,#settings-form button,#manual-member-form fieldset')], disabledStates=needsFields.map(field=>field.disabled);
-      needsFields.forEach(field=>field.disabled=true);
-      dialog.querySelectorAll('[data-finalize]').forEach(button=>button.disabled=true);
-      dialog.querySelector('[data-remind-event]').disabled=true;
-      controls.forEach(control=>{control.disabled=true;if(Number(control.dataset.selectUser)===userId)control.checked=control.value===role;});
-      message.classList.remove('error');message.textContent='Enregistrement…';
+    async function saveTeamChoice(userId,role,{manual=false,picker=null,input=null}={}){
+      if(dialog._savingTeam)return;
+      dialog._savingTeam=true;
+      const controls=[...dialog.querySelectorAll('input,select,button,fieldset')],states=controls.map(control=>control.disabled),scroll=dialog.scrollTop;
+      const message=picker?.querySelector('.seat-picker-message')||dialog.querySelector('.selection-message');
+      controls.forEach(control=>{if(!control.matches('.dialog-close,.seat-picker-close'))control.disabled=true;});
+      dialog.querySelectorAll('[data-select-user]').forEach(control=>{if(Number(control.dataset.selectUser)===userId)control.checked=control.value===role;});
+      message.classList.remove('error');message.textContent=manual?'Ajout en cours…':'Enregistrement…';
       let saved=false;
       try{
-        await api(`events/${e.id}/selection`,{userId,role});saved=true;
-        e.responses.find(r=>r.userId===userId).selectedRole=role;
+        await api(`events/${e.id}/${manual?'manual-member':'selection'}`,{userId,role,...(manual?{consent:true}:{})});saved=true;
+        if(!manual)e.responses.find(r=>r.userId===userId).selectedRole=role;
         data=await api('dashboard');
         if(!dialog.isConnected||!message.isConnected)return;
         const wasOpen=dialog.open;
-        dialog.close();render();
+        picker?.hidePopover();dialog.close();render();
         if(wasOpen){
           openEvent(e.id,true);
-          const refreshed=root.querySelector('dialog');refreshed.scrollTop=scroll;
-          refreshed.querySelector(`[data-select-user="${userId}"][value="${input.value}"]`)?.focus({preventScroll:true});
-          refreshed.querySelector('.selection-message').textContent='✓ Équipe mise à jour.';
+          const refreshed=root.querySelector('#event-dialog');refreshed.scrollTop=scroll;
+          const target=input?refreshed.querySelector(`[data-select-user="${userId}"][value="${input.value}"]`):refreshed.querySelector(`[data-team-user="${userId}"]`);
+          target?.focus({preventScroll:true});
+          refreshed.querySelector('.selection-message').textContent=manual?'✓ Membre ajouté avec son accord. Aucun email envoyé.':'✓ Équipe mise à jour.';
         }
+        if(manual)toast('Membre ajouté à l’équipe.');
       }catch(err){
         if(!message.isConnected)return;
-        needsFields.forEach((field,i)=>field.disabled=disabledStates[i]);
-        dialog.querySelector('[data-remind-event]').disabled=e.closed;
-        controls.forEach(control=>{control.checked=e.responses.find(r=>r.userId===Number(control.dataset.selectUser)).selectedRole===control.value;control.disabled=false;});
+        controls.forEach((control,i)=>control.disabled=states[i]);
+        dialog.querySelectorAll('[data-select-user]').forEach(control=>{control.checked=e.responses.some(r=>r.userId===Number(control.dataset.selectUser)&&r.selectedRole===control.value);});
+        refreshNeeds();
         message.classList.add('error');
         message.textContent=saved?'Le choix est enregistré, mais l’affichage n’a pas pu être actualisé. Recharge la page.':err.message;
-        refreshNeeds();
+        if(saved)controls.forEach(control=>{if(!control.matches('.dialog-close,.seat-picker-close'))control.disabled=true;});
+        toast(message.textContent,true);
+      }finally{dialog._savingTeam=false;}
+    }
+    dialog.querySelectorAll('[data-seat-role]').forEach(opener=>opener.onclick=()=>{
+      const role=opener.dataset.seatRole;
+      if(opener.disabled||roleCounts(e,role).selected>=e.capacity[role])return;
+      dialog.querySelector('.seat-picker')?.remove();
+      const picker=document.createElement('div');picker.className='seat-picker';picker.id='seat-picker';picker.popover='auto';
+      picker.setAttribute('role','dialog');picker.setAttribute('aria-labelledby','seat-picker-title');
+      picker.innerHTML=seatPicker(e,role);dialog.append(picker);
+      opener.setAttribute('aria-expanded','true');opener.setAttribute('aria-controls','seat-picker');
+      picker.addEventListener('toggle',event=>{
+        if(event.newState==='closed'){
+          opener.setAttribute('aria-expanded','false');
+        }
+      });
+      const closePicker=()=>{picker.hidePopover();if(dialog.open&&opener.isConnected)opener.focus({preventScroll:true});};
+      // Escape dismisses only the picker, preserving the composition behind it.
+      picker.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();event.stopPropagation();closePicker();}});
+      picker.querySelector('.seat-picker-close').onclick=closePicker;
+      picker.querySelectorAll('[data-seat-user]').forEach(button=>button.onclick=()=>saveTeamChoice(Number(button.dataset.seatUser),role,{picker}));
+      const manualForm=picker.querySelector('#manual-member-form');
+      if(manualForm){
+        manualForm.elements.userId.onchange=()=>{manualForm.elements.consent.checked=false;};
+        manualForm.onsubmit=event=>{
+          event.preventDefault();
+          if(!manualForm.reportValidity()||!manualForm.elements.consent.checked)return;
+          saveTeamChoice(Number(manualForm.elements.userId.value),role,{manual:true,picker});
+        };
       }
+      picker.showPopover();
+      (picker.querySelector('[data-seat-user]')||picker.querySelector('select')||picker.querySelector('.seat-picker-close')).focus({preventScroll:true});
     });
+    dialog.addEventListener('close',()=>dialog.querySelector('.seat-picker')?.hidePopover(),{once:true});
+    dialog.querySelectorAll('[data-select-user]').forEach(input=>input.onchange=()=>saveTeamChoice(Number(input.dataset.selectUser),input.checked?input.value:'',{input}));
     dialog.querySelectorAll('[data-finalize]').forEach(button=>button.onclick=async()=>{
       const notify=button.dataset.finalize==='notify',buttons=[...dialog.querySelectorAll('[data-finalize]')],message=dialog.querySelector('.finalize-message');
-      const needsFields=[...dialog.querySelectorAll('#settings-form input,#settings-form button,#manual-member-form fieldset')],disabledStates=needsFields.map(field=>field.disabled);
+      const needsFields=[...dialog.querySelectorAll('#settings-form input,#settings-form button,[data-seat-role]')],disabledStates=needsFields.map(field=>field.disabled);
       needsFields.forEach(field=>field.disabled=true);
       if(notify)button.textContent='Envoi en cours…';
       buttons.forEach(item=>item.disabled=true);dialog.querySelectorAll('[data-select-user]').forEach(input=>input.disabled=true);
@@ -696,8 +698,7 @@
           settings.querySelector(`[data-role="${key}"][data-step="-1"]`).disabled=!valid||n<=min;
           settings.querySelector(`[data-role="${key}"][data-step="1"]`).disabled=!valid||n>=30;
         });
-        dialog.querySelectorAll('[data-select-user],[data-finalize]').forEach(input=>input.disabled=dirty||!!(input.dataset.finalize&&(e.responses.every(r=>!r.selectedRole)||(input.dataset.finalize==='notify'&&e.teamNotified))));
-        if(manualForm)manualForm.querySelector('fieldset').disabled=dirty;
+        dialog.querySelectorAll('[data-select-user],[data-seat-role],[data-finalize]').forEach(input=>input.disabled=dirty||!!(input.dataset.finalize&&(e.responses.every(r=>!r.selectedRole)||(input.dataset.finalize==='notify'&&e.teamNotified))));
         const reminder=dialog.querySelector('[data-remind-event]');
         reminder.disabled=dirty||e.closed;
         reminder.title=dirty?'Enregistre les besoins avant de relancer':e.closed?'Les réponses sont fermées':'Choisir les personnes à relancer';
@@ -722,7 +723,7 @@
         const fd=new FormData(settings),fields=[...settings.querySelectorAll('input,button')];
         fields.forEach(field=>field.disabled=true);
         dialog.querySelectorAll('[data-select-user]').forEach(input=>input.disabled=true);
-        if(manualForm)manualForm.querySelector('fieldset').disabled=true;
+        dialog.querySelectorAll('[data-seat-role],[data-finalize]').forEach(button=>button.disabled=true);
         dialog.querySelector('[data-remind-event]').disabled=true;
         try{
           await api(`events/${e.id}/settings`,{capacity:Object.fromEntries(Object.keys(roleNames).map(key=>[key,Number(fd.get(key))])),closed:fd.has('closed')});

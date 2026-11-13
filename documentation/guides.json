@@ -317,18 +317,21 @@
                     "steps": [
                         "Dans le planning, lire la fraction de chaque rôle : « 1/3 » signifie une candidature pour trois places prévues. Les réponses « Partant·e » et « Si besoin » proposant ce rôle comptent comme candidatures. Les places à pourvoir et les personnes retenues restent indiquées en dessous. Un rôle « Complet » n’a plus de place libre.",
                         "Dans la carte du spectacle, consulter le cadre commun aux réponses et à la composition. La partie haute indique les disponibilités ; la partie basse affiche « Équipe à composer », « Équipe incomplète » ou « Équipe complète » avec le nombre de personnes retenues sur les places prévues. Cliquer sur « Composer l’équipe » dans cette partie basse.",
-                        "Consulter le tableau : chaque rôle indique les places prévues, les personnes retenues et les places encore libres.",
-                        "Dans les candidatures, consulter les colonnes « Joueur·ses », « MC » et « DJ ». Seuls les rôles avec des places prévues sont affichés. Cliquer sur la carte d’une personne « Partant·e » ou « Si besoin » pour la retenir dans cette colonne ; le choix est enregistré immédiatement.",
+                        "Consulter le tableau : chaque rôle indique les places prévues, les personnes retenues et les places encore libres. Cliquer sur « Place libre » pour ouvrir le sélecteur de ce rôle.",
+                        "Dans la colonne « Disponibles pour ce rôle », cliquer sur le nom d’une personne « Partant·e » ou « Si besoin » pour lui attribuer la place. Seules les personnes qui proposent ce rôle et ne sont pas déjà retenues apparaissent. Les « Partant·e » sont présentées en premier. Le choix est enregistré immédiatement et le sélecteur se ferme.",
+                        "Les colonnes « Joueur·ses », « MC » et « DJ », sous le tableau, permettent aussi de consulter et modifier les candidatures. Seuls les rôles avec des places prévues sont affichés. Cliquer sur la carte d’une personne « Partant·e » ou « Si besoin » pour la retenir dans cette colonne ; le choix est enregistré immédiatement.",
                         "Une personne qui propose plusieurs rôles apparaît dans chaque colonne concernée. Ses cartes portent le même repère ↔ et sont reliées par un trait sur grand écran. Les survoler ou les atteindre au clavier met en évidence ses autres candidatures.",
                         "Une personne ne peut occuper qu’un rôle par spectacle. Cliquer sur sa carte dans une autre colonne change son attribution ; recliquer sur sa carte retenue la retire de l’équipe. Sa réponse personnelle est conservée ; un ajout par l’organisation est effacé si le membre n’a pas depuis enregistré sa propre réponse."
                     ],
                     "notes": [
-                        "Les personnes indisponibles ne sont pas sélectionnables. Pour une personne sans réponse ayant donné son accord directement, utiliser « Ajouter un membre avec son accord ». Les listes « Sans réponse » et « Indisponibles » se trouvent en bas de la fenêtre. La liste des personnes sans réponse porte sur les profils « OK pour la scène ». Les candidatures et réponses déjà reçues restent visibles, même si la case a ensuite été décochée.",
+                        "Les personnes indisponibles ne sont pas sélectionnables. Pour une personne sans réponse ayant donné son accord directement, cliquer sur une place libre et utiliser la colonne « Ajouter un membre avec son accord ». Les listes « Sans réponse » et « Indisponibles » se trouvent en bas de la fenêtre. La liste des personnes sans réponse porte sur les profils « OK pour la scène ». Les candidatures et réponses déjà reçues restent visibles, même si la case a ensuite été décochée.",
                         "« Équipe complète » signifie que les places prévues sont attribuées. Un spectacle sans besoins définis n’est pas considéré comme complet.",
                         "Le bilan des réponses de chaque spectacle compte aussi les « Pas dispo » et détaille les trois disponibilités ainsi que les personnes sans réponse. Une personne compte une seule fois dans ce total, même si elle propose plusieurs rôles ; sa candidature compte dans chacun des rôles proposés.",
                         "Les cartes contiennent le nom, la disponibilité et le repas. Sur téléphone, les colonnes s’empilent et les repères ↔ restent visibles.",
                         "Le compteur des réponses et la barre de participation ne mesurent pas les places attribuées. Le nombre de personnes retenues dépend uniquement des sélections de l’organisation, même si toutes les personnes ont déjà répondu.",
-                        "Un ajout avec accord est compté comme une disponibilité « Partant·e » et comme une personne retenue. La mention « Ajouté·e par l’organisation » distingue cet ajout d’une réponse personnelle au sondage."
+                        "Un ajout avec accord est compté comme une disponibilité « Partant·e » et comme une personne retenue. La mention « Ajouté·e par l’organisation » distingue cet ajout d’une réponse personnelle au sondage.",
+                        "Le sélecteur comporte deux colonnes sur grand écran, empilées sur téléphone. La croix « Fermer le sélecteur », la touche Échap ou un clic en dehors le referment sans changer l’équipe. Échap dans le sélecteur laisse la composition ouverte.",
+                        "Une liste vide indique qu’aucune candidature encore libre ou aucun membre sans réponse ne correspond à ce rôle. Si la place est attribuée par une autre personne entre-temps, le serveur refuse l’ajout ; actualiser la composition avant de recommencer."
                     ]
                 },
                 {
@@ -337,8 +340,8 @@
                     "access": "organizer",
                     "summary": "L’organisation peut attribuer une place à un membre qui a donné son accord directement, sans réponse au sondage.",
                     "steps": [
-                        "Dans « Composer l’équipe », ouvrir « Ajouter un membre avec son accord ».",
-                        "Choisir le membre puis son rôle. La liste propose les membres « OK pour la scène » sans réponse, avec un rôle renseigné dans leur profil et une place encore libre pour ce rôle.",
+                        "Dans « Composer l’équipe », cliquer sur « Place libre » pour le rôle à pourvoir. Le sélecteur affiche les candidatures disponibles à gauche et « Ajouter un membre avec son accord » à droite ; sur téléphone, les deux parties s’empilent.",
+                        "Dans « Membre sans réponse », choisir la personne. La liste propose uniquement les membres « OK pour la scène » sans réponse qui ont ce rôle dans leur profil. Le « Rôle retenu » correspond à la place cliquée ; pour choisir un autre rôle, fermer le sélecteur et cliquer sur une place de ce rôle.",
                         "Cocher « J’ai l’accord de cette personne pour ce rôle. », puis cliquer sur « Ajouter à l’équipe ».",
                         "Vérifier sa présence dans l’équipe avec la mention « Ajouté·e par l’organisation ». Sa disponibilité est enregistrée comme « Partant·e » pour le rôle choisi.",
                         "Lorsque l’équipe est prête, cliquer sur « Sauvegarder et informer les joueurs » : les membres ajoutés manuellement reçoivent le même email de confirmation que les autres personnes sélectionnées, avec leur rôle retenu.",
@@ -351,7 +354,8 @@
                         "Si le rôle souhaité manque, il doit être ajouté au profil du membre. Si toutes les places sont prises, utiliser « Ajuster les besoins » puis « Enregistrer les besoins » avant l’ajout.",
                         "Un double ajout ou une place prise entre-temps est refusé. Actualiser la composition et vérifier l’équipe avant de recommencer.",
                         "Le membre peut ensuite enregistrer sa propre réponse tant que les réponses sont ouvertes. La mention de l’ajout disparaît ; un retrait ultérieur de l’équipe conserve alors sa réponse personnelle.",
-                        "Ce formulaire utilise les comptes existants de la troupe. Il ne crée pas de compte pour une personne extérieure."
+                        "Ce formulaire utilise les comptes existants de la troupe. Il ne crée pas de compte pour une personne extérieure.",
+                        "Changer le membre choisi décoche l’accord : il faut le confirmer pour chaque personne. Si aucune personne ne correspond, le sélecteur l’indique et ne propose pas de formulaire d’ajout."
                     ]
                 },
                 {

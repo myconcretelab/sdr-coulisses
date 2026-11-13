@@ -48,7 +48,7 @@ try {
         $assert($rest($path, $body)->get_status() === 409, 'Double ajout interdit');
         $assert($rest($path, array_replace($body, ['userId' => $users['other'], 'role' => $role]))->get_status() === 409, 'Dernière place déjà prise refusée');
         $assert($row($users['other']) === null, 'Refus sans créer de disponibilité artificielle');
-        $dashboard = SDR_Coulisses::dashboard(); $e = array_column($dashboard['events'], null, 'id')[$event];
+        $dashboard = SDR_Coulisses::dashboard()->get_data(); $e = array_column($dashboard['events'], null, 'id')[$event];
         $item = array_column($e['responses'], null, 'userId')[$users['member']];
         $assert($item['addedByOrganization'] === true && $item['selectedRole'] === $role, 'Origine exposée dans le planning');
         $members = array_column($dashboard['members'], null, 'id');

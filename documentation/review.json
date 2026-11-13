@@ -1,10 +1,10 @@
 {
     "schema": 1,
     "reviewed": "2026-11-13",
-    "guides": "f6f6b88dbe41eaf389931663b94e205bdb69d73bb5d5ec303846d45b7cad213c",
+    "guides": "3e2de74bb4e45278a9b77ac55e4190942ea5ceb8173bd8edb8a1c17a168f9bbe",
     "sources": {
-        "assets/app.css": "641ecaa42785fdfacd6b27060a084cdaaa9746d6d4393f4ecd5257a41022b4f8",
-        "assets/app.js": "48700a71580b81e1f9f715da3ba4f8482de2a188f4a84eec5a4ecbb01e48913d",
+        "assets/app.css": "166a1a864413df0dc509542d9c7915ed446dd5825a7d6328efd61616c6e5c8d4",
+        "assets/app.js": "3bf1de6d005e0b758ef5702926d1da437bd4044aeacc3afc8e955149990101a0",
         "assets/blocks.js": "9b509f6dd69a9a912bab7c7f360521c4d49f0c45bc157639281b4c5a00f241ef",
         "assets/documentation.css": "210783cff6ba54f89f8f0c9fc3f3ab94620fe2350ee80bad3d04d4eb78465231",
         "assets/documentation.js": "93067befd231c1bd2b050b3be667b07c1c347e85d1de5b0eb35e254b6f71c3b1",
