@@ -3,7 +3,7 @@ Contributors: myconcretelab
 Tags: theatre, events, members, availability
 Requires at least: 6.5
 Requires PHP: 8.1
-Stable tag: 1.15.7
+Stable tag: 1.16.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -51,6 +51,11 @@ conservent leur déploiement habituel.
 Elles sont conservées. Aucun effacement automatique n’est exécuté.
 
 == Changelog ==
+
+= 1.16.0 =
+* Ajout à une équipe d’un membre sans réponse, avec son accord et mention de l’organisation.
+* Contrôle des rôles du profil et des places, sans email automatique.
+* Les membres ajoutés manuellement reçoivent aussi la confirmation avec « Sauvegarder et informer les joueurs ».
 
 = 1.15.7 =
 * Réponses et composition de l’équipe réunies dans un cadre commun, avec deux parties distinctes.

@@ -267,3 +267,17 @@ body.sdr-workspace.sdr-relances-open{overflow:hidden}
 :where(body.sdr-workspace) .event-followup>.card-team-panel{margin:0;padding:14px;border:0;border-top:1px solid #dcd4e5;border-radius:0 0 9px 9px;background:#f1edf6;box-shadow:none}
 :where(body.sdr-workspace) .event-followup>.card-team-panel.team-complete{border-top-color:#c6d5aa;background:#edf3df}
 @media(max-width:560px){:where(body.sdr-workspace) .candidate-columns{grid-template-columns:1fr;gap:12px}:where(body.sdr-workspace) .candidate-role{padding:12px}:where(body.sdr-workspace) .candidate-pad{min-height:86px}:where(body.sdr-workspace) .candidate-links{display:none}}
+
+/* Agreement recorded by the organization for a member without a survey response. */
+:where(body.sdr-workspace) .manual-member-editor{border:1px solid #d8d1e4;border-radius:10px;background:#f8f5fc;padding:16px;margin:18px 0 24px}
+:where(body.sdr-workspace) .manual-member-editor summary{display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:600;font-size:13px;cursor:pointer}
+:where(body.sdr-workspace) .manual-member-editor fieldset{border:0;padding:0;margin:16px 0 0;min-width:0}
+:where(body.sdr-workspace) .manual-member-fields{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:14px}
+:where(body.sdr-workspace) .manual-member-fields label{display:flex;flex-direction:column;gap:8px;font-size:12px;min-width:0}
+:where(body.sdr-workspace) .manual-member-fields select{width:100%;min-width:0;min-height:42px;padding:9px;font:inherit;border:1px solid #c8bdd8;border-radius:6px;background:#fff}
+:where(body.sdr-workspace) .manual-member-editor .form-message{font-size:12px;line-height:1.6;margin-bottom:0}
+:where(body.sdr-workspace) .manual-member-editor .error{color:#9b3525}
+:where(body.sdr-workspace) .manual-member-badge{display:block;font-size:10px;line-height:1.5;color:#654d84;font-weight:500}
+:where(body.sdr-workspace) .casting-person:has(.manual-member-badge){flex-wrap:wrap}
+:where(body.sdr-workspace) .casting-person .manual-member-badge{flex-basis:100%;padding-left:21px}
+@media(max-width:480px){:where(body.sdr-workspace) .manual-member-fields{grid-template-columns:1fr}:where(body.sdr-workspace) .manual-member-editor .button{width:100%}}
